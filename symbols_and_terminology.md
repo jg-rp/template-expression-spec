@@ -196,10 +196,6 @@ That is what “total evaluation” means in this context.
 
 ---
 
-Excellent — this is exactly the right move. If we’re going to write spec-level definitions, the mathematical vocabulary needs to be clear and grounded in this context.
-
-I’ll define each term plainly, then connect it directly to your Liquid redesign.
-
 ---
 
 # 1. Domain
@@ -437,16 +433,6 @@ You’re essentially saying:
 > The template expression language is a closed algebra over Value.
 
 That’s far more rigorous than legacy Liquid, which behaves more like a loosely documented scripting DSL.
-
----
-
-If you'd like, next we can:
-
-- Translate the full `+` definition into this formal notation cleanly,
-- Or define the entire system without symbols (pure prose spec style),
-- Or show how this formalism prevents accidental partiality creeping in later.
-
-Where would you like to go next?
 
 ---
 
@@ -750,3 +736,284 @@ Using this formal model lets you _prove_ properties like:
 - Filters cannot escape the algebra
 
 It’s not just academic notation — it lets you reason precisely about edge cases.
+
+---
+
+We have been using a **metalanguage** (informal mathematical notation) to define the **denotational semantics** of your template language.
+
+Let’s unpack that precisely, then answer the variadic question.
+
+---
+
+# 1. Metalanguage vs Object Language
+
+You now have two languages in play:
+
+### 1️⃣ Object language
+
+The language you are designing:
+
+- `x + y`
+- `a | f: (y | g)`
+- `not (a and b)`
+- `??`
+
+This is the language template authors write.
+
+---
+
+### 2️⃣ Metalanguage
+
+The mathematical language we are using to describe what the object language _means_.
+
+This includes:
+
+- `⟦ e ⟧(ρ)`
+- `EvalValue`
+- `∈`
+- Function arrows `→`
+- Set notation
+- Case definitions
+
+The metalanguage is not executable.
+It’s a specification tool.
+
+You’re doing language theory now.
+
+---
+
+# 2. Denotational Semantics
+
+Yes — what we’ve written is denotational semantics.
+
+That means:
+
+> Each syntactic construct is mapped to a mathematical function describing its meaning.
+
+Example:
+
+```
+⟦ e1 + e2 ⟧(ρ) =
+    Add(⟦ e1 ⟧(ρ), ⟦ e2 ⟧(ρ))
+```
+
+We are not describing _how_ it evaluates step-by-step (that would be operational semantics).
+
+We are describing:
+
+> What value the expression denotes.
+
+That’s denotational.
+
+---
+
+# 3. Now: Variadic Functions in the Metalanguage
+
+You asked:
+
+> How would we define a function with variadic arguments in this meta language?
+
+Good. Because filters are variadic.
+
+There are three clean ways to do this.
+
+---
+
+# Option A — Use Lists Explicitly (Most Precise)
+
+Define:
+
+```
+FilterFunction : EvalValue × List<EvalValue> → EvalValue
+```
+
+Meaning:
+
+- First argument = piped value
+- Second argument = list of zero or more values
+
+This is the cleanest and most common formal approach.
+
+Then:
+
+```
+F(v0, [v1, v2, v3])
+```
+
+Models:
+
+```
+v0 | f: v1, v2, v3
+```
+
+This avoids needing special “variadic” syntax in the metalanguage.
+
+It reduces everything to fixed arity: two arguments.
+
+This is the preferred formal method.
+
+---
+
+# Option B — Use the Kleene Star (Mathematical Notation)
+
+Sometimes you’ll see:
+
+```
+F : EvalValue × EvalValue* → EvalValue
+```
+
+Where:
+
+```
+EvalValue*
+```
+
+means:
+
+> Zero or more EvalValues
+
+This is compact but slightly less explicit than `List<EvalValue>`.
+
+It’s common in formal grammar definitions.
+
+---
+
+# Option C — Tuple Expansion Notation
+
+You can write:
+
+```
+F : EvalValue^n → EvalValue   for n ≥ 1
+```
+
+But this is awkward because:
+
+- `n` is variable
+- You must quantify over all `n`
+
+So this is less elegant.
+
+---
+
+# 4. Best Choice for Your Spec
+
+Since your grammar already uses lists for arguments:
+
+```
+ArgumentList ::= Expr ("," Expr)*
+```
+
+The most consistent metalanguage definition is:
+
+```
+FilterFunction : EvalValue × List<EvalValue> → EvalValue
+```
+
+This keeps:
+
+- The grammar
+- The semantics
+- The type system
+
+Aligned.
+
+---
+
+# 5. Formal Evaluation Rule With Variadic Filters
+
+Let:
+
+```
+F ∈ FilterEnv
+```
+
+Then:
+
+```
+⟦ e | f : a1, ..., an ⟧(ρ) =
+
+let v0 = ⟦ e ⟧(ρ)
+
+if v0 = Nothing
+    → Nothing
+
+let args = [ ⟦ a1 ⟧(ρ), ..., ⟦ an ⟧(ρ) ]
+
+if ∃ v ∈ args such that v = Nothing
+    → Nothing
+
+return F(v0, args)
+```
+
+Notice:
+
+- We never needed special variadic syntax.
+- We use a list.
+- Everything stays total.
+
+---
+
+# 6. Slightly More Formal Version
+
+If we want to make it mathematically crisp:
+
+Let:
+
+```
+mapEval(args, ρ) = [ ⟦ ai ⟧(ρ) for each ai ∈ args ]
+```
+
+Then:
+
+```
+⟦ e | f : args ⟧(ρ) =
+
+match ⟦ e ⟧(ρ) with
+    Nothing → Nothing
+    v0 →
+        let vs = mapEval(args, ρ)
+        if Nothing ∈ vs
+            → Nothing
+        else
+            → FilterEnv(f)(v0, vs)
+```
+
+That’s a fully formal denotational definition.
+
+---
+
+# 7. Why This Is Clean
+
+Because:
+
+- Your object language has variadic filters
+- Your metalanguage reduces that to:
+  - A fixed-arity function
+  - Whose second parameter is a list
+
+That’s standard mathematical encoding.
+
+---
+
+# 8. One Subtle but Powerful Insight
+
+Now that filters are defined as:
+
+```
+EvalValue × List<EvalValue> → EvalValue
+```
+
+They are:
+
+- First-class in the semantic model
+- Pure functions
+- Total
+- Closed over the evaluation domain
+
+Which means your template language is:
+
+> A pure, total, first-order functional expression language with explicit bottom.
+
+That’s a remarkably clean foundation.
+
+---
