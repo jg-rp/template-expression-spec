@@ -277,3 +277,224 @@ Your language now has:
 - Deterministic propagation semantics
 
 This is now a small, well-defined functional expression language embedded in templates.
+
+---
+
+---
+
+# 1. Strict vs Lifting (Conceptually)
+
+### Strict operator (what we used before)
+
+```
+f(Nothing, …) → Nothing
+```
+
+Automatic propagation.
+Filter never sees `Nothing`.
+
+---
+
+### Lifting filter (what you want)
+
+```
+f : EvalValue × List<EvalValue> → EvalValue
+```
+
+And we **do not** pre-check for `Nothing`.
+
+The filter receives `Nothing` as a legitimate input.
+
+This makes `Nothing` part of the public algebra, not a hidden propagation rule.
+
+This is the correct move if:
+
+* `default` must handle `Nothing`
+* Some filters treat `Nothing` as empty
+* Some filters treat `Nothing` as meaningful
+
+---
+
+# 2. Revised Filter Evaluation Rule
+
+Old rule (strict):
+
+```
+If v0 = Nothing → Nothing
+If any arg = Nothing → Nothing
+Else call F(v0, args)
+```
+
+New rule (lifting):
+
+```
+⟦ e | f : args ⟧(ρ) =
+
+let v0 = ⟦ e ⟧(ρ)
+let vs = [ ⟦ ai ⟧(ρ) ]
+
+return FilterEnv(f)(v0, vs)
+```
+
+That’s it.
+
+No automatic `Nothing` propagation.
+
+The filter decides.
+
+This keeps evaluation total and pushes responsibility to the filter definition.
+
+---
+
+# 3. Why This Is Semantically Cleaner
+
+Now:
+
+* `Nothing` is a first-class member of `EvalValue`
+* Operators propagate it by rule
+* Filters receive it explicitly
+
+This avoids having two propagation systems (operators strict, filters implicit).
+
+Everything is explicit.
+
+---
+
+# 4. Example: `default`
+
+Define:
+
+```
+default(v, [fallback]) =
+    if v = Nothing
+        → fallback
+    else
+        → v
+```
+
+Now:
+
+```
+Nothing | default: 5  → 5
+Null    | default: 5  → Null
+false   | default: 5  → false
+0       | default: 5  → 0
+```
+
+Exactly what you want.
+
+---
+
+# 5. Optional Arguments
+
+Since filters receive a list:
+
+```
+FilterFunction : EvalValue × List<EvalValue> → EvalValue
+```
+
+Optional arguments are trivial.
+
+Define:
+
+```
+truncate(v, args):
+    let length =
+        if args has at least 1 element
+            → ToNumber(args[0])
+        else
+            → 30
+```
+
+No special typing machinery required.
+
+---
+
+# 6. What About Operators?
+
+Important consistency rule:
+
+Operators remain strict.
+Filters are lifting.
+
+This creates a clean distinction:
+
+| Construct  | Behavior with Nothing |
+| ---------- | --------------------- |
+| Arithmetic | Strict propagation    |
+| Boolean    | Strict propagation    |
+| Coalesce   | Consumes Nothing      |
+| Filters    | Lifting               |
+
+This is elegant and predictable.
+
+---
+
+# 7. Algebraic View
+
+You have now defined:
+
+```
+EvalValue = DataValue ∪ {Nothing}
+```
+
+Operators are strict functions over this set.
+Filters are total functions over this set.
+
+In category-theoretic terms (just conceptually):
+
+* `Nothing` behaves like a bottom element.
+* Strict operators are bottom-preserving.
+* Filters are arbitrary total functions.
+
+You are not implementing full Maybe-monad lifting.
+You’re implementing a controlled bottom algebra.
+
+That’s simpler and more practical.
+
+---
+
+# 8. Important Design Decision
+
+Should filters be *required* to handle `Nothing`, or allowed to treat it as identity?
+
+You likely want this rule in the spec:
+
+> Filters must be total and must explicitly define behavior for `Nothing` inputs.
+
+This prevents accidental reintroduction of partiality.
+
+---
+
+# 9. Edge Case: Nested Example
+
+```
+x | f: (y | g)
+```
+
+Evaluation:
+
+1. Evaluate `x`
+2. Evaluate `y`
+3. Apply `g(y)` — even if `y = Nothing`
+4. Apply `f(x, result_of_g)`
+
+Nothing is not intercepted unless a filter chooses to.
+
+That’s consistent and powerful.
+
+---
+
+# 10. What You’ve Achieved
+
+Your language now has:
+
+* A formally defined denotational semantics
+* A closed evaluation algebra
+* Explicit bottom value
+* Strict operators
+* Lifting filters
+* Deterministic evaluation
+* Immutability
+
+This is a strong foundation for a formal spec.
