@@ -1,14 +1,76 @@
-X.X Type System for Liquid Expressions
+# X. Expressions
 
-Liquid tags are composed of a tag name and zero or more expressions. Additional tag-specific keywords and punctuation contribute to tag syntax and semantics.
+Here we formally define an expression language that all template tags and the output statement must use.
 
-The output statement takes a single expression and renders it to the output buffer.
+## X.1 Overview
 
-Historically, expression syntax and semantics have been a free-for-all in Liquid tags.
+TODO:
 
-Here we formally define an expression language that all tags must use.
+TODO: Filters are allowed everywhere.
 
-X.X.1 Value Universe
+TODO: All values are immutable.
+
+### X.1.1 Syntax
+
+TODO:
+
+```
+Expr         ::= PipeExpr
+
+PipeExpr     ::= CoalesceExpr
+               | PipeExpr "|" Filter
+
+CoalesceExpr ::= OrExpr
+               | CoalesceExpr "??" OrExpr
+
+OrExpr       ::= AndExpr
+               | OrExpr "or" AndExpr
+
+AndExpr      ::= CompareExpr
+               | AndExpr "and" CompareExpr
+
+CompareExpr  ::= AddExpr
+               | AddExpr ("==" | "!=" | "<" | "<=", ">", ">=") AddExpr
+
+AddExpr      ::= MulExpr
+               | AddExpr ("+" | "-") MulExpr
+
+MulExpr      ::= PrefixExpr
+               | MulExpr ("*" | "/" | "%") PrefixExpr
+
+PrefixExpr   ::= Primary
+               | "not" PrefixExpr
+
+Primary      ::= Literal
+               | Variable
+               | Primary "." Identifier
+               | Primary "[" Expr "]"
+               | "(" Expr ")"
+```
+
+### X.1.2 Semantics
+
+Evaluation never fails. Every syntactically valid expression evaluates to a value and does not raise an error at render time.
+
+```
+⟦ e ⟧ : Environment → EvalValue
+```
+
+For every expression `e` and environment `ρ`:
+
+```
+⟦ e ⟧(ρ) ∈ EvalValue
+```
+
+That is, every operator and filter must be implemented as a total function over `EvalValue`.
+
+## X.2 Data Types and Values
+
+### X.2.1 Syntax
+
+TODO: Move literals here?
+
+### X.2.2 Semantics
 
 Value types are split into _data values_ and _Nothing_. User data and developer-controlled global data are of type _DataValue_. The special _Nothing_ type indicates the absence of a value and is distinct from `Null` (or implementation-specific `nil` and `undefined`).
 
@@ -33,62 +95,166 @@ TODO: Drops are coerced to primitive values using drop coercion methods.
 
 TODO: The value domain is closed and finite.
 
-X.X.1.1 The Null Type
+#### X.2.2.1. The Null Type
 
 TODO:
 
-X.X.1.2 The Boolean Type
+#### X.2.2.2. The Boolean Type
 
 TODO:
 
-X.X.1.3 The Integer Type
+#### X.2.2.3. The Integer Type
 
 TODO:
 
-X.X.1.4 The Float Type
+#### X.2.2.4. The Float Type
 
 TODO:
 
-X.X.1.5 The String Type
+#### X.2.2.5. The String Type
 
 TODO:
 
-X.X.1.6 The Array Type
+#### X.2.2.6. The Array Type
 
 TODO:
 
-X.X.1.7 The Object Type
+#### X.2.2.7. The Object Type
 
 TODO:
 
-X.X.1.8 The Special Nothing Type
+#### X.2.2.8. The Special Nothing Type
 
 TODO:
 
-X.X.1.2 Total Evaluation
+Nothing can originate from:
 
-Evaluation never fails. Every syntactically valid expression evaluates to a value and does not raise an error at render time.
+- Missing variable
+- Missing property
+- Invalid operator usage
+- Invalid conversion
+- Explicit filter return
+
+## X.3. Type Coercion
+
+TODO: Primitive conversion functions
+
+All conversion functions are total:
 
 ```
-⟦ e ⟧ : Environment → EvalValue
+ToNumber : EvalValue → EvalValue
+ToString : EvalValue → EvalValue
+ToBoolean : EvalValue → EvalValue
 ```
 
-For every expression `e` and environment `ρ`:
-
-```
-⟦ e ⟧(ρ) ∈ EvalValue
-```
-
-That is, every operator and filter must be implemented as a total function over `EvalValue`.
-
-X.X.1.3 Type Coercion
+## X.4 Literals
 
 TODO:
 
-X.X.1.4 Filters
+#### X.4.2.1 Null Literal
 
 TODO:
 
-X.X.1.3 Drops
+#### X.4.2.2 Boolean Literals
+
+TODO:
+
+#### X.4.2.3 Integer Literals
+
+TODO:
+
+#### X.4.2.4 Float Literals
+
+TODO:
+
+#### X.4.2.5 String Literals
+
+TODO:
+
+#### X.4.2.5 Array Literals
+
+TODO:
+
+#### X.4.2.5 Object Literals
+
+TODO:
+
+## X.5 Operators
+
+TODO:
+
+## X.6 Filters
+
+TODO:
+
+### X.6.1 Syntax
+
+TODO:
+
+```
+Filter          ::= Identifier
+                  | Identifier ":" ArgumentList
+
+ArgumentList    ::= Argument ("," Argument)*
+
+Argument        ::= Expr
+                  | KeywordArgument
+
+KeywordArgument ::= Identifier ("=" | ":") Expr
+```
+
+This yields:
+
+- `a + b | f` → `(a + b) | f`
+- `a and b | f` → `(a and b) | f`
+- `a | f | g` → `((a | f) | g)`
+- `x | f: (a + b)`
+- `x | f: y | g` → `(x | f: y) | g`
+
+Expression:
+
+```
+x | f: a, b, c
+```
+
+Desugars semantically to:
+
+```
+ApplyFilter(f, x, [a, b, c])
+```
+
+Nested case:
+
+```
+x | f: (y | g)
+```
+
+Desugars to:
+
+```
+ApplyFilter(
+  f,
+  x,
+  [ ApplyFilter(g, y, []) ]
+)
+```
+
+Filter arguments are full expressions.
+
+### X.6.2 Semantics
+
+A filter is a **named total function** registered in the environment.
+
+```
+FilterEnv : Identifier → FilterFunction
+```
+
+Where:
+
+```
+FilterFunction : EvalValue × List<EvalValue> → EvalValue
+```
+
+## X.7 Drops (Extension Types)
 
 TODO:
