@@ -3,7 +3,7 @@
 //! Notable additions to traditional Liquid expressions include:
 //!
 //! * Arithmetic operators.
-//! * First-class filters.
+//! * First-class filters (no need for tail filter operator).
 //! * A comprehensive precedence hierarchy.
 //! * A `not` prefix operator.
 //! * Parentheses for grouping expressions.
@@ -11,7 +11,7 @@
 //! * Array and object literals with a spread operator.
 
 expression    = _{ SOI ~ expr ~ EOI }
-expr          =  { pipe_expr }
+expr          =  { pipe_expr ~ condition? }
 pipe_expr     = _{ coalesce_expr ~ ("|" ~ filter)* }
 coalesce_expr =  { or_expr ~ ("??" ~ or_expr)* }
 or_expr       =  { and_expr ~ (or_keyword ~ and_expr)* }
@@ -22,11 +22,15 @@ test_expr     =  { add_expr ~ (test_op ~ add_expr)? }
 add_expr      =  { mul_expr ~ (add_op ~ mul_expr)* }
 mul_expr      =  { primary ~ (mul_op ~ primary)* }
 
+condition = { if_keyword ~ expr ~ else_keyword ~ expr }
+
 or_keyword       = @{ "or" ~ !name_char }
 and_keyword      = @{ "and" ~ !name_char }
 not_keyword      = @{ "not" ~ !name_char }
 contains_keyword = @{ "contains" ~ !name_char }
 in_keyword       = @{ "in" ~ !name_char }
+if_keyword       = @{ "if" ~ !name_char }
+else_keyword     = @{ "else" ~ !name_char }
 
 test_op = { "==" | "!=" | "<" | "<=" | ">" | ">=" | contains_keyword | in_keyword }
 add_op  = { "+" | "-" }
@@ -146,7 +150,13 @@ selector = _{
 
 filter           = { name ~ (":" ~ argument_list)? }
 argument_list    = { argument ~ ("," ~ argument)* }
-argument         = { expr | keyword_argument }
-keyword_argument = { name ~ ("=" | ":") ~ expr }
+argument         = { lambda_expr | keyword_argument | expr }
+keyword_argument = { name ~ ("=" | ":") ~ (lambda_expr | expr) }
+
+lambda_expr      = { lambda_arguments ~ "=>" ~ expr }
+lambda_arguments = {
+    name
+  | ("(" ~ (name ~ ("," ~ name)*)? ~ ")")
+}
 
 WHITESPACE = _{ " " | "\t" | NEWLINE }

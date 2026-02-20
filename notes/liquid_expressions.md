@@ -81,12 +81,16 @@ DataValue =
   | Integer
   | Float
   | String
-  | Array<Value>
-  | Object<String, Value>
+  | Array<DataValue>
+  | Object<String, DataValue>
 
 EvalValue =
     DataValue
   | Nothing
+
+ArgValue =
+    EvalValue
+  | Lambda
 ```
 
 TODO: `Range` does not exist at runtime. `(a..b)` evaluates to `Array<Integer>`.
@@ -252,7 +256,7 @@ FilterEnv : Identifier → FilterFunction
 Where:
 
 ```
-FilterFunction : EvalValue × List<EvalValue> → EvalValue
+FilterFunction : EvalValue × List<ArgValue> → EvalValue
 ```
 
 ## X.7 Drops (Extension Types)
