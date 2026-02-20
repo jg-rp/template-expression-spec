@@ -1,6 +1,11 @@
-def main():
-    print("Hello from liquid-def!")
+from pest import Parser
 
+with open("expression.pest") as fd:
+    GRAMMAR = fd.read()
 
-if __name__ == "__main__":
-    main()
+PARSER = Parser.from_grammar(GRAMMAR)
+
+expr = "(1..3)"
+pairs = PARSER.parse("expression", expr)
+
+print(pairs.dumps())

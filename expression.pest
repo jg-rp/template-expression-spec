@@ -8,20 +8,30 @@
 //! * A `not` prefix operator.
 //! * Parentheses for grouping expressions.
 //! * A coalesce operator for distinguishing between falsy values and the special `Nothing` value.
-//!
+//! * Array and object literals with a spread operator.
 
 expression    = _{ SOI ~ expr ~ EOI }
-expr          = _{ pipe_expr }
-pipe_expr     =  { coalesce_expr ~ ("|" ~ filter)* }
+expr          =  { pipe_expr }
+pipe_expr     = _{ coalesce_expr ~ ("|" ~ filter)* }
 coalesce_expr =  { or_expr ~ ("??" ~ or_expr)* }
-or_expr       =  { and_expr ~ ("or" ~ and_expr)* }
-and_expr      =  { test_expr ~ ("and" ~ test_expr)* }
-test_expr     =  { add_expr ~ (("==" | "!=" | "<" | "<=" | ">" | ">=" | "contains" | "in") ~ add_expr)* }
-add_expr      =  { mul_expr ~ (("+" | "-") ~ mul_expr)* }
-mul_expr      =  { prefix_expr ~ (("*" | "/" | "%") ~ prefix_expr)* }
-prefix_expr   =  { ("not" ~ prefix_expr) | primary }
+or_expr       =  { and_expr ~ (or_keyword ~ and_expr)* }
+and_expr      =  { prefix_expr ~ (and_keyword ~ prefix_expr)* }
+prefix_expr   =  { not_expr | test_expr }
+not_expr      =  { not_keyword ~ prefix_expr }
+test_expr     =  { add_expr ~ (test_op ~ add_expr)? }
+add_expr      =  { mul_expr ~ (add_op ~ mul_expr)* }
+mul_expr      =  { primary ~ (mul_op ~ primary)* }
 
-// TODO: range expr
+or_keyword       = @{ "or" ~ !name_char }
+and_keyword      = @{ "and" ~ !name_char }
+not_keyword      = @{ "not" ~ !name_char }
+contains_keyword = @{ "contains" ~ !name_char }
+in_keyword       = @{ "in" ~ !name_char }
+
+test_op = { "==" | "!=" | "<" | "<=" | ">" | ">=" | contains_keyword | in_keyword }
+add_op  = { "+" | "-" }
+mul_op  = { "*" | "/" | "%" }
+
 primary = {
     literal
   | variable
@@ -34,6 +44,9 @@ literal = _{
   | true_literal
   | false_literal
   | null
+  | array_literal
+  | object_literal
+  | range_literal
 }
 
 string_literal = ${
@@ -97,9 +110,17 @@ int    = @{ "0" | ("-"? ~ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*) }
 frac   =  { "." ~ ASCII_DIGIT+ }
 exp    =  { ^"e" ~ ("-" | "+")? ~ ASCII_DIGIT+ }
 
-true_literal  = { "true" }
-false_literal = { "false" }
-null          = { "null" | "nil" }
+true_literal  = { "true" ~ !name_char }
+false_literal = { "false" ~ !name_char }
+null          = { ("null" | "nil") ~ !name_char }
+
+array_literal  =  { "[" ~ (item ~ ("," ~ item)*)? ~ ","? ~ "]" }
+object_literal =  { "{" ~ (object_item ~ ("," ~ object_item)*)? ~ ","? ~ "}" }
+item           = _{ spread_expr | expr }
+spread_expr    =  { "..." ~ expr }
+object_item    =  { spread_expr | (string_literal | name) ~ ":" ~ expr }
+
+range_literal = { "(" ~ expr ~ ".." ~ expr ~ ")" }
 
 variable =  { name ~ segment* }
 name     = @{ name_first ~ name_char* }
@@ -120,7 +141,7 @@ segment = {
 
 selector = _{
     string_literal
-  | variable
+  | expr
 }
 
 filter           = { name ~ (":" ~ argument_list)? }
