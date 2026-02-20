@@ -1,0 +1,131 @@
+//! Expression parser for a Liquid-like template language.
+//!
+//! Notable additions to traditional Liquid expressions include:
+//!
+//! * Arithmetic operators.
+//! * First-class filters.
+//! * A comprehensive precedence hierarchy.
+//! * A `not` prefix operator.
+//! * Parentheses for grouping expressions.
+//! * A coalesce operator for distinguishing between falsy values and the special `Nothing` value.
+//!
+
+expression    = _{ SOI ~ expr ~ EOI }
+expr          = _{ pipe_expr }
+pipe_expr     =  { coalesce_expr ~ ("|" ~ filter)* }
+coalesce_expr =  { or_expr ~ ("??" ~ or_expr)* }
+or_expr       =  { and_expr ~ ("or" ~ and_expr)* }
+and_expr      =  { test_expr ~ ("and" ~ test_expr)* }
+test_expr     =  { add_expr ~ (("==" | "!=" | "<" | "<=" | ">" | ">=" | "contains" | "in") ~ add_expr)* }
+add_expr      =  { mul_expr ~ (("+" | "-") ~ mul_expr)* }
+mul_expr      =  { prefix_expr ~ (("*" | "/" | "%") ~ prefix_expr)* }
+prefix_expr   =  { ("not" ~ prefix_expr) | primary }
+
+// TODO: range expr
+primary = {
+    literal
+  | variable
+  | ("(" ~ expr ~ ")")
+}
+
+literal = _{
+    number
+  | string_literal
+  | true_literal
+  | false_literal
+  | null
+}
+
+string_literal = ${
+    ("\x22" ~ double_quoted ~ "\x22")
+  | ("\x27" ~ single_quoted ~ "\x27")
+}
+
+double_quoted = @{ double_quoted_char* }
+single_quoted = @{ single_quoted_char* }
+
+double_quoted_char = _{
+    unescaped
+  | "\x27"
+  | (ESC ~ "\x22")
+  | (ESC ~ escapable)
+}
+
+single_quoted_char = _{
+    unescaped
+  | "\x22"
+  | (ESC ~ "\x27")
+  | (ESC ~ escapable)
+}
+
+ESC = _{ "\x5C" }
+
+unescaped = _{
+    '\u{20}'..'\u{21}'
+  | '\u{23}'..'\u{26}'
+  | '\u{28}'..'\u{5B}'
+  | '\u{5D}'..'\u{D7FF}'
+  | '\u{E000}'..'\u{10FFFF}'
+}
+
+escapable = _{
+    "\x62"
+  | "\x66"
+  | "\x6E"
+  | "\x72"
+  | "\x74"
+  | "/"
+  | "\\"
+  | ("\x75" ~ hexchar)
+}
+
+hexchar = _{
+    non_surrogate
+  | (high_surrogate ~ "\\u" ~ low_surrogate)
+}
+
+non_surrogate = _{
+    ((ASCII_DIGIT | ^"A" | ^"B" | ^"C" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{3})
+  | (^"D" ~ '\u{30}'..'\u{37}' ~ ASCII_HEX_DIGIT{2})
+}
+
+high_surrogate = _{ ^"D" ~ ("8" | "9" | ^"A" | ^"B") ~ ASCII_HEX_DIGIT{2} }
+low_surrogate  = _{ ^"D" ~ (^"C" | ^"D" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{2} }
+
+number = ${ (int | "-0") ~ frac? ~ exp? }
+int    = @{ "0" | ("-"? ~ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*) }
+frac   =  { "." ~ ASCII_DIGIT+ }
+exp    =  { ^"e" ~ ("-" | "+")? ~ ASCII_DIGIT+ }
+
+true_literal  = { "true" }
+false_literal = { "false" }
+null          = { "null" | "nil" }
+
+variable =  { name ~ segment* }
+name     = @{ name_first ~ name_char* }
+
+name_first = _{
+    ASCII_ALPHA
+  | "_"
+  | '\u{80}'..'\u{D7FF}'
+  | '\u{E000}'..'\u{10FFFF}'
+}
+
+name_char = _{ name_first | ASCII_DIGIT }
+
+segment = {
+    "[" ~ selector ~ "]"
+  | ("." ~ name)
+}
+
+selector = _{
+    string_literal
+  | variable
+}
+
+filter           = { name ~ (":" ~ argument_list)? }
+argument_list    = { argument ~ ("," ~ argument)* }
+argument         = { expr | keyword_argument }
+keyword_argument = { name ~ ("=" | ":") ~ expr }
+
+WHITESPACE = _{ " " | "\t" | NEWLINE }
