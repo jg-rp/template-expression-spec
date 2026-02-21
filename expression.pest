@@ -1,16 +1,22 @@
-//! Expression parser for a Liquid-like template language.
-//!
-//! Notable additions to traditional Liquid expressions include:
-//!
-//! * Arithmetic operators.
-//! * First-class filters (no need for tail filter operator).
-//! * A comprehensive precedence hierarchy.
-//! * A `not` prefix operator.
-//! * Parentheses for grouping expressions.
-//! * A coalesce operator for distinguishing between falsy values and the special `Nothing` value.
-//! * Array and object literals with a spread operator.
+//! A Unified Expression Grammar for Liquid Templates.
 
-expression    = _{ SOI ~ expr ~ EOI }
+// This rule is mostly used for testing the grammar. It is unlikely that
+// an `expr` will need to be parsed in isolation.
+expression = _{ SOI ~ expr ~ EOI }
+
+// Conceptual operator precedence, lowest to highest:
+// 
+// ternary
+// pipe
+// coalesce
+// or
+// and
+// not
+// comparison and membership
+// add and sub
+// mul, div and mod
+// primary
+
 expr          =  { pipe_expr ~ condition? }
 pipe_expr     = _{ coalesce_expr ~ ("|" ~ filter)* }
 coalesce_expr =  { or_expr ~ ("??" ~ or_expr)* }
@@ -32,9 +38,27 @@ in_keyword       = @{ "in" ~ !name_char }
 if_keyword       = @{ "if" ~ !name_char }
 else_keyword     = @{ "else" ~ !name_char }
 
-test_op = { "==" | "!=" | "<" | "<=" | ">" | ">=" | contains_keyword | in_keyword }
-add_op  = { "+" | "-" }
-mul_op  = { "*" | "/" | "%" }
+add_op = {
+    "+"
+  | "-"
+}
+
+mul_op = {
+    "*"
+  | "/"
+  | "%"
+}
+
+test_op = {
+    "=="
+  | "!="
+  | "<"
+  | "<="
+  | ">"
+  | ">="
+  | contains_keyword
+  | in_keyword
+}
 
 primary = {
     literal
@@ -53,6 +77,7 @@ literal = _{
   | range_literal
 }
 
+// TODO: string interpolation
 string_literal = ${
     ("\x22" ~ double_quoted ~ "\x22")
   | ("\x27" ~ single_quoted ~ "\x27")
