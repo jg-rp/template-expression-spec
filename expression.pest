@@ -77,38 +77,49 @@ literal = _{
   | range_literal
 }
 
-// TODO: string interpolation
-string_literal = ${
+// Both double and single-quoted strings support interpolation with `${expr}`,
+// and `${` can be escaped with `\${`.
+string_literal = _{
     ("\x22" ~ double_quoted ~ "\x22")
   | ("\x27" ~ single_quoted ~ "\x27")
 }
 
-double_quoted = @{ double_quoted_char* }
-single_quoted = @{ single_quoted_char* }
+double_quoted = { double_quoted_segment* }
+single_quoted = { single_quoted_segment* }
 
-double_quoted_char = _{
-    unescaped
+double_quoted_segment = {
+    interpolation
   | "\x27"
-  | (ESC ~ "\x22")
-  | (ESC ~ escapable)
+  | double_quoted_escaped
+  | unescaped_segment
 }
 
-single_quoted_char = _{
-    unescaped
+single_quoted_segment = _{
+    interpolation
   | "\x22"
-  | (ESC ~ "\x27")
-  | (ESC ~ escapable)
+  | single_quoted_escaped
+  | unescaped_segment
 }
+
+interpolation = { "${" ~ expr ~ "}" }
+
+double_quoted_escaped = @{ (ESC ~ "\x22" | ESC ~ escapable)+ }
+single_quoted_escaped = @{ (ESC ~ "\x27" | ESC ~ escapable)+ }
+unescaped_segment     = @{ unescaped+ }
 
 ESC = _{ "\x5C" }
 
 unescaped = _{
     '\u{20}'..'\u{21}'
-  | '\u{23}'..'\u{26}'
+  | "\x23"
+  | dollar
+  | '\u{25}'..'\u{26}'
   | '\u{28}'..'\u{5B}'
   | '\u{5D}'..'\u{D7FF}'
   | '\u{E000}'..'\u{10FFFF}'
 }
+
+dollar = @{ "$" ~ !"{" }
 
 escapable = _{
     "\x62"
@@ -119,6 +130,7 @@ escapable = _{
   | "/"
   | "\\"
   | ("\x75" ~ hexchar)
+  | "${"
 }
 
 hexchar = _{
