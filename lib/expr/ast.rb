@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-module Expr
+module Expr::AST
   Expression = Data.define(:token, :expr)
-  Ternary = Data.define(:token, :expr, :condition, :else)
-  Filtered = Data.define(:token, :left, :filters)
-  Coalesce = Data.define(:token, :left, :right)
 
+  Ternary = Data.define(:token, :condition, :expr, :else)
+  Filtered = Data.define(:token, :left, :filters)
+
+  Coalesce = Data.define(:token, :left, :right)
   Or = Data.define(:token, :left, :right)
   And = Data.define(:token, :left, :right)
   Not = Data.define(:token, :right)
@@ -26,11 +27,15 @@ module Expr
   Div = Data.define(:token, :left, :right)
   Mod = Data.define(:token, :left, :right)
 
+  Pos = Data.define(:token, :right)
+  Neg = Data.define(:token, :right)
+
   Integer = Data.define(:token, :value)
   Float = Data.define(:token, :value)
   String = Data.define(:token, :segments)
   Boolean = Data.define(:token, :segments)
   Null = Data.define(:token)
+
   Array = Data.define(:token, :items)
   Object = Data.define(:token, :items)
   Spread = Data.define(:token, :expr)
@@ -39,6 +44,6 @@ module Expr
   Range = Data.define(:token, :start, :stop)
   Variable = Data.define(:token, :root, :segments)
 
-  Filter = Data.define(:token, :name, :args)
+  Filter = Data.define(:token, :left, :name, :args)
   KeywordArg = Data.define(:token, :name, :expr)
 end
