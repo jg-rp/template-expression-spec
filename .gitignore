@@ -1,17 +1,13 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
 
-# Virtual environments
-.venv
-
-# Dev
-dev.py
-.vscode/
-
-# Docs
-site/
+.vscode
+.stackprof*
+flamegraph*
+dev*
