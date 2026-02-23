@@ -22,7 +22,7 @@ C = _{ name_char }
 // literal, variable or parenthesized expression
 
 expr          =  { ternary_expr }
-ternary_expr  =  { pipe_expr ~ condition? }
+ternary_expr  = _{ pipe_expr ~ condition? }
 pipe_expr     = _{ coalesce_expr ~ filter* }
 coalesce_expr = _{ or_expr ~ (S ~ coalesce ~ S ~ or_expr)* }
 or_expr       = _{ and_expr ~ (S ~ or ~ S ~ and_expr)* }
@@ -115,7 +115,7 @@ single_quoted_segment = _{
   | unescaped_segment
 }
 
-interpolation         =  { "${" ~ expr ~ "}" }
+interpolation         = _{ "${" ~ expr ~ "}" }
 double_quoted_escaped =  { (ESC ~ "\x22" | ESC ~ escapable)+ }
 single_quoted_escaped =  { (ESC ~ "'" | ESC ~ escapable)+ }
 unescaped_segment     =  { unescaped+ }

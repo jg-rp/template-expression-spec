@@ -2,6 +2,7 @@
 
 require "pestle"
 require_relative "ast"
+require_relative "unescape"
 
 module Expr
   class Parser < Pestle::PrattParser
@@ -40,14 +41,14 @@ module Expr
 
     def parse(expression)
       pairs = @parser.parse(:expression, expression)
-      parse_expr(pairs.first.inner.first.stream)
+      parse_expr(pairs.first.stream)
     end
 
     def parse_primary(pair)
       case pair
       in :number, _
         parse_number(pair)
-      in :string_literal, _
+      in :double_quoted | :single_quoted, _
         parse_string(pair)
       in :true_literal, _
         AST::Boolean.new(pair, true)
@@ -61,6 +62,8 @@ module Expr
         parse_object(pair)
       in :range_literal, _
         parse_range(pair)
+      in :variable, _
+        parse_variable(pair)
       else
         raise "unexpected #{pair.rule} #{pair.text.inspect}"
       end
@@ -141,6 +144,29 @@ module Expr
       else
         raise "expected :number, found #{pair.rule.inspect}"
       end
+    end
+
+    def parse_string(pair)
+      segments = pair.map { |child| parse_string_segment(child) }
+      AST::String.new(pair, segments)
+    end
+
+    def parse_string_segment(pair)
+      case pair
+      in :unescaped_segment, _
+        pair.text
+      in :double_quoted_escaped | :single_quoted_escaped, _
+        Expr.unescape(pair)
+      in :expr, _
+        parse_expr(pair.stream)
+      else
+        raise "unexpected string segment #{pair.rule.inspect} #{pair.text.inspect}"
+      end
+    end
+
+    def parse_variable(pair)
+      # TODO:
+      raise "not implemented"
     end
   end
 end
