@@ -86,41 +86,60 @@ module Expr
     def parse_infix(lhs, op, rhs)
       case op
       in :pipe, _
-        AST::Filtered.new(lhs, rhs)
+        AST::Filtered.new(op, lhs, rhs)
       in :coalesce, _
-        AST::Coalesce.new(lhs, rhs)
+        AST::Coalesce.new(op, lhs, rhs)
       in :or, _
-        AST::Or.new(lhs, rhs)
+        AST::Or.new(op, lhs, rhs)
       in :and, _
-        AST::And.new(lhs, rhs)
+        AST::And.new(op, lhs, rhs)
       in :eq, _
-        AST::Eq.new(lhs, rhs)
+        AST::Eq.new(op, lhs, rhs)
       in :ne, _
-        AST::Ne.new(lhs, rhs)
+        AST::Ne.new(op, lhs, rhs)
       in :lt, _
-        AST::Lt.new(lhs, rhs)
+        AST::Lt.new(op, lhs, rhs)
       in :le, _
-        AST::Le.new(lhs, rhs)
+        AST::Le.new(op, lhs, rhs)
       in :gt, _
-        AST::Gt.new(lhs, rhs)
+        AST::Gt.new(op, lhs, rhs)
       in :ge, _
-        AST::Ge.new(lhs, rhs)
+        AST::Ge.new(op, lhs, rhs)
       in :contains, _
-        AST::Contains.new(lhs, rhs)
+        AST::Contains.new(op, lhs, rhs)
       in :in, _
-        AST::In.new(lhs, rhs)
+        AST::In.new(op, lhs, rhs)
       in :add, _
-        AST::Add.new(lhs, rhs)
+        AST::Add.new(op, lhs, rhs)
       in :sub, _
-        AST::Sub.new(lhs, rhs)
+        AST::Sub.new(op, lhs, rhs)
       in :mul, _
-        AST::Mul.new(lhs, rhs)
+        AST::Mul.new(op, lhs, rhs)
       in :div, _
-        AST::Div.new(lhs, rhs)
+        AST::Div.new(op, lhs, rhs)
       in :mod, _
-        AST::Mod.new(lhs, rhs)
+        AST::Mod.new(op, lhs, rhs)
       else
         raise "unknown infix operator #{op.text.inspect}"
+      end
+    end
+
+    def parse_number(pair)
+      case pair
+      in :number, [int]
+        AST::Integer.new(pair, int.text.to_i)
+      in :number, [int, [:frac, _], *]
+        AST::Float.new(pair, pair.text.to_f)
+      in :number, [int, [:expr, _]]
+        text = pair.text
+        if text.include?("-")
+          # negative exponent
+          AST::Float.new(text.to_f)
+        else
+          AST::Integer.new(text.to_f.to_i)
+        end
+      else
+        raise "expected :number, found #{pair.rule.inspect}"
       end
     end
   end

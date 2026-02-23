@@ -5,7 +5,9 @@ require_relative "expr/parser"
 module Expr
   GRAMMAR = Pathname.new("expression.pest")
 
-  PRATT_PARSER = Parser.new(Pestle::Parser.from_grammar(GRAMMAR.read))
+  PEST_PARSER = Pestle::Parser.from_grammar(GRAMMAR.read)
+
+  PRATT_PARSER = Parser.new(PEST_PARSER)
 
   def self.parse(expr)
     PRATT_PARSER.parse(expr)
