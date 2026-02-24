@@ -5,7 +5,7 @@ module Expr
     Expression = Data.define(:token, :expr)
 
     Ternary = Data.define(:token, :condition, :expr, :else)
-    Filtered = Data.define(:token, :left, :filters)
+    Filtered = Data.define(:token, :left, :filter)
 
     Coalesce = Data.define(:token, :left, :right)
     Or = Data.define(:token, :left, :right)
@@ -34,7 +34,7 @@ module Expr
     Integer = Data.define(:token, :value)
     Float = Data.define(:token, :value)
     String = Data.define(:token, :segments)
-    Boolean = Data.define(:token, :segments)
+    Boolean = Data.define(:token, :value)
     Null = Data.define(:token)
 
     Array = Data.define(:token, :items)
@@ -44,8 +44,9 @@ module Expr
 
     Range = Data.define(:token, :start, :stop)
     Variable = Data.define(:token, :root, :segments)
+    Name = Data.define(:token, :value)
 
-    Filter = Data.define(:token, :left, :name, :args)
+    Filter = Data.define(:token, :name, :args)
     KeywordArg = Data.define(:token, :name, :expr)
 
     def self.children(e)
@@ -59,18 +60,19 @@ module Expr
           to_s(e.expr)
         end
       when Filtered
-        if e.filters
-          # TODO:
-          [e.left, e.filters]
-        else
-          [e.left]
-        end
+        [e.left, e.filter]
+      when Filter
+        e.args
+      when KeywordArg
+        [e.expr]
       when Coalesce, And, Or, Eq, Ne, Lt, Le, Gt, Ge, Contains, In, Add, Sub, Mul, Div, Mod
         [e.left, e.right]
       when Not, Pos, Neg
         [e.right]
-      when String, Integer, Float, Boolean, Null
+      when Integer, Float, Boolean, Null, Name
         []
+      when String
+        e.segments.reject { |s| s.is_a?(::String) }
       when Array, Object
         # TODO:
         raise "not implemented"
@@ -82,6 +84,8 @@ module Expr
         else
           []
         end
+      else
+        raise "unknown expression #{e.class}"
       end
     end
 
@@ -96,8 +100,16 @@ module Expr
           [e.expr]
         end
       when Filtered
-        # TODO:
-        raise "not implemented"
+        "#{to_s(e.left)} | #{to_s(e.filter)}"
+      when Filter
+        if e.args && !e.args.empty?
+          args = e.args.map { |arg| to_s(arg) }
+          "#{e.name}: #{args.join(", ")}"
+        else
+          e.name
+        end
+      when KeywordArg
+        "#{e.name}=#{to_s(e.expr)}"
       when Coalesce
         "#{to_s(e.left)} ?? #{to_s(e.right)}"
       when And
@@ -139,9 +151,13 @@ module Expr
       when Integer, Float, Boolean
         e.value.to_s
       when String
-        e.value.inspect
+        e.segments.map do |segment|
+          segment.is_a?(::String) ? segment : "${#{to_s(segment)}}"
+        end.join.inspect
       when Null
         "null"
+      when Name
+        e.value
       when Array, Object
         # TODO:
         raise "not implemented"
@@ -150,6 +166,8 @@ module Expr
       when Variable
         # TODO:
         e.root
+      else
+        raise "unknown expression #{e.class}"
       end
     end
 

@@ -64,8 +64,14 @@ module Expr
         parse_range(pair)
       in :variable, _
         parse_variable(pair)
-      in :expr, _
+      in :expr | :arg_expr, _
         parse_expr(pair.stream)
+      in :name, _
+        AST::Name.new(pair, pair.text)
+      in :filter_invocation, _
+        parse_filter(pair)
+      in :keyword_argument, [name, arg]
+        AST::KeywordArg.new(pair, name.text, parse_expr(arg.stream))
       else
         raise "unexpected #{pair.rule.inspect} #{pair.text.inspect}"
       end
@@ -182,6 +188,11 @@ module Expr
       else
         raise "unexpected variable segment #{pair.rule.inspect} #{pair.text.inspect}"
       end
+    end
+
+    def parse_filter(pair)
+      name, *args = pair.children
+      AST::Filter.new(pair, name.text, args.map { |arg| parse_expr(arg.stream) })
     end
   end
 end

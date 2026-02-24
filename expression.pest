@@ -38,15 +38,16 @@ pos_expr      = _{ pos ~ S ~ unary_expr }
 
 condition = _{ S ~ "if" ~ !C ~ S ~ pipe_expr ~ S ~ "else" ~ !C ~ S ~ pipe_expr }
 
-filter           = { S ~ pipe ~ S ~ name ~ (S ~ ":" ~ S ~ argument_list)? }
-argument_list    = { argument ~ (S ~ "," ~ S ~ argument)* }
-argument         = { lambda_expr | keyword_argument | arg_expr }
-keyword_argument = { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
-lambda_expr      = { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
-lambda_arguments = { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
-arg_expr         = { arg_ternary_expr }
-arg_ternary_expr = { coalesce_expr ~ arg_condition? }
-arg_condition    = { S ~ "if" ~ !C ~ S ~ arg_expr ~ S ~ "else" ~ !C ~ S ~ arg_expr }
+filter            = _{ S ~ pipe ~ S ~ filter_invocation }
+filter_invocation =  { name ~ (S ~ ":" ~ S ~ argument_list)? }
+argument_list     = _{ argument ~ (S ~ "," ~ S ~ argument)* }
+argument          =  { lambda_expr | keyword_argument | arg_expr }
+keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
+lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
+lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
+arg_expr          =  { arg_ternary_expr }
+arg_ternary_expr  = _{ coalesce_expr ~ arg_condition? }
+arg_condition     = _{ S ~ "if" ~ !C ~ S ~ arg_expr ~ S ~ "else" ~ !C ~ S ~ arg_expr }
 
 add_op = _{ add | sub }
 add    =  { "+" }
