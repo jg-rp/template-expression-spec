@@ -177,5 +177,5 @@ name_first = _{
 name_char = _{ name_first | ASCII_DIGIT }
 
 segments = _{ (S ~ segment)* }
-segment  =  { "[" ~ S ~ selector ~ S ~ "]" | ("." ~ name) }
+segment  = _{ "[" ~ S ~ selector ~ S ~ "]" | ("." ~ name) }
 selector = _{ string_literal | expr }

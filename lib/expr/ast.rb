@@ -47,5 +47,148 @@ module Expr
 
     Filter = Data.define(:token, :left, :name, :args)
     KeywordArg = Data.define(:token, :name, :expr)
+
+    def self.children(e)
+      case e
+      when Expression
+        to_s(e.expr)
+      when Ternary
+        if e.condition
+          "#{to_s(e.expr)} if #{to_s(e.condition)} else #{to_s(e.else)}"
+        else
+          to_s(e.expr)
+        end
+      when Filtered
+        if e.filters
+          # TODO:
+          [e.left, e.filters]
+        else
+          [e.left]
+        end
+      when Coalesce, And, Or, Eq, Ne, Lt, Le, Gt, Ge, Contains, In, Add, Sub, Mul, Div, Mod
+        [e.left, e.right]
+      when Not, Pos, Neg
+        [e.right]
+      when String, Integer, Float, Boolean, Null
+        []
+      when Array, Object
+        # TODO:
+        raise "not implemented"
+      when Range
+        "(#{e.start}..#{e.stop})"
+      when Variable
+        if e.segments
+          e.segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
+        else
+          []
+        end
+      end
+    end
+
+    def self.to_s(e)
+      case e
+      when Expression
+        [e.expr]
+      when Ternary
+        if e.condition
+          [e.expr, e.condition, e.else]
+        else
+          [e.expr]
+        end
+      when Filtered
+        # TODO:
+        raise "not implemented"
+      when Coalesce
+        "#{to_s(e.left)} ?? #{to_s(e.right)}"
+      when And
+        "#{to_s(e.left)} and #{to_s(e.right)}"
+      when Or
+        "#{to_s(e.left)} or #{to_s(e.right)}"
+      when Not
+        "not #{to_s(e.right)}"
+      when Eq
+        "#{to_s(e.left)} == #{to_s(e.right)}"
+      when Ne
+        "#{to_s(e.left)} != #{to_s(e.right)}"
+      when Lt
+        "#{to_s(e.left)} < #{to_s(e.right)}"
+      when Le
+        "#{to_s(e.left)} <= #{to_s(e.right)}"
+      when Gt
+        "#{to_s(e.left)} > #{to_s(e.right)}"
+      when Ge
+        "#{to_s(e.left)} >= #{to_s(e.right)}"
+      when Contains
+        "#{to_s(e.left)} contains #{to_s(e.right)}"
+      when In
+        "#{to_s(e.left)} in #{to_s(e.right)}"
+      when Add
+        "#{to_s(e.left)} + #{to_s(e.right)}"
+      when Sub
+        "#{to_s(e.left)} - #{to_s(e.right)}"
+      when Mul
+        "#{to_s(e.left)} * #{to_s(e.right)}"
+      when Div
+        "#{to_s(e.left)} / #{to_s(e.right)}"
+      when Mod
+        "#{to_s(e.left)} % #{to_s(e.right)}"
+      when Pos
+        "+#{to_s(e.right)}"
+      when Neg
+        "-#{to_s(e.right)}"
+      when Integer, Float, Boolean
+        e.value.to_s
+      when String
+        e.value.inspect
+      when Null
+        "null"
+      when Array, Object
+        # TODO:
+        raise "not implemented"
+      when Range
+        "(#{e.start}..#{e.stop})"
+      when Variable
+        # TODO:
+        e.root
+      end
+    end
+
+    def self.tree_view(e)
+      # (prefix, connector, class_name, inspect_value)
+      nodes = [] # : Array[[String, String, String, String]]
+
+      # @type var visit: ^(Expression, String, bool) -> void
+      visit = lambda do |node, prefix, is_last|
+        connector = if prefix.empty?
+                      ""
+                    elsif is_last
+                      "└── "
+                    else
+                      "├── "
+                    end
+
+        nodes << [prefix, connector, node.class.to_s, to_s(node)]
+        child_prefix = prefix + (is_last ? "    " : "│   ")
+        children(node).each_with_index do |child, i|
+          last = i == children(node).length - 1
+          visit.call(child, child_prefix, last)
+        end
+      end
+
+      visit.call(e, "", true)
+
+      widths = nodes.map { |prefix, connector, cls| (prefix + connector + cls).length }
+      max_width = widths.max || 0
+
+      lines = [] # : Array[String]
+      nodes.zip(widths).each do |node, width|
+        prefix, connector, cls, val = node
+        left = prefix + connector + cls
+        padding = " " * (max_width - (width || raise) + 4)
+        lines << (left + padding + val)
+      end
+
+      lines.join("\n")
+    end
   end
 end

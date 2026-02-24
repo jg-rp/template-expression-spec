@@ -64,21 +64,23 @@ module Expr
         parse_range(pair)
       in :variable, _
         parse_variable(pair)
+      in :expr, _
+        parse_expr(pair.stream)
       else
-        raise "unexpected #{pair.rule} #{pair.text.inspect}"
+        raise "unexpected #{pair.rule.inspect} #{pair.text.inspect}"
       end
     end
 
     def parse_prefix(op, rhs)
-      case op
-      in :not
+      case op.rule
+      when :not
         AST::Not.new(op, rhs)
-      in :neg
+      when :neg
         AST::Neg.new(op, rhs)
-      in :pos
+      when :pos
         AST::Pos.new(op, rhs)
       else
-        raise "unexpected prefix operator #{op.text.inspect}"
+        raise "unexpected prefix operator #{op.rule.inspect} #{op.text.inspect}"
       end
     end
 
@@ -165,8 +167,21 @@ module Expr
     end
 
     def parse_variable(pair)
-      # TODO:
-      raise "not implemented"
+      name, *segments = pair.children
+      AST::Variable.new(pair, name.text, segments.map { |s| parse_variable_segment(s) })
+    end
+
+    def parse_variable_segment(pair)
+      case pair
+      in :name, _
+        pair.text
+      in :double_quoted | :single_quoted, _
+        parse_string(pair)
+      in :expr
+        parse_expr(pair.stream)
+      else
+        raise "unexpected variable segment #{pair.rule.inspect} #{pair.text.inspect}"
+      end
     end
   end
 end
