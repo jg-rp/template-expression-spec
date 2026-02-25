@@ -22,7 +22,7 @@ C = _{ name_char }
 // literal, variable or parenthesized expression
 
 expr          =  { ternary_expr }
-ternary_expr  = _{ pipe_expr ~ condition? }
+ternary_expr  =  { consequence ~ (S ~ "if" ~ !C ~ S ~ condition ~ S ~ "else" ~ !C ~ S ~ alternative)? }
 pipe_expr     = _{ coalesce_expr ~ filter* }
 coalesce_expr = _{ or_expr ~ (S ~ coalesce ~ S ~ or_expr)* }
 or_expr       = _{ and_expr ~ (S ~ or ~ S ~ and_expr)* }
@@ -36,7 +36,9 @@ unary_expr    = _{ neg_expr | pos_expr | primary }
 neg_expr      = _{ neg ~ S ~ unary_expr }
 pos_expr      = _{ pos ~ S ~ unary_expr }
 
-condition = _{ S ~ "if" ~ !C ~ S ~ pipe_expr ~ S ~ "else" ~ !C ~ S ~ pipe_expr }
+condition   = { pipe_expr }
+consequence = { pipe_expr }
+alternative = { pipe_expr }
 
 filter            = _{ S ~ pipe ~ S ~ filter_invocation }
 filter_invocation =  { name ~ (S ~ ":" ~ S ~ argument_list)? }
@@ -46,8 +48,10 @@ keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
 lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
 lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
 arg_expr          =  { arg_ternary_expr }
-arg_ternary_expr  = _{ coalesce_expr ~ arg_condition? }
-arg_condition     = _{ S ~ "if" ~ !C ~ S ~ arg_expr ~ S ~ "else" ~ !C ~ S ~ arg_expr }
+arg_ternary_expr  =  { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
+arg_condition     =  { coalesce_expr }
+arg_consequence   =  { coalesce_expr }
+arg_alternative   =  { coalesce_expr }
 
 add_op = _{ add | sub }
 add    =  { "+" }

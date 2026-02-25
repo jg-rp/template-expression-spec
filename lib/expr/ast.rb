@@ -4,7 +4,7 @@ module Expr
   module AST
     Expression = Data.define(:token, :expr)
 
-    Ternary = Data.define(:token, :condition, :expr, :else)
+    Ternary = Data.define(:token, :expr, :condition, :else)
     Filtered = Data.define(:token, :left, :filter)
 
     Coalesce = Data.define(:token, :left, :right)
@@ -48,23 +48,22 @@ module Expr
 
     Filter = Data.define(:token, :name, :args)
     KeywordArg = Data.define(:token, :name, :expr)
+    Lambda = Data.define(:token, :params, :expr)
 
     def self.children(e)
       case e
-      when Expression
-        to_s(e.expr)
+      when Expression, KeywordArg, Lambda
+        [e.expr]
       when Ternary
         if e.condition
-          "#{to_s(e.expr)} if #{to_s(e.condition)} else #{to_s(e.else)}"
+          [e.expr, e.condition, e.else]
         else
-          to_s(e.expr)
+          [e.expr]
         end
       when Filtered
         [e.left, e.filter]
       when Filter
         e.args
-      when KeywordArg
-        [e.expr]
       when Coalesce, And, Or, Eq, Ne, Lt, Le, Gt, Ge, Contains, In, Add, Sub, Mul, Div, Mod
         [e.left, e.right]
       when Not, Pos, Neg
@@ -92,12 +91,12 @@ module Expr
     def self.to_s(e)
       case e
       when Expression
-        [e.expr]
+        to_s(e.expr)
       when Ternary
         if e.condition
-          [e.expr, e.condition, e.else]
+          "#{to_s(e.expr)} if #{to_s(e.condition)} else #{to_s(e.else)}"
         else
-          [e.expr]
+          to_s(e.expr)
         end
       when Filtered
         "#{to_s(e.left)} | #{to_s(e.filter)}"
@@ -166,6 +165,9 @@ module Expr
       when Variable
         # TODO:
         e.root
+      when Lambda
+        params = e.params.map { |p| to_s(p) }.join(",")
+        "(#{params}) => #{to_s(e.expr)}"
       else
         raise "unknown expression #{e.class}"
       end

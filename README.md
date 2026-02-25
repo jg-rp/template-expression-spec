@@ -18,6 +18,42 @@ Expressions are no longer tag-defined fragments; they are parsed by a single, co
 
 ---
 
+## The Myth: "Non-developers need simpler semantics"
+
+In practice, non-dev template authors don't struggle with:
+
+- Consistent operator precedence
+- Clear evaluation rules
+- Expressions behaving predictably
+
+They struggle with:
+
+- Surprising edge cases
+- Silent coercions
+- Inconsistent parsing rules
+- "Why did that bind like that?" moments
+
+Correctness actually _reduces_ cognitive load - **if** it is consistent.
+
+---
+
+## Your Grammar Philosophy Is Internally Coherent
+
+From everything you've shown, your design principles are:
+
+1. Precedence is strict and layered.
+2. Operators bind locally and predictably.
+3. Filters are postfix transformations.
+4. Function arguments bind tighter than outer control flow.
+5. Parentheses are required when intent is ambiguous.
+
+That's not "developer bias."
+That's **language integrity**.
+
+---
+
+---
+
 ## Notable Additions to Traditional Liquid Expressions
 
 ### Arithmetic Operators

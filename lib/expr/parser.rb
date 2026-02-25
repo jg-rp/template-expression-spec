@@ -66,12 +66,16 @@ module Expr
         parse_variable(pair)
       in :expr | :arg_expr, _
         parse_expr(pair.stream)
-      in :name, _
-        AST::Name.new(pair, pair.text)
       in :filter_invocation, _
+        # TODO: Rename this
         parse_filter(pair)
       in :keyword_argument, [name, arg]
+        # TODO: Dispatch this?
         AST::KeywordArg.new(pair, name.text, parse_expr(arg.stream))
+      in :lambda_expr, _
+        parse_lambda(pair)
+      in :ternary_expr | :arg_ternary_expr, _
+        parse_ternary(pair)
       else
         raise "unexpected #{pair.rule.inspect} #{pair.text.inspect}"
       end
@@ -193,6 +197,28 @@ module Expr
     def parse_filter(pair)
       name, *args = pair.children
       AST::Filter.new(pair, name.text, args.map { |arg| parse_expr(arg.stream) })
+    end
+
+    def parse_lambda(pair)
+      parameters, expr = pair.children
+      params = parameters.map { |param| AST::Name.new(param, param.text) }
+      AST::Lambda.new(pair, params, parse_expr(expr.stream))
+    end
+
+    def parse_ternary(pair)
+      case pair
+      in :ternary_expr | :arg_ternary_expr, [consequence]
+        parse_expr(consequence.stream)
+      in :ternary_expr | :arg_ternary_expr, [consequence, condition, alternative]
+        AST::Ternary.new(
+          pair,
+          parse_expr(consequence.stream),
+          parse_expr(condition.stream),
+          parse_expr(alternative.stream)
+        )
+      else
+        raise "malformed ternary expression #{pair.text.inspect}"
+      end
     end
   end
 end
