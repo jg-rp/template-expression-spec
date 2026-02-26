@@ -45,37 +45,35 @@ module Expr
     end
 
     def parse_primary(pair)
-      case pair
-      in :number, _
-        parse_number(pair)
-      in :double_quoted | :single_quoted, _
-        parse_string(pair)
-      in :true_literal, _
-        AST::Boolean.new(pair, true)
-      in :false_literal, _
-        AST::Boolean.new(pair, false)
-      in :null_literal, _
-        AST::Null.new(pair)
-      in :array_literal, _
-        parse_array(pair)
-      in :object_literal, _
-        parse_object(pair)
-      in :range_literal, _
-        parse_range(pair)
-      in :variable, _
-        parse_variable(pair)
-      in :expr | :arg_expr, _
+      case pair.rule
+      when :expr, :arg_expr
         parse_expr(pair.stream)
-      in :filter_invocation, _
-        # TODO: Rename this
-        parse_filter(pair)
-      in :keyword_argument, [name, arg]
-        # TODO: Dispatch this?
-        AST::KeywordArg.new(pair, name.text, parse_expr(arg.stream))
-      in :lambda_expr, _
-        parse_lambda(pair)
-      in :ternary_expr | :arg_ternary_expr, _
+      when :ternary_expr, :arg_ternary_expr
         parse_ternary(pair)
+      when :filter_invocation
+        parse_filter(pair)
+      when :keyword_argument
+        parse_keyword_arg(pair)
+      when :lambda_expr
+        parse_lambda(pair)
+      when :variable
+        parse_variable(pair)
+      when :range_literal
+        parse_range(pair)
+      when :array_literal
+        parse_array(pair)
+      when :object_literal
+        parse_object(pair)
+      when :number
+        parse_number(pair)
+      when :double_quoted, :single_quoted
+        parse_string(pair)
+      when :true_literal
+        AST::Boolean.new(pair, true)
+      when :false_literal
+        AST::Boolean.new(pair, false)
+      when :null_literal
+        AST::Null.new(pair)
       else
         raise "unexpected #{pair.rule.inspect} #{pair.text.inspect}"
       end
@@ -94,49 +92,49 @@ module Expr
       end
     end
 
-    def parse_postfix(lhs, op) # rubocop: disable Lint/UnusedMethodArgument
-      raise "unknown postfix operator #{op.text.inspect}"
-    end
-
     def parse_infix(lhs, op, rhs)
-      case op
-      in :pipe, _
+      case op.rule
+      when :pipe
         AST::Filtered.new(op, lhs, rhs)
-      in :coalesce, _
+      when :coalesce
         AST::Coalesce.new(op, lhs, rhs)
-      in :or, _
+      when :or
         AST::Or.new(op, lhs, rhs)
-      in :and, _
+      when :and
         AST::And.new(op, lhs, rhs)
-      in :eq, _
+      when :eq
         AST::Eq.new(op, lhs, rhs)
-      in :ne, _
+      when :ne
         AST::Ne.new(op, lhs, rhs)
-      in :lt, _
+      when :lt
         AST::Lt.new(op, lhs, rhs)
-      in :le, _
+      when :le
         AST::Le.new(op, lhs, rhs)
-      in :gt, _
+      when :gt
         AST::Gt.new(op, lhs, rhs)
-      in :ge, _
+      when :ge
         AST::Ge.new(op, lhs, rhs)
-      in :contains, _
+      when :contains
         AST::Contains.new(op, lhs, rhs)
-      in :in, _
+      when :in
         AST::In.new(op, lhs, rhs)
-      in :add, _
+      when :add
         AST::Add.new(op, lhs, rhs)
-      in :sub, _
+      when :sub
         AST::Sub.new(op, lhs, rhs)
-      in :mul, _
+      when :mul
         AST::Mul.new(op, lhs, rhs)
-      in :div, _
+      when :div
         AST::Div.new(op, lhs, rhs)
-      in :mod, _
+      when :mod
         AST::Mod.new(op, lhs, rhs)
       else
         raise "unknown infix operator #{op.text.inspect}"
       end
+    end
+
+    def parse_postfix(lhs, op) # rubocop: disable Lint/UnusedMethodArgument
+      raise "unknown postfix operator #{op.text.inspect}"
     end
 
     def parse_number(pair)
@@ -159,20 +157,49 @@ module Expr
     end
 
     def parse_string(pair)
-      segments = pair.map { |child| parse_string_segment(child) }
-      AST::String.new(pair, segments)
+      AST::String.new(pair, pair.map { |child| parse_string_segment(child) })
     end
 
     def parse_string_segment(pair)
-      case pair
-      in :unescaped_segment, _
+      case pair.rule
+      when :unescaped_segment
         pair.text
-      in :double_quoted_escaped | :single_quoted_escaped, _
+      when :double_quoted_escaped, :single_quoted_escaped_
         Expr.unescape(pair)
-      in :expr, _
+      when :expr
         parse_expr(pair.stream)
       else
         raise "unexpected string segment #{pair.rule.inspect} #{pair.text.inspect}"
+      end
+    end
+
+    def parse_array(pair)
+      AST::Array.new(pair, pair.map { |item| parse_array_item(item) })
+    end
+
+    def parse_array_item(pair)
+      case pair.rule
+      when :expr
+        parse_expr(pair.stream)
+      when :spread_expr
+        AST::Spread.new(pair, parse_expr(pair.inner.first.stream))
+      else
+        raise "unexpected array item #{pair.rule.inspect} #{pair.text.inspect}"
+      end
+    end
+
+    def parse_object(pair)
+      AST::Array.new(pair, pair.map { |item| parse_object_item(item) })
+    end
+
+    def parse_object_item(pair)
+      case pair
+      in :object_item, [[:single_quoted | :double_quoted, _], expr]
+        AST::Item.new(pair, parse_string(pair.inner.first), parse_expr(expr.stream))
+      in :object_item, [name, expr]
+        AST::Item.new(pair, AST::Name.new(name, name.text), parse_expr(expr.stream))
+      in :object_item, [spread]
+        AST::Spread.new(spread, parse_expr(spread.inner.first.stream))
       end
     end
 
@@ -182,16 +209,26 @@ module Expr
     end
 
     def parse_variable_segment(pair)
-      case pair
-      in :name, _
+      case pair.rule
+      when :name
         pair.text
-      in :double_quoted | :single_quoted, _
+      when :double_quoted, :single_quoted
         parse_string(pair)
-      in :expr
+      when :expr
         parse_expr(pair.stream)
       else
         raise "unexpected variable segment #{pair.rule.inspect} #{pair.text.inspect}"
       end
+    end
+
+    def parse_range(pair)
+      start, stop = pair.children
+      AST::Range.new(pair, parse_expr(start.stream), parse_expr(stop.stream))
+    end
+
+    def parse_keyword_arg(pair)
+      name, arg = pair.children
+      AST::KeywordArg.new(pair, name.text, parse_expr(arg.stream))
     end
 
     def parse_filter(pair)

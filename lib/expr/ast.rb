@@ -52,7 +52,7 @@ module Expr
 
     def self.children(e)
       case e
-      when Expression, KeywordArg, Lambda
+      when Expression, KeywordArg, Lambda, Spread
         [e.expr]
       when Ternary
         if e.condition
@@ -73,10 +73,11 @@ module Expr
       when String
         e.segments.reject { |s| s.is_a?(::String) }
       when Array, Object
-        # TODO:
-        raise "not implemented"
+        e.items
+      when Item
+        [e.key, e.expr]
       when Range
-        "(#{e.start}..#{e.stop})"
+        [e.start, e.stop]
       when Variable
         if e.segments
           e.segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
@@ -157,11 +158,18 @@ module Expr
         "null"
       when Name
         e.value
-      when Array, Object
-        # TODO:
-        raise "not implemented"
+      when Array
+        items = e.items.map { |item| to_s(item) }
+        "[#{items.join(", ")}]"
+      when Object
+        items = e.items.map { |item| to_s(item) }
+        "{#{items.join(", ")}}"
+      when Item
+        "#{to_s(e.key)}: #{to_s(e.expr)}"
+      when Spread
+        "...#{to_s(e.expr)}"
       when Range
-        "(#{e.start}..#{e.stop})"
+        "(#{to_s(e.start)}..#{to_s(e.stop)})"
       when Variable
         # TODO:
         e.root
