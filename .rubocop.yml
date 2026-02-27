@@ -45,7 +45,7 @@ Naming/PredicateMethod:
   Enabled: false
 
 Naming/MethodParameterName:
-  AllowedNames: [op, re]
+  AllowedNames: [op, re, e]
 
 Lint/UnusedMethodArgument:
   AllowUnusedKeywordArguments: true

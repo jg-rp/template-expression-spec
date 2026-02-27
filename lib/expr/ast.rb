@@ -2,8 +2,6 @@
 
 module Expr
   module AST
-    Expression = Data.define(:token, :expr)
-
     Ternary = Data.define(:token, :expr, :condition, :else)
     Filtered = Data.define(:token, :left, :filter)
 
@@ -52,7 +50,7 @@ module Expr
 
     def self.children(e)
       case e
-      when Expression, KeywordArg, Lambda, Spread
+      when KeywordArg, Lambda, Spread
         [e.expr]
       when Ternary
         if e.condition
@@ -91,8 +89,6 @@ module Expr
 
     def self.to_s(e)
       case e
-      when Expression
-        to_s(e.expr)
       when Ternary
         if e.condition
           "#{to_s(e.expr)} if #{to_s(e.condition)} else #{to_s(e.else)}"

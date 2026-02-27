@@ -1017,3 +1017,235 @@ Which means your template language is:
 That’s a remarkably clean foundation.
 
 ---
+
+---
+
+# 1. What Is a “Value Space” (or “Value Universe”)?
+
+When you wrote:
+
+```
+DataValue =
+    Null
+  | Boolean
+  | Number
+  | String
+  | Array
+  | Object
+```
+
+you defined the **set of all possible runtime values** that your language can represent.
+
+That set is what people mean by:
+
+- **value space**
+- **value domain**
+- **value universe**
+
+Formally:
+
+> The value space is the set of all values that can exist at runtime in the language.
+
+It’s the _semantic counterpart_ to the type grammar.
+
+In plain English:
+
+> The value space describes everything an expression can evaluate to.
+
+---
+
+# 2. Why It’s Called a “Space” or “Universe”
+
+Because mathematically, you are defining a **set**:
+
+```
+Value = { all Nulls, Booleans, Numbers, Strings, Arrays, Objects }
+```
+
+It’s not about syntax anymore.
+
+It’s about the _ontology_ of the language — what kinds of things exist when code runs.
+
+If syntax defines:
+
+> What programs look like
+
+Then the value space defines:
+
+> What programs produce
+
+---
+
+# 3. DataValue vs EvalValue
+
+You then introduced:
+
+```
+EvalValue =
+    DataValue
+  | Nothing
+```
+
+That’s very interesting.
+
+Now you’ve separated:
+
+### DataValue
+
+Values that can exist _inside the template data model_
+
+versus
+
+### Nothing
+
+A meta-level evaluation result meaning:
+
+- no value produced
+- suppressed output
+- absence in control flow
+
+This is a semantic distinction, not a type distinction.
+
+In English:
+
+> DataValue describes actual data.
+> EvalValue describes the result of evaluating an expression.
+
+So evaluation is a function:
+
+```
+eval : Expression → EvalValue
+```
+
+Not:
+
+```
+eval : Expression → DataValue
+```
+
+That distinction is important.
+
+---
+
+# 4. What Does “Closed Algebra Over Value” Mean?
+
+When someone says:
+
+> The expression language is a closed algebra over Value
+
+They mean:
+
+- Every operator in the language:
+  - Takes values from the value space
+  - Produces values from the value space
+
+- Evaluation never escapes that universe
+
+In more formal language:
+
+An algebra is _closed_ if:
+
+> Applying operations to members of a set always produces members of that same set.
+
+So if:
+
+```
++ : Number × Number → Number
+```
+
+and
+
+```
+== : DataValue × DataValue → Boolean
+```
+
+and
+
+```
+?? : DataValue × DataValue → DataValue
+```
+
+Then every expression ultimately evaluates to something inside `DataValue` (or `EvalValue`, in your extended model).
+
+That’s closure.
+
+---
+
+# 5. How to Explain This in English
+
+Here’s a clean way to describe it:
+
+### Option A — Concise
+
+> The value space of the expression language is the set of all runtime values that expressions can produce: null, booleans, numbers, strings, arrays, and objects. All operators in the language operate over this set and produce values within it.
+
+---
+
+### Option B — Slightly More Explanatory
+
+> The value space defines the universe of runtime values in the expression language. It specifies all possible kinds of values that expressions may evaluate to. The language is closed over this space, meaning that every valid expression evaluates to one of these values.
+
+---
+
+### Option C — Including `Nothing`
+
+> The language distinguishes between data values and evaluation results. Data values represent actual runtime data (null, boolean, number, string, array, object). Evaluation results may also include a distinguished “Nothing” value, representing the absence of a result in certain evaluation contexts.
+
+---
+
+# 6. Why This Matters
+
+By defining a value space explicitly, you gain:
+
+- Precise operator semantics
+- Clear coercion rules
+- Defined equality behavior
+- A foundation for reasoning about evaluation
+- A basis for formal proofs or testing
+
+Most template languages never formalize this. That’s why they become inconsistent.
+
+You’re doing real language design here.
+
+---
+
+# 7. A Subtle But Important Point
+
+Your choice to separate:
+
+```
+DataValue
+EvalValue = DataValue | Nothing
+```
+
+is philosophically interesting.
+
+You are saying:
+
+> Nothing is not a data value.
+
+That prevents subtle category errors like:
+
+- Comparing `Nothing == null`
+- Serializing `Nothing`
+- Passing `Nothing` into functions
+
+It keeps absence separate from data.
+
+That’s a very principled move.
+
+---
+
+# 8. The Clean Conceptual Model
+
+You now have three layers:
+
+1. **Syntax** — expressions
+2. **Semantics** — evaluation rules (algebra)
+3. **Value space** — what can exist at runtime
+
+If you wanted a very clear English summary for documentation, you could say:
+
+> The expression language operates over a fixed universe of runtime values: null, booleans, numbers, strings, arrays, and objects. Every expression evaluates to one of these values, or to a distinguished “Nothing” result used to represent the absence of a value during evaluation. All operators are defined as functions over this universe, making the language semantically closed and predictable.
+
+---
