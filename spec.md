@@ -42,7 +42,9 @@ Every syntactically valid expression evaluates to a value and does not raise an 
 
 In addition to the core value space, the implementation may expose developer-defined objects known as Drops. A Drop is not itself a data value in the language. Instead, it is an object that can be coerced into an evaluation value when required, possibly using a context hint such as numeric or string context.
 
-TODO:
+```
+ToLiquid : Drop × ContextHint → EvalValue
+```
 
 `HostValue` is an implementation-defined runtime value. Each `HostValue` must be representable as an EvalValue via the language’s evaluation rules.
 
@@ -50,12 +52,6 @@ TODO:
 HostValue =
     EvalValue
   | Drop
-```
-
-A Drop may define context-sensitive conversions that determine how it behaves in numeric, string, or boolean contexts. Whenever evaluation requires a `DataValue`, if the operand is a Drop:
-
-```
-ToLiquid : Drop × ContextHint → EvalValue
 ```
 
 ## Type Conversion
@@ -164,3 +160,11 @@ TODO: Condition semantics
 ## Equality
 
 TODO:
+
+## Logical Operators
+
+TODO: short circuit, last value
+
+## Filters
+
+TODO: desugar
