@@ -205,7 +205,71 @@ TODO: short circuit, last value
 
 ### Arithmetic Operators
 
-TODO:
+Arithmetic operators are total and defined in terms of numeric conversion. Each operand is converted to a `Number` via the total abstract function `ToNumber`. Non-numeric values convert to 0.
+
+```
++, -, *, /, % : EvalValue × EvalValue → Number
++ , - (unary) : EvalValue → Number
+```
+
+For any infix arithmetic operator `⊗ ∈ { +, −, *, /, % }`:
+
+```
+x ⊗ y = ToNumber(x) ⊗ₙ ToNumber(y)
+```
+
+For unary prefix operators:
+
+```
++x = ToNumber(x)
+-x = - ToNumber(x)
+```
+
+Arithmetic operators share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
+
+#### Addition
+
+1. If either operand ∈ Nothing → Nothing
+2. If both Number → numeric addition
+3. If either String → string concatenation (immutable)
+4. If both Array → array concatenation (immutable)
+5. Otherwise → Nothing
+
+#### Subtraction
+
+1. If either operand ∈ Nothing → Nothing
+2. If both Number → numeric subtraction
+3. Otherwise → Nothing
+
+#### Multiplication
+
+1. If either operand ∈ Nothing → Nothing
+2. If both Number → numeric multiplication
+3. If either String → string repetition
+4. If both Array → array repetition
+5. Otherwise → Nothing
+
+#### Division
+
+1. If either operand ∈ Nothing → Nothing
+2. If both Number → numeric division, or Nothing if divide by zero.
+3. Otherwise → Nothing
+
+#### Modulus
+
+1. If either operand ∈ Nothing → Nothing
+2. If both Number → numeric remainder after division, or Nothing if divide by zero.
+3. Otherwise → Nothing
+
+#### Prefix Negation
+
+1. Number → numeric negation
+2. Otherwise → Nothing
+
+#### Prefix Positive
+
+1. Number → numeric negation
+2. Otherwise → Nothing
 
 ## Filters
 
