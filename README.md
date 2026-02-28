@@ -52,6 +52,8 @@ That's **language integrity**.
 
 ---
 
+Value-returning operations such as “size” and element selection are expressed via filters and indexing. Boolean tests are expressed via predicate suffixes (?). There are no special-case properties like .size, .first, or .last.
+
 ---
 
 ## Notable Additions to Traditional Liquid Expressions

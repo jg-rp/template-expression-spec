@@ -216,6 +216,8 @@ module Expr
         parse_string(pair)
       when :expr
         parse_expr(pair.stream)
+      when :predicate
+        AST::Predicate.new(pair, pair.text)
       else
         raise "unexpected variable segment #{pair.rule.inspect} #{pair.text.inspect}"
       end

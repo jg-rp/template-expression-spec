@@ -43,6 +43,7 @@ module Expr
     Range = Data.define(:token, :start, :stop)
     Variable = Data.define(:token, :root, :segments)
     Name = Data.define(:token, :value)
+    Predicate = Data.define(:token, :value)
 
     Filter = Data.define(:token, :name, :args)
     KeywordArg = Data.define(:token, :name, :expr)
@@ -66,7 +67,7 @@ module Expr
         [e.left, e.right]
       when Not, Pos, Neg
         [e.right]
-      when Integer, Float, Boolean, Null, Name
+      when Integer, Float, Boolean, Null, Name, Predicate
         []
       when String
         e.segments.reject { |s| s.is_a?(::String) }
@@ -152,7 +153,7 @@ module Expr
         end.join.inspect
       when Null
         "null"
-      when Name
+      when Name, Predicate
         e.value
       when Array
         items = e.items.map { |item| to_s(item) }
@@ -173,7 +174,7 @@ module Expr
         params = e.params.map { |p| to_s(p) }.join(",")
         "(#{params}) => #{to_s(e.expr)}"
       else
-        raise "unknown expression #{e.class}"
+        raise "unknown expression #{e.class} #{e.inspect}"
       end
     end
 
