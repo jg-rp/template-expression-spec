@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
+require "json"
 require_relative "ast"
 
 module Expr
   def self.evaluate(e, context)
     case e
-    when Expression
-      evaluate(e.expr, context)
     when Ternary
       if truthy?(evaluate(e.condition, context))
         evaluate(e.expr, context)
@@ -65,31 +64,89 @@ module Expr
     end
   end
 
+  def self.to_boolean(value)
+    case value
+    when Nothing, nil
+      false
+    when true, false
+      value
+    when Integer, Float
+      !value.zero?
+    when String, Array, Hash
+      value.size.positive?
+    else
+      raise "unknown value for boolean conversion #{value.inspect}"
+    end
+  end
+
+  def self.to_number(value)
+    case value
+    when Integer, Float # TODO: BigDecimal, Numeric
+      value
+    when true
+      1
+    when false, nil, Nothing, Array, Hash
+      0
+    when String
+      begin
+        obj.match?(/\A-?\d+(?:[eE]\+?\d+)?\Z/) ? obj.to_f.to_i : Float(obj)
+      rescue ArgumentError
+        0
+      end
+    end
+  end
+
+  def self.to_string(value)
+    case value
+    when Sting
+      value
+    when Hash, Array
+      JSON.generate(value)
+    when nil, Nothing
+      ""
+    else
+      # TODO: BigDecimal
+      value.to_s
+    end
+  end
+
+  def self.to_array(value)
+    case value
+    when Array
+      value
+    when nil, Nothing
+      []
+    when Hash, String
+      [value]
+    else
+      value.respond_to?(:each) ? value.each : [value]
+    end
+  end
+
   def self.nothing?(value)
     value.instance_of?(Nothing)
   end
 
-  def truthy?(value)
+  def self.truthy?(value)
+    to_boolean(value)
+  end
+
+  def self.eq?(left, right)
     # TODO:
     raise "not implemented"
   end
 
-  def eq?(left, right)
+  def self.lt?(left, right)
     # TODO:
     raise "not implemented"
   end
 
-  def lt?(left, right)
+  def self.contains?(left, right)
     # TODO:
     raise "not implemented"
   end
 
-  def contains?(left, right)
-    # TODO:
-    raise "not implemented"
-  end
-
-  def apply_filter(expr)
+  def self.apply_filter(expr)
     # TODO:
     raise "not implemented"
   end

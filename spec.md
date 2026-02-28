@@ -12,19 +12,24 @@ DataValue =
   | Boolean
   | Number
   | String
-  | Array<EvalValue>
-  | Object<String → EvalValue>
+  | Array<DataValue>
+  | Object<String → DataValue>
 ```
 
-And `EvalValue` describes the result of evaluating an expression.
+`EvalValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `EvalValue` that does not contain Nothing
 
 ```
 EvalValue =
-    DataValue
+    Null
+  | Boolean
+  | Number
+  | String
+  | Array<EvalValue>
+  | Object<String → EvalValue>
   | Nothing
 ```
 
-The special `Nothing` type indicates the absence of a value and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.). `Nothing` may appear within composite values. Its behavior is defined uniformly wherever `EvalValue` is accepted.
+`Nothing` is a first-class evaluation result and may appear within composite values. It represents the absence of a value produced during evaluation and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.).
 
 ### Total Evaluation
 
@@ -40,7 +45,7 @@ Every syntactically valid expression evaluates to a value and does not raise an 
 
 ### Extension Types
 
-In addition to the core value space, the implementation may expose developer-defined objects known as Drops. A Drop is not itself a data value in the language. Instead, it is an object that can be coerced into an evaluation value when required, possibly using a context hint such as numeric or string context.
+In addition to the core value space, the implementation may expose developer-defined objects known as Drops. A Drop is not itself a value in the language. Instead, it is an object that can be coerced into an evaluation value when required, possibly using a context hint such as numeric or string context.
 
 ```
 ToLiquid : Drop × ContextHint → EvalValue
@@ -68,7 +73,7 @@ ToIterator : HostValue → Iterator | Nothing
 
 ### ToBoolean(x)
 
-The abstract operation `ToBoolean` is defined to be identical to `IsTruthy`. Boolean coercion in all contexts (including conditional evaluation and logical operators) uses the structural truthiness rules defined by IsTruthy.
+The abstract operation `ToBoolean` is defined to be identical to `IsTruthy`.
 
 ```
 ToBoolean : EvalValue → Boolean
@@ -157,13 +162,50 @@ The language adopts structural truthiness. Empty strings, empty arrays, empty ob
 
 TODO: Condition semantics
 
-## Equality
+## Operators
+
+### Comparison Operators
+
+Comparison operators are total and always produce a Boolean. If operands are not comparable under the operator, the result is false.
+
+```
+==, < : EvalValue × EvalValue → Boolean
+```
+
+XXX: Paraphrased from https://www.rfc-editor.org/rfc/rfc9535#section-2.3.5.2.2
+
+We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and `<`.
+
+- A comparison using the operator `==` evaluates to true if the comparison is between:
+  - `Nothing` and `Nothing`.
+  - numbers, where the numbers compare equal using an implementation-specific equality.
+  - equal primitive data values
+  - arrays of the same length where each element of the first array is equal to the corresponding element in the second array.
+  - objects with the same collection of names and, for each of those names, the associated values are equal.
+- A comparison using the operator `<` yields true if and only if the comparison is between values that are both numbers or both strings and that satisfy the comparison:
+  - TODO: typical number ordering
+  - TODO: Unicode string ordering
+
+`!=`, `>`, `<=` and `>=` are defined in terms of `==` and `<`.
+
+```
+x != y  = not (x == y)
+x > y   = y < x
+x <= y  = (x < y) or (x == y)
+x >= y  = (y < x) or (x == y)
+```
+
+### Membership Operators
 
 TODO:
 
-## Logical Operators
+### Logical Operators
 
 TODO: short circuit, last value
+
+### Arithmetic Operators
+
+TODO:
 
 ## Filters
 
