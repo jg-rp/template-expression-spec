@@ -205,61 +205,38 @@ TODO: short circuit, last value
 
 ### Arithmetic Operators
 
-Arithmetic operators are total and defined in terms of numeric conversion. Each operand is converted to a `Number` via the total abstract function `ToNumber`. Non-numeric values convert to 0.
+Arithmetic operators do not apply implicit type conversion. `+` and `*` are overloaded operators that perform string and array concatenation and repetition, respectively.
 
-```
-+, -, *, /, % : EvalValue × EvalValue → Number
-+ , - (unary) : EvalValue → Number
-```
-
-For any infix arithmetic operator `⊗ ∈ { +, −, *, /, % }`:
-
-```
-x ⊗ y = ToNumber(x) ⊗ₙ ToNumber(y)
-```
-
-For unary prefix operators:
-
-```
-+x = ToNumber(x)
--x = - ToNumber(x)
-```
-
-Arithmetic operators share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
+Implementations MAY provide filters whose semantics align with arithmetic operators.
 
 #### Addition
 
-1. If either operand ∈ Nothing → Nothing
-2. If both Number → numeric addition
-3. If either String → string concatenation (immutable)
-4. If both Array → array concatenation (immutable)
-5. Otherwise → Nothing
+1. If both Number → numeric addition
+2. If both String → string concatenation
+3. If both Array → array concatenation
+4. Otherwise → Nothing
 
 #### Subtraction
 
-1. If either operand ∈ Nothing → Nothing
-2. If both Number → numeric subtraction
-3. Otherwise → Nothing
+1. If both Number → numeric subtraction
+2. Otherwise → Nothing
 
 #### Multiplication
 
-1. If either operand ∈ Nothing → Nothing
-2. If both Number → numeric multiplication
-3. If either String → string repetition
-4. If both Array → array repetition
-5. Otherwise → Nothing
+1. If both Number → numeric multiplication
+2. If String and Number → string repetition
+3. If Array and Number → array repetition
+4. Otherwise → Nothing
 
 #### Division
 
-1. If either operand ∈ Nothing → Nothing
-2. If both Number → numeric division, or Nothing if divide by zero.
-3. Otherwise → Nothing
+1. If both Number → numeric division, or Nothing if divide by zero.
+2. Otherwise → Nothing
 
 #### Modulus
 
-1. If either operand ∈ Nothing → Nothing
-2. If both Number → numeric remainder after division, or Nothing if divide by zero.
-3. Otherwise → Nothing
+1. If both Number → numeric remainder after division, or Nothing if divide by zero.
+2. Otherwise → Nothing
 
 #### Prefix Negation
 
@@ -274,3 +251,12 @@ Arithmetic operators share semantics with their filter equivalents - `plus`, `mi
 ## Filters
 
 TODO: desugar
+
+### Conversion filters
+
+TODO:
+
+```
+("2" | number) + 3
+(1 | string) + "2"
+```
