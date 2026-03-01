@@ -14,88 +14,100 @@ DataValue =
   | String
   | Array<DataValue>
   | Object<String → DataValue>
-```
-
-`EvalValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `EvalValue` that does not contain Nothing
-
-```
-EvalValue =
-    Null
-  | Boolean
-  | Number
-  | String
-  | Array<EvalValue>
-  | Object<String → EvalValue>
   | Nothing
 ```
 
-`Nothing` is a first-class evaluation result and may appear within composite values. It represents the absence of a value produced during evaluation and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.).
+`RuntimeValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `RuntimeValue` that does not contain `Drop`.
+
+```
+RuntimeValue =
+    DataValue
+  | Array<RuntimeValue>
+  | Object<String → RuntimeValue>
+  | Drop
+  | Nothing
+```
+
+`Nothing` represents the absence of a value produced during evaluation and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.).
+
+### Extension Types (Drops)
+
+The implementation may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
+
+```
+ToLiquid : Drop × ContextHint → RuntimeValue
+```
+
+Where:
+
+```
+ContextHint ∈ { default, numeric, string, boolean, iterable, render, array }
+```
+
+Constraints:
+
+- `ToLiquid(drop, boolean)` MUST return `Boolean` or `Nothing`.
+- `ToLiquid(drop, default)` MUST return `DataValue`
+- `ToLiquid(drop, iterable)` MUST return `Array<RuntimeValue>`, a `Drop` that MUST implement the sequence protocol, or `Nothing`
+- `ToLiquid(drop, numeric)` MUST return `Number` or `Nothing`.
+- `ToLiquid(drop, string)` MUST return `String` or `Nothing`.
+- `ToLiquid(drop, render)` MUST return `String` or `Nothing`.
+- `ToLiquid(drop, array)` MUST return `Array<RuntimeValue>` or `Nothing`.
+
+The result of `ToLiquid(drop, default)` MUST be a valid `DataValue` as defined above, meaning it MUST NOT contain `Drop` at any depth.
+
+The following table shows when each hint applies.
+
+| Context                          | Hint     |
+| -------------------------------- | -------- |
+| Arithmetic                       | numeric  |
+| String concatenation             | string   |
+| Boolean test (`if`, `and`, `or`) | boolean  |
+| Comparison                       | default  |
+| Rendering `{{ x }}`              | render   |
+| `for` iterable expression        | iterable |
+| Filter arguments (general)       | default  |
+| Used by `ToArray`                | array    |
+
+#### Sequence protocol
+
+A Drop MAY implement the `Sequence` protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
+
+A Drop implements the `Sequence` protocol if it supports:
+
+```
+length() → Number
+slice(offset, limit, reversed) → Drop
+iterate() → Iterator<RuntimeValue>
+```
+
+Constraints:
+
+- `length()` MUST reflect the current logical sequence.
+- `slice()` MUST return a `Drop` implementing the `Sequence` protocol.
+- `iterate()` MUST yield exactly `length()` elements.
 
 ### Total Evaluation
 
-Evaluation never fails. Evaluating any expression always produces either a data value or `Nothing`. Every operator, filter, and conversion must produce a value for every possible input.
+Evaluation never fails. Evaluating any expression always produces a value. Every operator, filter, and conversion must produce a value for every possible input.
 
-Formally, expressions are a closed algebra over `EvalValue`. For every expression `e` and environment `ρ`:
+Formally, expressions are a closed algebra over `RuntimeValue`. For every expression `e` and environment `ρ`:
 
 ```
-⟦ e ⟧(ρ) ∈ EvalValue
+⟦ e ⟧(ρ) ∈ RuntimeValue
 ```
 
 Every syntactically valid expression evaluates to a value and does not raise an error at render time.
 
-### Extension Types
-
-In addition to the core value space, the implementation may expose developer-defined objects known as Drops. A Drop is not itself a value in the language. Instead, it is an object that can be coerced into an evaluation value when required, possibly using a context hint such as numeric or string context.
-
-```
-ToLiquid : Drop × ContextHint → EvalValue | Sequence
-```
-
-`HostValue` is an implementation-defined runtime value. Each `HostValue` must be representable as an EvalValue via the language’s evaluation rules.
-
-```
-HostValue =
-    EvalValue
-  | Drop
-```
-
-#### Sequence protocol
-
-A Sequence is an ordered finite collection of EvalValue elements with the following operations
-
-```
-Sequence {
-  length() → Number
-  slice(offset, limit, reversed) → Sequence
-  iterate() → Iterator<EvalValue>
-}
-```
-
-- `length()` returns the number of elements in the sequence instance.
-- `slice` returns a new logical sequence.
-- `iterate()` yields exactly `length()` elements in order.
-- `Sequence` is not an `EvalValue`.
-
-Implementations MAY return `Sequence` from filters for optimization. But note:
-
-- Sequences are not valid operands for comparison operators.
-- Sequences are not renderable.
-- Sequences are not valid arithmetic operands.
-
-They are consumed only by:
-
-- `for`
-- Possibly sequence-aware filters
-
 ## Type Conversion
 
-Liquid performs automatic type conversions as needed. Here we define abstract conversion functions for data values, each of which is total, deterministic and never throws an error.
+Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for data values, each of which is total, deterministic and never throws an error.
 
 ```
-ToBoolean  : EvalValue → Boolean
-ToNumber   : EvalValue → Number   (Integer | Float)
-ToString   : EvalValue → String
-ToArray    : EvalValue → Array<EvalValue>
+ToBoolean  : RuntimeValue → Boolean
+ToNumber   : RuntimeValue → Number   (Integer | Float)
+ToString   : RuntimeValue → String
+ToArray    : RuntimeValue → Array<RuntimeValue>
 ```
 
 ### ToBoolean(x)
@@ -103,28 +115,29 @@ ToArray    : EvalValue → Array<EvalValue>
 The abstract operation `ToBoolean` is defined to be identical to `IsTruthy`.
 
 ```
-ToBoolean : EvalValue → Boolean
+ToBoolean : RuntimeValue → Boolean
 ```
 
 An evaluation result is truthy if it represents a non-empty, non-zero, non-null value.
 
-| Input Type | Result        |
-| ---------- | ------------- |
-| Nothing    | false         |
-| Null       | false         |
-| Boolean    | identity      |
-| Integer    | x ≠ 0         |
-| Float      | x ≠ 0.0       |
-| String     | length(x) > 0 |
-| Array      | length(x) > 0 |
-| Object     | size(o) > 0   |
+| Input Type | Result                                   |
+| ---------- | ---------------------------------------- |
+| Nothing    | false                                    |
+| Null       | false                                    |
+| Boolean    | identity                                 |
+| Integer    | x ≠ 0                                    |
+| Float      | x ≠ 0.0                                  |
+| String     | length(x) > 0                            |
+| Array      | length(x) > 0                            |
+| Object     | size(o) > 0                              |
+| Drop       | ToLiquid(x, boolean) or false if Nothing |
 
 ### ToNumber(x)
 
 Returns either Integer or Decimal.
 
 ```
-ToNumber  : EvalValue → Number   (Integer | Float)
+ToNumber  : RuntimeValue → Number   (Integer | Float)
 ```
 
 | Input Type | Result                                |
@@ -137,36 +150,39 @@ ToNumber  : EvalValue → Number   (Integer | Float)
 | String     | parse numeric literal; if invalid → 0 |
 | Array      | 0                                     |
 | Object     | 0                                     |
+| Drop       | ToLiquid(x, numeric) or 0 if Nothing  |
 
 ### ToString(x)
 
 ```
-ToString  : EvalValue → String
+ToString  : RuntimeValue → String
 ```
 
-| Input Type | Result                 |
-| ---------- | ---------------------- |
-| String     | identity               |
-| Integer    | decimal representation |
-| Float      | canonical decimal      |
-| Boolean    | `"true"` or `"false"`  |
-| Null       | `""`                   |
-| Nothing    | `""`                   |
-| Array      | JSON-formatted array   |
-| Object     | JSON-formatted object  |
+| Input Type | Result                                 |
+| ---------- | -------------------------------------- |
+| String     | identity                               |
+| Integer    | decimal representation                 |
+| Float      | canonical decimal                      |
+| Boolean    | `"true"` or `"false"`                  |
+| Null       | `""`                                   |
+| Nothing    | `""`                                   |
+| Array      | JSON-formatted array                   |
+| Object     | JSON-formatted object                  |
+| Drop       | ToLiquid(x, string) or `""` if Nothing |
 
 ### ToArray(x)
 
 ```
-ToArray   : EvalValue → Array<EvalValue>
+ToArray   : RuntimeValue → Array<RuntimeValue>
 ```
 
-| Input Type      | Result   |
-| --------------- | -------- |
-| Array           | identity |
-| Null            | []       |
-| Nothing         | []       |
-| Any other value | [x]      |
+| Input Type      | Result                              |
+| --------------- | ----------------------------------- |
+| Array           | identity                            |
+| Null            | []                                  |
+| Nothing         | []                                  |
+| Drop            | ToLiquid(x, array) or [] if Nothing |
+| Any other value | [x]                                 |
 
 ## Predicates
 
@@ -182,15 +198,17 @@ TODO: Condition semantics
 
 ### Comparison Operators
 
-Comparison operators are total and always produce a Boolean. If operands are not comparable under the operator, the result is false.
+Comparison operators are total and always produce a Boolean value. If operands are not comparable under the operator, the result is false.
 
 ```
-==, < : EvalValue × EvalValue → Boolean
+==, < : RuntimeValue × RuntimeValue → Boolean
 ```
 
 XXX: Paraphrased from https://www.rfc-editor.org/rfc/rfc9535#section-2.3.5.2.2
 
 We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and `<`.
+
+Before comparison, if either operand is a Drop, apply `ToLiquid(operand, default)`.
 
 - A comparison using the operator `==` evaluates to true if the comparison is between:
   - `Nothing` and `Nothing`.
@@ -227,42 +245,49 @@ Implementations MAY provide filters whose semantics align with arithmetic operat
 
 #### Addition
 
-1. If both Number → numeric addition
-2. If both String → string concatenation
-3. If both Array → array concatenation
-4. Otherwise → Nothing
+1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
+2. If both Number → numeric addition
+3. If both String → string concatenation
+4. If both Array → array concatenation
+5. Otherwise → Nothing
 
 #### Subtraction
 
-1. If both Number → numeric subtraction
-2. Otherwise → Nothing
+1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
+2. If both Number → numeric subtraction
+3. Otherwise → Nothing
 
 #### Multiplication
 
-1. If both Number → numeric multiplication
-2. If String and Number → string repetition
-3. If Array and Number → array repetition
-4. Otherwise → Nothing
+1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
+2. If both Number → numeric multiplication
+3. If String and Number → string repetition
+4. If Array and Number → array repetition
+5. Otherwise → Nothing
 
 #### Division
 
-1. If both Number → numeric division, or Nothing if divide by zero.
-2. Otherwise → Nothing
+1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
+2. If both Number → numeric division, or Nothing if divide by zero.
+3. Otherwise → Nothing
 
 #### Modulus
 
-1. If both Number → numeric remainder after division, or Nothing if divide by zero.
-2. Otherwise → Nothing
+1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
+2. If both Number → numeric remainder after division, or Nothing if divide by zero.
+3. Otherwise → Nothing
 
 #### Prefix Negation
 
-1. Number → numeric negation
-2. Otherwise → Nothing
+1. If the operand is a drop, apply `ToLiquid(operand, numeric)`
+2. Number → numeric negation
+3. Otherwise → Nothing
 
 #### Prefix Positive
 
-1. Number → numeric negation
-2. Otherwise → Nothing
+1. If the operand is a drop, apply `ToLiquid(operand, numeric)`
+2. Number → numeric negation
+3. Otherwise → Nothing
 
 ## Filters
 
