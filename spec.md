@@ -48,7 +48,7 @@ Every syntactically valid expression evaluates to a value and does not raise an 
 In addition to the core value space, the implementation may expose developer-defined objects known as Drops. A Drop is not itself a value in the language. Instead, it is an object that can be coerced into an evaluation value when required, possibly using a context hint such as numeric or string context.
 
 ```
-ToLiquid : Drop × ContextHint → EvalValue
+ToLiquid : Drop × ContextHint → EvalValue | Sequence
 ```
 
 `HostValue` is an implementation-defined runtime value. Each `HostValue` must be representable as an EvalValue via the language’s evaluation rules.
@@ -59,6 +59,34 @@ HostValue =
   | Drop
 ```
 
+#### Sequence protocol
+
+A Sequence is an ordered finite collection of EvalValue elements with the following operations
+
+```
+Sequence {
+  length() → Number
+  slice(offset, limit, reversed) → Sequence
+  iterate() → Iterator<EvalValue>
+}
+```
+
+- `length()` returns the number of elements in the sequence instance.
+- `slice` returns a new logical sequence.
+- `iterate()` yields exactly `length()` elements in order.
+- `Sequence` is not an `EvalValue`.
+
+Implementations MAY return `Sequence` from filters for optimization. But note:
+
+- Sequences are not valid operands for comparison operators.
+- Sequences are not renderable.
+- Sequences are not valid arithmetic operands.
+
+They are consumed only by:
+
+- `for`
+- Possibly sequence-aware filters
+
 ## Type Conversion
 
 Liquid performs automatic type conversions as needed. Here we define abstract conversion functions for data values, each of which is total, deterministic and never throws an error.
@@ -68,7 +96,6 @@ ToBoolean  : EvalValue → Boolean
 ToNumber   : EvalValue → Number   (Integer | Float)
 ToString   : EvalValue → String
 ToArray    : EvalValue → Array<EvalValue>
-ToIterator : HostValue → Iterator | Nothing
 ```
 
 ### ToBoolean(x)
@@ -140,17 +167,6 @@ ToArray   : EvalValue → Array<EvalValue>
 | Null            | []       |
 | Nothing         | []       |
 | Any other value | [x]      |
-
-### ToIterator(x)
-
-The abstract operation `ToIterator` operates on `HostValue`. Arrays yield iterators over their elements. Drops may provide iterators. Other values are non-iterable.
-
-```
-GetIterator : HostValue → Iterator | Nothing
-```
-
-TODO: table  
-TODO: iterator over object items
 
 ## Predicates
 
