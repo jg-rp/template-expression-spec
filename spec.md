@@ -1,6 +1,34 @@
 # A Unified Expression Grammar for Liquid Templates
 
+## Abstract
+
+TODO:
+
 This document defines a Liquid template expression syntax...
+
+## Status
+
+TODO:
+
+## History
+
+TODO:
+
+## Overview
+
+TODO:
+
+### Total Evaluation
+
+Evaluation never fails. Evaluating any expression always produces a value. Every operator, filter, and conversion must produce a value for every possible input.
+
+Formally, expressions are a closed algebra over `RuntimeValue`. For every expression `e` and environment `ρ`:
+
+```
+⟦ e ⟧(ρ) ∈ RuntimeValue
+```
+
+Every syntactically valid expression evaluates to a value and does not raise an error at render time.
 
 ## Data Types and Values
 
@@ -130,18 +158,6 @@ A Drop implements the `Membership` protocol if it supports:
 Contains(x) -> Boolean | Nothing
 ```
 
-### Total Evaluation
-
-Evaluation never fails. Evaluating any expression always produces a value. Every operator, filter, and conversion must produce a value for every possible input.
-
-Formally, expressions are a closed algebra over `RuntimeValue`. For every expression `e` and environment `ρ`:
-
-```
-⟦ e ⟧(ρ) ∈ RuntimeValue
-```
-
-Every syntactically valid expression evaluates to a value and does not raise an error at render time.
-
 ## Type Conversion
 
 Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
@@ -153,7 +169,7 @@ ToString   : RuntimeValue → String
 ToArray    : RuntimeValue → Array<RuntimeValue>
 ```
 
-TODO: enumerate context that do implicit type conversion.
+TODO: enumerate contexts that do implicit type conversion.
 
 ### ToBoolean(x)
 
@@ -200,7 +216,7 @@ ToNumber  : RuntimeValue → Number | Nothing
 ### ToString(x)
 
 ```
-ToString  : RuntimeValue → String
+ToString : RuntimeValue → String
 ```
 
 | Input Type | Result                               |
@@ -218,7 +234,7 @@ ToString  : RuntimeValue → String
 ### ToArray(x)
 
 ```
-ToArray   : RuntimeValue → Array<RuntimeValue>
+ToArray : RuntimeValue → Array<RuntimeValue>
 ```
 
 | Input Type      | Result                              |
@@ -228,10 +244,6 @@ ToArray   : RuntimeValue → Array<RuntimeValue>
 | Nothing         | []                                  |
 | Drop            | ToLiquid(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
-
-## Predicates
-
-TODO:
 
 ## Truthiness
 
@@ -246,10 +258,8 @@ TODO: Condition semantics
 Comparison operators are total and always produce a Boolean value. If operands are not comparable under the operator, the result is false.
 
 ```
-==, < : RuntimeValue × RuntimeValue → Boolean
+==, !=, <, >, <=, >= : RuntimeValue × RuntimeValue → Boolean
 ```
-
-XXX: Paraphrased from https://www.rfc-editor.org/rfc/rfc9535#section-2.3.5.2.2
 
 We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and `<`.
 
@@ -320,7 +330,7 @@ TODO: short circuit, last value
 
 ### Arithmetic Operators
 
-Arithmetic operators are defined in terms of numeric conversion and can produce `Nothing`. Each operand is converted to a `Number` via the total abstract function `ToNumber`.
+Arithmetic operators are defined in terms of numeric conversion and can produce `Nothing`. Each operand is converted to a `Number` via the abstract function `ToNumber`.
 
 ```
 +, -, *, /, % : EvalValue × EvalValue → Number | Nothing
@@ -351,3 +361,131 @@ Arithmetic operators MUST share semantics with their filter equivalents - `plus`
 ## Filters
 
 TODO: desugar
+
+## Variables and Paths
+
+TODO:
+
+### Predicates
+
+A predicate is an optional trailing path segment of the form `.predicate?`. Predicates are syntactically distinct from shorthand name segments in that they must end in a question mark `?` and they must be the last segment of a path.
+
+Note that `?` is not a valid character for a shorthand name segment. Should a template author need to reference a value by a key containing `?`, they must use bracketed syntax `some["thing?"]`.
+
+All predicates are total over `RuntimeValue` and MUST return `Boolean`.
+
+```
+Predicate : RuntimeValue → Boolean
+```
+
+For any predicate `.p?` and accompanying abstract function `IsP`:
+
+```
+x.p?
+```
+
+Is semantically equivalent to:
+
+```
+IsP(x)
+```
+
+#### IsBlank(x)
+
+TODO:
+
+The absence of a value (`Nothing`) is not considered blank.
+
+```
+IsBlank(x) =
+    x is Null
+ OR x is String and trim(x) = ""
+ OR x is Array and length(x) = 0
+ OTHERWISE false
+
+blank?(Nothing) = false
+empty?(Nothing) = false
+```
+
+#### IsEmpty(x)
+
+TODO:
+
+The absence of a value (`Nothing`) is not considered empty.
+
+```
+IsEmpty(x) =
+    x is String and length(x) = 0
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false
+```
+
+#### IsDefined(x)
+
+TODO:
+
+```
+IsDefined(Nothing) → false
+Otherwise → true
+```
+
+#### IsString(x)
+
+TODO:
+
+```
+IsString(x) =
+    x is String → true
+    otherwise   → false
+```
+
+#### IsNull(x)
+
+TODO
+
+```
+IsNull(x) =
+    x is Null → true
+    otherwise → false
+```
+
+#### IsNumber(x)
+
+TODO
+
+```
+IsNumber(x) =
+    x is Number → true
+    otherwise   → false
+```
+
+#### IsBoolean(x)
+
+TODO
+
+```
+IsBoolean(x) =
+    x is Boolean → true
+    otherwise    → false
+```
+
+#### IsArray(x)
+
+TODO
+
+```
+IsArray(x) =
+    x is Array → true
+    otherwise  → false
+```
+
+#### IsObject(x)
+
+TODO
+
+```
+IsObject(x) =
+    x is Object → true
+    otherwise   → false
+```
