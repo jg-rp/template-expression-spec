@@ -144,11 +144,11 @@ Every syntactically valid expression evaluates to a value and does not raise an 
 
 ## Type Conversion
 
-Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for data values, each of which is total, deterministic and never throws an error.
+Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
 
 ```
 ToBoolean  : RuntimeValue → Boolean
-ToNumber   : RuntimeValue → Number   (Integer | Float)
+ToNumber   : RuntimeValue → Number | Nothing
 ToString   : RuntimeValue → String
 ToArray    : RuntimeValue → Array<RuntimeValue>
 ```
@@ -165,37 +165,37 @@ ToBoolean : RuntimeValue → Boolean
 
 An evaluation result is truthy if it represents a non-empty, non-zero, non-null value.
 
-| Input Type | Result                                   |
-| ---------- | ---------------------------------------- |
-| Nothing    | false                                    |
-| Null       | false                                    |
-| Boolean    | identity                                 |
-| Integer    | x ≠ 0                                    |
-| Float      | x ≠ 0.0                                  |
-| String     | length(x) > 0                            |
-| Array      | length(x) > 0                            |
-| Object     | size(o) > 0                              |
-| Drop       | ToLiquid(x, boolean) or false if Nothing |
+| Input Type | Result                                 |
+| ---------- | -------------------------------------- |
+| Nothing    | false                                  |
+| Null       | false                                  |
+| Boolean    | identity                               |
+| Integer    | x ≠ 0                                  |
+| Float      | x ≠ 0.0                                |
+| String     | length(x) > 0                          |
+| Array      | length(x) > 0                          |
+| Object     | size(o) > 0                            |
+| Drop       | ToLiquid(x, boolean); false if Nothing |
 
 ### ToNumber(x)
 
 Returns either Integer or Decimal.
 
 ```
-ToNumber  : RuntimeValue → Number   (Integer | Float)
+ToNumber  : RuntimeValue → Number | Nothing
 ```
 
-| Input Type | Result                                |
-| ---------- | ------------------------------------- |
-| Integer    | identity                              |
-| Float      | identity                              |
-| Boolean    | true → 1, false → 0                   |
-| Nothing    | 0                                     |
-| Null       | 0                                     |
-| String     | parse numeric literal; if invalid → 0 |
-| Array      | 0                                     |
-| Object     | 0                                     |
-| Drop       | ToLiquid(x, numeric) or 0 if Nothing  |
+| Input Type | Result                                      |
+| ---------- | ------------------------------------------- |
+| Integer    | identity                                    |
+| Float      | identity                                    |
+| Boolean    | true → 1, false → 0                         |
+| Nothing    | Nothing                                     |
+| Null       | Nothing                                     |
+| String     | parse numeric literal; if invalid → Nothing |
+| Array      | Nothing                                     |
+| Object     | Nothing                                     |
+| Drop       | ToLiquid(x, numeric)                        |
 
 ### ToString(x)
 
@@ -203,17 +203,17 @@ ToNumber  : RuntimeValue → Number   (Integer | Float)
 ToString  : RuntimeValue → String
 ```
 
-| Input Type | Result                                 |
-| ---------- | -------------------------------------- |
-| String     | identity                               |
-| Integer    | decimal representation                 |
-| Float      | canonical decimal                      |
-| Boolean    | `"true"` or `"false"`                  |
-| Null       | `""`                                   |
-| Nothing    | `""`                                   |
-| Array      | JSON-formatted array                   |
-| Object     | JSON-formatted object                  |
-| Drop       | ToLiquid(x, string) or `""` if Nothing |
+| Input Type | Result                               |
+| ---------- | ------------------------------------ |
+| String     | identity                             |
+| Integer    | decimal representation               |
+| Float      | canonical decimal                    |
+| Boolean    | `"true"` or `"false"`                |
+| Null       | `""`                                 |
+| Nothing    | `""`                                 |
+| Array      | JSON-formatted array                 |
+| Object     | JSON-formatted object                |
+| Drop       | ToLiquid(x, string); `""` if Nothing |
 
 ### ToArray(x)
 
@@ -320,65 +320,34 @@ TODO: short circuit, last value
 
 ### Arithmetic Operators
 
-Arithmetic operators do not apply implicit type conversion. `+` and `*` are overloaded operators that perform string and array concatenation and repetition, respectively.
+Arithmetic operators are defined in terms of numeric conversion and can produce `Nothing`. Each operand is converted to a `Number` via the total abstract function `ToNumber`.
 
-Implementations MAY provide filters whose semantics align with arithmetic operators.
+```
++, -, *, /, % : EvalValue × EvalValue → Number | Nothing
++ , - (unary) : EvalValue → Number | Nothing
+```
 
-#### Addition
+For any infix arithmetic operator `⊗ ∈ { +, −, *, /, % }`:
 
-1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
-2. If both Number → numeric addition
-3. If both String → string concatenation
-4. If both Array → array concatenation
-5. Otherwise → Nothing
+```
+x ⊗ y = ToNumber(x) ⊗ₙ ToNumber(y)
+```
 
-#### Subtraction
+1. If either operand is `Nothing` after `ToNumber(operand)`, the result is `Nothing`.
+2. Otherwise apply numeric operator, or `Nothing` if divide by zero.
 
-1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
-2. If both Number → numeric subtraction
-3. Otherwise → Nothing
+For unary prefix operators:
 
-#### Multiplication
+```
++x = ToNumber(x)
+-x = - ToNumber(x)
+```
 
-1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
-2. If both Number → numeric multiplication
-3. If String and Number → string repetition
-4. If Array and Number → array repetition
-5. Otherwise → Nothing
+1. If the operand is `Nothing` after `ToNumber(operand)`, the result is `Nothing`.
+2. Otherwise apply numeric prefix operator.
 
-#### Division
-
-1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
-2. If both Number → numeric division, or Nothing if divide by zero.
-3. Otherwise → Nothing
-
-#### Modulus
-
-1. If either operand is a drop, apply `ToLiquid(operand, numeric)`
-2. If both Number → numeric remainder after division, or Nothing if divide by zero.
-3. Otherwise → Nothing
-
-#### Prefix Negation
-
-1. If the operand is a drop, apply `ToLiquid(operand, numeric)`
-2. Number → numeric negation
-3. Otherwise → Nothing
-
-#### Prefix Positive
-
-1. If the operand is a drop, apply `ToLiquid(operand, numeric)`
-2. Number → numeric negation
-3. Otherwise → Nothing
+Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
 
 ## Filters
 
 TODO: desugar
-
-### Conversion filters
-
-TODO:
-
-```
-("2" | number) + 3
-(1 | string) + "2"
-```
