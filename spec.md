@@ -14,10 +14,9 @@ DataValue =
   | String
   | Array<DataValue>
   | Object<String → DataValue>
-  | Nothing
 ```
 
-`RuntimeValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `RuntimeValue` that does not contain `Drop`.
+`RuntimeValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `RuntimeValue` that does not contain `Drop` or `Nothing`.
 
 ```
 RuntimeValue =
@@ -32,7 +31,7 @@ RuntimeValue =
 
 ### Extension Types (Drops)
 
-The implementation may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
+Implementations may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
 
 ```
 ToLiquid : Drop × ContextHint → RuntimeValue
@@ -47,7 +46,7 @@ ContextHint ∈ { default, numeric, string, boolean, iterable, render, array }
 Constraints:
 
 - `ToLiquid(drop, boolean)` MUST return `Boolean` or `Nothing`.
-- `ToLiquid(drop, default)` MUST return `DataValue`
+- `ToLiquid(drop, default)` MUST return `DataValue`.
 - `ToLiquid(drop, iterable)` MUST return `Array<RuntimeValue>`, a `Drop` that MUST implement the sequence protocol, or `Nothing`
 - `ToLiquid(drop, numeric)` MUST return `Number` or `Nothing`.
 - `ToLiquid(drop, string)` MUST return `String` or `Nothing`.
@@ -87,6 +86,50 @@ Constraints:
 - `slice()` MUST return a `Drop` implementing the `Sequence` protocol.
 - `iterate()` MUST yield exactly `length()` elements.
 
+#### Equality Protocol
+
+A Drop MAY implement the `Equality` protocol for interaction with `==` and `!=` operators, without first coercing to a data value.
+
+```
+Equals : Drop × RuntimeValue → Boolean | Nothing
+```
+
+A Drop implements the `Equality` protocol if it supports:
+
+```
+Equals(x) -> Boolean | Nothing
+```
+
+`equals` MUST NOT throw an error.
+
+#### Ordering Protocol
+
+A Drop MAY implement the `Ordering` protocol for interaction with `<`, `>`, `<=`, and `>=` operators, without first coercing to a data value.
+
+```
+LessThan : Drop × RuntimeValue → Boolean | Nothing
+```
+
+A Drop implements the `Ordering` protocol if it supports:
+
+```
+LessThan(x) -> Boolean | Nothing
+```
+
+#### Membership Protocol
+
+A Drop MAY implement the `Membership` protocol for interaction with `in` and `contains` operators, without first coercing to a data value.
+
+```
+Contains : Drop × RuntimeValue → Boolean | Nothing
+```
+
+A Drop implements the `Membership` protocol if it supports:
+
+```
+Contains(x) -> Boolean | Nothing
+```
+
 ### Total Evaluation
 
 Evaluation never fails. Evaluating any expression always produces a value. Every operator, filter, and conversion must produce a value for every possible input.
@@ -109,6 +152,8 @@ ToNumber   : RuntimeValue → Number   (Integer | Float)
 ToString   : RuntimeValue → String
 ToArray    : RuntimeValue → Array<RuntimeValue>
 ```
+
+TODO: enumerate context that do implicit type conversion.
 
 ### ToBoolean(x)
 
@@ -208,17 +253,28 @@ XXX: Paraphrased from https://www.rfc-editor.org/rfc/rfc9535#section-2.3.5.2.2
 
 We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and `<`.
 
-Before comparison, if either operand is a Drop, apply `ToLiquid(operand, default)`.
-
 - A comparison using the operator `==` evaluates to true if the comparison is between:
   - `Nothing` and `Nothing`.
   - numbers, where the numbers compare equal using an implementation-specific equality.
   - equal primitive data values
   - arrays of the same length where each element of the first array is equal to the corresponding element in the second array.
   - objects with the same collection of names and, for each of those names, the associated values are equal.
-- A comparison using the operator `<` yields true if and only if the comparison is between values that are both numbers or both strings and that satisfy the comparison:
-  - TODO: typical number ordering
+  - drops:
+    1. If `a` is Drop and implements `Equals` and `a.Equals(b)` is true.
+    2. Else if `b` is Drop and implements `Equals` and `b.Equals(a)` is true.
+    3. Else:
+       - Coerce both via `ToLiquid(…, default)`
+       - Compare `DataValue` structurally
+
+- A comparison using the operator `<` yields true if the comparison is between values that are both numbers or both strings and that satisfy the comparison:
+  - TODO: conventional number ordering
   - TODO: Unicode string ordering
+- Or, if either operand is a drop:
+  1. If `a` is `Drop` and implements `LessThan` and `a.LessThan(b)` is true.
+  2. Else if `b` is `Drop` and implements `LessThan` and `b.LessThan(a)` is true.
+  3. Else:
+     - Coerce both via `ToLiquid(…, default)`
+     - Attempt standard ordering
 
 `!=`, `>`, `<=` and `>=` are defined in terms of `==` and `<`.
 
@@ -232,6 +288,31 @@ x >= y  = (y < x) or (x == y)
 ### Membership Operators
 
 TODO:
+
+1. If `container` is Drop and implements `Contains`:
+
+   ```
+   container.Contains(element)
+   ```
+
+2. Else if container is Sequence:
+   - Iterate and compare using `==`
+
+3. Else if container is Object:
+   - Membership tests key existence
+
+4. Else:
+   - Coerce container via `default`
+   - Retry
+
+5. Otherwise → Boolean false
+
+This allows:
+
+- Database-backed collections
+- Lazy paginated results
+- Efficient membership tests
+- Avoid materializing huge arrays
 
 ### Logical Operators
 
