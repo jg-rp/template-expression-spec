@@ -14,6 +14,8 @@ Draft - specification in progress. Feedback and test cases are welcome.
 
 ## Introduction
 
+TODO:
+
 ### Terminology
 
 - _Expression_: An expression is the fundamental unit of computation within a Liquid template, representing a sequence of identifiers, literals, and operators that resolves to a value. Expressions serve as the logic centers inside Liquid tags: they appear within output delimiters to render data directly to the page (e.g., `{{ user.name | upcase }}`), inside conditional tags to govern template logic (e.g., `{% if item.price > 100 %}`), and as the data sources for iterations (e.g., `{% for product in collections.frontpage %}`)
@@ -66,7 +68,7 @@ Filters are first-class citizens integrated into the recursive structure of the 
 (x | upper) == 'FOO'
 ```
 
-TODO: lambdas
+TODO: lambda arguments
 
 #### Ternary Expressions
 
@@ -211,31 +213,31 @@ Contains(x) -> Boolean | Nothing
 
 TODO:
 
-### X.4.2.1 Null Literal
+### Null Literal
 
 TODO:
 
-### X.4.2.2 Boolean Literals
+### Boolean Literals
 
 TODO:
 
-### X.4.2.3 Integer Literals
+### Integer Literals
 
 TODO:
 
-### X.4.2.4 Float Literals
+### Float Literals
 
 TODO:
 
-### X.4.2.5 String Literals
+### String Literals
 
 TODO:
 
-### X.4.2.5 Array Literals
+### Array Literals
 
 TODO:
 
-### X.4.2.5 Object Literals
+### Object Literals
 
 ### Range Literals
 
@@ -269,12 +271,26 @@ Implicit conversions occur in the following contexts (each uses the correspondin
 
 Conversions are deterministic and must never raise errors; when a conversion cannot produce the requested target it returns `Nothing` where specified.
 
-### ToBoolean(x)
+#### Conversion Summary Table
+
+| Input Type             | `ToBoolean` | `ToNumber`         | `ToString`         | `ToArray` |
+| ---------------------- | ----------- | ------------------ | ------------------ | --------- |
+| **Nothing / Null**     | `false`     | `Nothing`          | `""`               | `[]`      |
+| **Boolean**            | Identity    | `1` or `0`         | `"true"`/`"false"` | `[x]`     |
+| **Number (non-zero)**  | `true`      | Identity           | String value       | `[x]`     |
+| **String (non-empty)** | `true`      | Parse or `Nothing` | Identity           | `[x]`     |
+| **Array (non-empty)**  | `true`      | `Nothing`          | JSON String        | Identity  |
+
+### Truthiness and ToBoolean(x)
+
+The language adopts structural truthiness. Empty strings, empty arrays, empty objects, zero numbers, null, and absence (`Nothing`) are falsy. All other values are truthy. This rule is uniform across value types and does not depend on host-language semantics.
+
+Conditions are evaluated by first evaluating the condition expression and then applying `ToBoolean` to the result.
 
 The abstract operation `ToBoolean` is defined to be identical to `IsTruthy`.
 
 ```
-ToBoolean : RuntimeValue → Boolean
+ToBoolean, IsTruthy : RuntimeValue → Boolean
 ```
 
 An evaluation result is truthy if it represents a non-empty, non-zero, non-null value.
@@ -343,21 +359,49 @@ ToArray : RuntimeValue → Array<RuntimeValue>
 | Drop            | ToLiquid(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
 
-## Truthiness
-
-The language adopts structural truthiness. Empty strings, empty arrays, empty objects, zero numbers, null, and absence (`Nothing`) are falsy. All other values are truthy. This rule is uniform across value types and does not depend on host-language semantics.
-
-Condition semantics
-
-Conditions are evaluated by first evaluating the condition expression and then applying `ToBoolean` to the result. For ternary expressions of the form `consequence if condition else alternative` the `condition` is evaluated first; depending on its truthiness only the selected branch (`consequence` or `alternative`) is subsequently evaluated. Implementations MUST not evaluate the unselected branch.
-
-The `if` tag and boolean operators treat their operand values via `ToBoolean`. Drops used in boolean contexts are coerced using `ToLiquid(drop, boolean)`, with `Nothing` treated as `false`.
-
 ## Operators
+
+The following table lists operators from lowest to highest precedence. Operators within the same group are evaluated left-to-right (left-associative).
+
+| Precedence   | Operator Type             | Syntax                                             |
+| ------------ | ------------------------- | -------------------------------------------------- |
+| 1 (Lowest)   | **Ternary**               | `consequence if condition else alternative`        |
+| 2            | **Pipe (Filter)**         | `expr \| filter`                                   |
+| 3            | **Nothing Coalesce**      | `??`                                               |
+| 4            | **Logical OR**            | `or`                                               |
+| 5            | **Logical AND**           | `and`                                              |
+| 6            | **Logical NOT**           | `not`                                              |
+| 7            | **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
+| 8            | **Additive**              | `+`, `-`                                           |
+| 9            | **Multiplicative**        | `*`, `/`, `%`                                      |
+| 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
+| 11 (Highest) | **Primary**               | Literals, Variables, `( expr )`                    |
+
+### Conditional and Logical Operators
+
+#### Ternary Expressions
+
+The ternary operator `consequence if condition else alternative` provides inline branching.
+
+- **Evaluation:** The `condition` is evaluated first and converted via `ToBoolean`.
+
+- **Short-circuiting:** Only the branch corresponding to the truthiness of the condition is evaluated; the other branch MUST NOT be evaluated.
+
+- **Recursive Binding:** While `ternary_expr` has the lowest precedence, its components (`consequence`, `alternative`) are bound to `pipe_expr`, allowing pipelines to exist within either branch without parentheses.
+
+The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
+
+#### Logical `and` / `or` / `not`
+
+These operators handle boolean logic but return the **last evaluated operand** rather than a strict boolean, allowing them to act as value selectors.
+
+- **Short-circuiting:** `and` returns the first falsy value or the last value; `or` returns the first truthy value or the last value.
+
+- **Not:** `not` always returns a strict `Boolean` result by negating the `ToBoolean` result of its operand.
 
 ### Comparison Operators
 
-Comparison operators are total and always produce a Boolean value. If operands are not comparable under the operator, the result is false.
+Comparison is **total**; if two types are fundamentally incomparable and no protocol is present, the result is `false` rather than an error.
 
 ```
 ==, !=, <, >, <=, >= : RuntimeValue × RuntimeValue → Boolean
@@ -399,40 +443,15 @@ x >= y  = (y < x) or (x == y)
 
 ### Membership Operators
 
-Membership tests (`contains` and `in`) determine whether a value appears in a
-container. Semantics are:
+Membership tests (`contains` and `in`) determine whether a value appears in a container. Semantics are:
 
-1. If `container` is a `Drop` and implements `Contains`, call
-   `container.Contains(element)`. If it returns `Boolean`, use that value; if
-   it returns `Nothing`, treat as `false`.
-2. Else if `container` is an `Array` or a `Sequence`: iterate its elements and
-   compare each element to `element` using `==`. If any element compares equal
-   then the result is `true`, otherwise `false`.
-3. Else if `container` is an `Object`: membership tests whether there exists a
-   key equal to the `element` when the `element` is converted to `String` (or
-   compared structurally to the keys as implementation prefers). Typical
-   implementations coerce `element` to `String` and test key presence.
-4. Else if `container` is a `String` and `element` is a `String`: `contains`
-   tests substring inclusion; `in` with swapped operands follows the same
-   rule.
-5. Otherwise, coerce `container` via `ToLiquid(…, default)` and retry from
-   the top. If no rule applies, return `false`.
+1. If `container` is a `Drop` and implements `Contains`, call `container.Contains(element)`. If it returns `Boolean`, use that value; if it returns `Nothing`, treat as `false`.
+2. Else if `container` is an `Array` or a `Sequence`: iterate its elements and compare each element to `element` using `==`. If any element compares equal then the result is `true`, otherwise `false`.
+3. Else if `container` is an `Object`: membership tests whether there exists a key equal to the `element` when the `element` is converted to `String` (or compared structurally to the keys as implementation prefers). Typical implementations coerce `element` to `String` and test key presence.
+4. Else if `container` is a `String` and `element` is a `String`: `contains` tests substring inclusion; `in` with swapped operands follows the same rule.
+5. Otherwise, coerce `container` via `ToLiquid(…, default)` and retry from the top. If no rule applies, return `false`.
 
-`in` is defined as `element in container` (i.e. RHS is the container). Both
-`contains` and `in` produce a `Boolean` result.
-
-### Logical Operators
-
-`and` and `or` are short‑circuiting operators and return the last evaluated
-operand (not necessarily a Boolean). Their semantics:
-
-- `x and y`: evaluate `x`; if `ToBoolean(x)` is falsy return `x`; otherwise
-  evaluate and return `y`.
-- `x or y`: evaluate `x`; if `ToBoolean(x)` is truthy return `x`; otherwise
-  evaluate and return `y`.
-- `not x`: evaluate `x` then return `not ToBoolean(x)` (a Boolean).
-
-These rules preserve short‑circuit evaluation and allow logical expressions to be used as value selectors. When used in a boolean context (e.g. `if`), the resulting value is coerced with `ToBoolean`.
+`in` is defined as `element in container` (i.e. RHS is the container). Both `contains` and `in` produce a `Boolean` result.
 
 ### Arithmetic Operators
 
@@ -466,19 +485,37 @@ Arithmetic operators MUST share semantics with their filter equivalents - `plus`
 
 ## Filters
 
-Filters are syntactic sugar for function application. An expression with filters:
+A filter is a **named total function** registered in the environment.
+
+Formally:
+
+```
+FilterEnv : Identifier → FilterFunction
+```
+
+Where:
+
+```
+FilterFunction : RuntimeValue × List<RuntimeValue> → RuntimeValue
+```
+
+The pipe operator `|` represents function application, where the expression on the left is passed as the first argument to the filter on the right.
 
 ```
 expr | filter1: a, b | filter2: c
 ```
 
-desugars to nested function calls where the previous expression is passed as the first argument to the next filter:
+is equivalent to nested function calls where the previous expression is passed as the first argument to the next filter:
 
 ```
 filter2(filter1(expr, a, b), c)
 ```
 
-When a filter is invoked any positional and keyword arguments are evaluated left-to-right before the filter is called. If an argument is a lambda, it is passed as a callable object rather than evaluated immediately. Filters receive their arguments already coerced according to their documented parameter expectations (implementations may coerce using `ToLiquid(…, default)` if the filter does not specify otherwise).
+When a filter is invoked, any positional and keyword arguments are evaluated left-to-right before the filter is called. If an argument is a lambda, it is passed as a callable object rather than evaluated immediately. Filters receive their arguments already coerced according to their documented parameter expectations (implementations may coerce using `ToLiquid(…, default)` if the filter does not specify otherwise).
+
+TODO: variadic arguments?
+
+TODO: Well-typed filters "implementations MAY register argument and return type information with concrete filter implementations for parse-time type checking."
 
 ## Variables and Paths
 
@@ -490,7 +527,7 @@ Variable resolution proceeds as follows:
 - Accessing a missing key on an object yields `Nothing` (not an error).
 - Numeric indices on arrays use `ToNumber` for the selector, and out‑of‑range accesses yield `Nothing`.
 
-Implementations SHOULD treat property access on host objects according to a well‑documented resolution order (e.g. keys first, then methods) and MUST avoid raising exceptions during lookup — missing or inaccessible values map to `Nothing`.
+Implementations SHOULD treat property access on host objects according to a well‑documented resolution order (e.g. keys first, then methods) and MUST avoid raising exceptions during lookup - missing or inaccessible values map to `Nothing`.
 
 ### Predicates
 
