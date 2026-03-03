@@ -189,7 +189,7 @@ module Expr
     end
 
     def parse_object(pair)
-      AST::Array.new(pair, pair.map { |item| parse_object_item(item) })
+      AST::Object.new(pair, pair.map { |item| parse_object_item(item) })
     end
 
     def parse_object_item(pair)

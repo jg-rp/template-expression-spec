@@ -165,7 +165,10 @@ array_literal  =  { "[" ~ S ~ (item ~ (S ~ "," ~ S ~ item)*)? ~ S ~ ","? ~ S ~ "
 object_literal =  { "{" ~ S ~ (object_item ~ (S ~ "," ~ S ~ object_item)*)? ~ S ~ ","? ~ S ~ "}" }
 item           = _{ spread_expr | expr }
 spread_expr    =  { "..." ~ expr }
-object_item    =  { spread_expr | (string_literal | name) ~ S ~ ":" ~ S ~ expr }
+
+// TODO: define quoted_name instead of string literal.
+// A quoted name does not allow interpolation
+object_item = { spread_expr | (string_literal | name) ~ S ~ ":" ~ S ~ expr }
 
 range_literal = { "(" ~ S ~ expr ~ S ~ ".." ~ S ~ expr ~ S ~ ")" }
 

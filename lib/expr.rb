@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "expr/parser"
+require_relative "expr/eval"
 
 module Expr
   GRAMMAR = Pathname.new("expression.pest")

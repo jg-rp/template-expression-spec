@@ -6,7 +6,7 @@ This document specifies a unified, implementation‑independent expression langu
 
 ## Status
 
-Draft — specification in progress. Feedback and test cases are welcome.
+Draft - specification in progress. Feedback and test cases are welcome.
 
 ## History
 
@@ -156,9 +156,46 @@ A Drop implements the `Membership` protocol if it supports:
 Contains(x) -> Boolean | Nothing
 ```
 
+## Literals
+
+TODO:
+
+### X.4.2.1 Null Literal
+
+TODO:
+
+### X.4.2.2 Boolean Literals
+
+TODO:
+
+### X.4.2.3 Integer Literals
+
+TODO:
+
+### X.4.2.4 Float Literals
+
+TODO:
+
+### X.4.2.5 String Literals
+
+TODO:
+
+### X.4.2.5 Array Literals
+
+TODO:
+
+### X.4.2.5 Object Literals
+
+### Range Literals
+
+TODO: syntactic sugar for array of ints
+TODO: optional lazy drop
+
 ## Type Conversion
 
 Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
+
+TODO: define ToObject for object literal spread
 
 ```
 ToBoolean  : RuntimeValue → Boolean
