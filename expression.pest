@@ -166,9 +166,10 @@ object_literal =  { "{" ~ S ~ (object_item ~ (S ~ "," ~ S ~ object_item)*)? ~ S 
 item           = _{ spread_expr | expr }
 spread_expr    =  { "..." ~ expr }
 
-// TODO: define quoted_name instead of string literal.
-// A quoted name does not allow interpolation
-object_item = { spread_expr | (string_literal | name) ~ S ~ ":" ~ S ~ expr }
+object_item = {
+    spread_expr
+  | (quoted_name | name) ~ S ~ ":" ~ S ~ expr
+}
 
 range_literal = { "(" ~ S ~ expr ~ S ~ ".." ~ S ~ expr ~ S ~ ")" }
 
@@ -187,3 +188,37 @@ name_char = _{ name_first | ASCII_DIGIT }
 
 segment  = _{ "[" ~ S ~ selector ~ S ~ "]" | ("." ~ name) }
 selector = _{ string_literal | expr }
+
+// A quoted name does not allow interpolation.
+quoted_name = _{
+    ("\x22" ~ double_quoted_name ~ "\x22")
+  | ("'" ~ single_quoted_name ~ "'")
+}
+
+double_quoted_name = { double_quoted_name_segment* }
+single_quoted_name = { single_quoted_name_segment* }
+
+double_quoted_name_segment = _{
+    "'"
+  | double_quoted_escaped_name_char
+  | unescaped_name_segment
+}
+
+single_quoted_name_segment = _{
+    "\x22"
+  | single_quoted_escaped_name_char
+  | unescaped_name_segment
+}
+
+double_quoted_escaped_name_char =  { (ESC ~ "\x22" | ESC ~ escapable_name_char)+ }
+single_quoted_escaped_name_char =  { (ESC ~ "'" | ESC ~ escapable_name_char)+ }
+unescaped_name_segment          =  { unescaped_name_char+ }
+unescaped_name_char             = _{
+    '\u{20}'..'\u{21}'
+  | '\u{23}'..'\u{26}'
+  | '\u{28}'..'\u{5B}'
+  | '\u{5D}'..'\u{D7FF}'
+  | '\u{E000}'..'\u{10FFFF}'
+}
+
+escapable_name_char = _{ "b" | "f" | "n" | "r" | "t" | "/" | "\\" | ("u" ~ hexchar) }

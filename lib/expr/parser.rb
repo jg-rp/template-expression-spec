@@ -66,7 +66,7 @@ module Expr
         parse_object(pair)
       when :number
         parse_number(pair)
-      when :double_quoted, :single_quoted
+      when :double_quoted, :single_quoted, :double_quoted_name, :single_quoted_name
         parse_string(pair)
       when :true_literal
         AST::Boolean.new(pair, true)
@@ -164,7 +164,7 @@ module Expr
       case pair.rule
       when :unescaped_segment
         pair.text
-      when :double_quoted_escaped, :single_quoted_escaped_
+      when :double_quoted_escaped, :single_quoted_escaped
         Expr.unescape(pair)
       when :expr
         parse_expr(pair.stream)
