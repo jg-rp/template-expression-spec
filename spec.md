@@ -241,7 +241,106 @@ Trailing zeros are not semantically significant:
 
 ### String Literals
 
-TODO:
+A string literal represents a sequence of Unicode scalar values.
+
+String literals:
+
+- May be delimited by single (`'`) or double (`"`) quotes.
+- Support JavaScript-style escape sequences.
+- Support JavaScript-style interpolation using `${expr}`.
+- Are evaluated left-to-right.
+- Are total and never produce `Nothing`.
+
+Two forms are supported:
+
+```
+"double quoted"
+'single quoted'
+```
+
+The delimiter determines which quote character must be escaped.
+
+Both forms support:
+
+- Escape sequences
+- Interpolation
+
+There is no semantic difference between single- and double-quoted strings beyond delimiter rules.
+
+Invalid Unicode escape sequences make the string literal invalid at parse time.
+
+#### Evaluation Model
+
+A string literal is evaluated as a sequence of segments:
+
+- Raw text segments
+- Escape sequences
+- Interpolation segments
+
+Evaluation proceeds left-to-right.
+
+We construct:
+
+```
+Result = ""
+```
+
+For each segment:
+
+- if raw text segment
+  1. Append literal Unicode characters to `Result`
+
+- if escape sequences
+  1. Append decoded escape sequence to `Result`.
+
+  Escape sequences are interpreted according to JavaScript-style rules.
+
+  Supported escapes:
+
+  | Escape         | Meaning                  |
+  | -------------- | ------------------------ |
+  | `\\`           | backslash                |
+  | `\"`           | double quote             |
+  | `\'`           | single quote             |
+  | `\n`           | line feed (U+000A)       |
+  | `\r`           | carriage return (U+000D) |
+  | `\t`           | tab (U+0009)             |
+  | `\b`           | backspace                |
+  | `\f`           | form feed                |
+  | `\/`           | slash                    |
+  | `\uXXXX`       | Unicode code unit        |
+  | `\uXXXX\uYYYY` | surrogate pair           |
+  | `\${`          | literal `${`             |
+
+  Escape evaluation rules:
+  - `\uXXXX` MUST produce the corresponding Unicode scalar value.
+  - Surrogate pairs MUST be combined into a single scalar.
+
+  Implementations MUST decode escape sequences at parse time. Invalid escape sequences MUST throw an error at parse time.
+
+- if interpolation `${ expr }`
+  1. Evaluate `expr` to `v`.
+  2. Convert `v `to string `s = ToString(v)`
+  3. Append `s` to `Result`
+
+  Interpolation NEVER propagates `Nothing`. `ToString(Nothing) → ""`
+
+##### Examples
+
+```
+"hello"
+'world'
+
+"line\nbreak"
+'quote: \''
+"quote: \""
+
+"${1 + 2}"        → "3"
+"${1 / 0}"        → ""
+
+"\u0041"          → "A"
+"\uD83D\uDE00"    → "😀"
+```
 
 ### Array Literals
 
@@ -480,6 +579,8 @@ ToObject   : RuntimeValue → Object<String → RuntimeValue>
 ```
 
 Implicit conversions occur in the following contexts (each uses the corresponding abstract conversion function):
+
+TODO: turn this into a table
 
 - Arithmetic and numeric operators: `ToNumber`
 - Unary `+`/`-`: `ToNumber`
@@ -854,6 +955,8 @@ FilterFunction : RuntimeValue × List<RuntimeValue> → RuntimeValue
 For every possible input tuple, a filter MUST return a `RuntimeValue` and MUST NOT raise an exception.
 
 If a filter implementation encounters an internal failure or unsupported input combination, it MUST return `Nothing`.
+
+Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the even of an unknown filter.
 
 ## Variables and Paths
 
