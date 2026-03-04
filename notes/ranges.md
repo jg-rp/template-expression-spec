@@ -1,9 +1,3 @@
-I agree with you about short-circuiting — given your design, `Nothing` must remain an ordinary `RuntimeValue`. Filters like `default`, `coalesce`, or even custom recovery filters rely on that. Automatic pipeline short-circuiting would break algebraic composability and violate your totality model.
-
-Now, here is a drafted **Range Literals** section consistent with the rest of your spec.
-
----
-
 ## Range Literals
 
 A range literal denotes a finite sequence of consecutive integers.

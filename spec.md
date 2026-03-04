@@ -18,7 +18,7 @@ TODO:
 
 ### Terminology
 
-- _Expression_: An expression is the fundamental unit of computation within a Liquid template, representing a sequence of identifiers, literals, and operators that resolves to a value. Expressions serve as the logic centers inside Liquid tags: they appear within output delimiters to render data directly to the page (e.g., `{{ user.name | upcase }}`), inside conditional tags to govern template logic (e.g., `{% if item.price > 100 %}`), and as the data sources for iterations (e.g., `{% for product in collections.frontpage %}`)
+- _Expression_: An expression is the fundamental unit of computation within a Liquid template, representing a sequence of identifiers, literals, and operators that resolves to a value. They appear within output delimiters to render data directly to the page (e.g., `{{ user.name | upcase }}`), inside conditional tags to govern template logic (e.g., `{% if item.price > 100 %}`), and as the data sources for iterations (e.g., `{% for product in collections.frontpage %}`)
 
   For each of the preceding examples, this tables isolates the expression part of the markup to illustrate some of the places an expression can appear.
 
@@ -52,7 +52,7 @@ All operators, filters, and grouping constructs are valid in any expression cont
 
 #### Literals
 
-TODO:
+TODO: String interpolation
 
 TODO: Structured Literals and Spread
 
@@ -221,13 +221,23 @@ TODO:
 
 TODO:
 
-### Integer Literals
+### Numeric Literals
 
-TODO:
+Numeric literals are parsed as exact decimal values.
 
-### Float Literals
+Examples:
 
-TODO:
+```
+1        → exact integer
+1.0      → exact decimal
+0.01     → exact decimal
+```
+
+Trailing zeros are not semantically significant:
+
+```
+1.0 == 1  → true
+```
 
 ### String Literals
 
@@ -235,26 +245,238 @@ TODO:
 
 ### Array Literals
 
-TODO:
+An array literal is defined as:
+
+```
+array_literal =
+  "[" ~ S ~ (item ~ (S ~ "," ~ S ~ item)*)? ~ S ~ ","? ~ S ~ "]"
+
+item =
+    spread_expr
+  | expr
+
+spread_expr =
+    "..." ~ expr
+```
+
+Trailing commas are permitted.
+
+#### Evaluation Semantics
+
+Evaluation proceeds left-to-right.
+
+Let:
+
+```
+[ e1, e2, ..., en ]
+```
+
+Each `ei` is either:
+
+- A normal expression
+- A spread expression `...x`
+
+We construct a result list:
+
+```
+Result = []
+```
+
+For each item in order:
+
+- if normal item
+  1. Evaluate `expr` to `v`.
+  2. Append `v` to `Result` (`Nothing` is appended as a normal element).
+
+- if spread item
+  1. Evaluate `expr` to `v`.
+  2. Normalize via:
+
+     ```
+     elements = ToArray(v)
+     ```
+
+  3. Append each element of `elements` to `Result`.
+
+The final result is `Array<RuntimeValue>`. Array literals always evaluate to an eager `Array`.
 
 ### Object Literals
 
+An object literal is defined as:
+
+```
+object_literal =
+  "{" ~ S ~ (object_item ~ (S ~ "," ~ S ~ object_item)*)? ~ S ~ ","? ~ S ~ "}"
+
+object_item =
+    spread_expr
+  | (quoted_name | name) ~ S ~ ":" ~ S ~ expr
+```
+
+Trailing commas are permitted.
+
+#### Evaluation Semantics
+
+Evaluation proceeds left-to-right.
+
+We construct:
+
+```
+Result = {}
+```
+
+A mapping:
+
+```
+Object<String → RuntimeValue>
+```
+
+For item in order:
+
+- if keyed property `key : expr`
+  1. Evaluate `expr` → `v`.
+  2. Determine key string:
+  - If `quoted_name`, use literal string.
+  - If `name`, use its identifier text.
+  3. Insert into `Result`:
+
+     ```
+     Result[key] = v
+     ```
+
+     If the key already exists, it is overwritten.
+
+- if spread property `...expr`
+  1. Evaluate `expr` → `v`.
+  2. Convert via abstract operation `ToObject`:
+
+     ```
+     source = ToObject(v)
+     ```
+
+  3. For each key-value pair in `source`:
+
+     ```
+     for (k, v) in source:
+         Result[k] = v
+     ```
+
+     If the key already exists, it is overwritten.
+
 ### Range Literals
 
-TODO: syntactic sugar for array of ints
-TODO: optional lazy drop
+A range literal denotes a finite sequence of consecutive integers.
+
+Syntactic form:
+
+```
+range_literal ::= "(" start ".." end ")"
+```
+
+Where:
+
+- `start` and `end` are arbitrary expressions.
+- `..` binds as a primary expression.
+- Parentheses MUST be used.
+
+Examples:
+
+```
+(1..5)
+((1 + 1)..10)
+(a..b)
+```
+
+#### Evaluation Semantics
+
+A range literal is syntactic sugar for a finite integer sequence.
+
+Evaluation proceeds as follows:
+
+1. Evaluate `start` to `v_start`.
+2. Evaluate `end` to `v_end`.
+3. Apply numeric coercion:
+
+   ```
+   n_start = ToNumber(v_start)
+   n_end   = ToNumber(v_end)
+   ```
+
+4. If either coercion yields `Nothing`, the range evaluates to an empty sequence.
+
+5. Otherwise:
+   - Convert both numbers to integers using implementation-defined truncation toward zero.
+
+   - If `n_start ≤ n_end`, the sequence contains all integers `n` such that:
+
+     ```
+     n_start ≤ n ≤ n_end
+     ```
+
+   - If `n_start > n_end`, the result is an empty sequence.
+
+A range literal never evaluates to `Nothing`. A malformed range is an empty collection, not an absent value.
+
+An implementation MAY define an upper limit to the number of items in a range to guard against excessively large array materialization.
+
+#### Result Representation
+
+A range literal evaluates to a `RuntimeValue` that behaves as a finite sequence of integers.
+
+Implementations MAY represent this value as:
+
+1. An eager `Array<RuntimeValue>`, or
+2. A `Drop` implementing the `Sequence` protocol.
+
+The observable behavior MUST be indistinguishable.
+
+#### Interaction with the Sequence Protocol
+
+If a range is represented as a `Drop`, it MUST implement the `Sequence` protocol:
+
+```
+length()  → max(0, n_end - n_start + 1)
+iterate() → yields each integer in increasing order
+slice(offset, limit, reversed) → another range-like Drop
+```
+
+The `for` tag and any sequence-aware filters MUST:
+
+1. First check whether the value implements the `Sequence` protocol.
+2. If so, use `length()` and `iterate()` directly.
+3. Otherwise, fall back to `ToArray`.
+
+This ensures that lazy range implementations are not forced into eager materialization.
+
+#### Interaction with Filters and Operators
+
+Because a range evaluates to a sequence value, it:
+
+- May be piped into filters.
+- May be compared structurally.
+- May be used with `contains` / `in`.
+- May be passed to `ToArray`.
+
+Examples:
+
+```
+(1..5) | length
+3 in (1..5)
+(1..5) == [1,2,3,4,5]
+```
+
+All such expressions MUST behave identically regardless of eager or lazy representation.
 
 ## Type Conversion
 
 Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
-
-TODO: define ToObject for object literal spread
 
 ```
 ToBoolean  : RuntimeValue → Boolean
 ToNumber   : RuntimeValue → Number | Nothing
 ToString   : RuntimeValue → String
 ToArray    : RuntimeValue → Array<RuntimeValue>
+ToObject   : RuntimeValue → Object<String → RuntimeValue>
 ```
 
 Implicit conversions occur in the following contexts (each uses the corresponding abstract conversion function):
@@ -270,16 +492,6 @@ Implicit conversions occur in the following contexts (each uses the correspondin
 - `ToArray` helper and sequence normalization: `ToArray`
 
 Conversions are deterministic and must never raise errors; when a conversion cannot produce the requested target it returns `Nothing` where specified.
-
-#### Conversion Summary Table
-
-| Input Type             | `ToBoolean` | `ToNumber`         | `ToString`         | `ToArray` |
-| ---------------------- | ----------- | ------------------ | ------------------ | --------- |
-| **Nothing / Null**     | `false`     | `Nothing`          | `""`               | `[]`      |
-| **Boolean**            | Identity    | `1` or `0`         | `"true"`/`"false"` | `[x]`     |
-| **Number (non-zero)**  | `true`      | Identity           | String value       | `[x]`     |
-| **String (non-empty)** | `true`      | Parse or `Nothing` | Identity           | `[x]`     |
-| **Array (non-empty)**  | `true`      | `Nothing`          | JSON String        | Identity  |
 
 ### Truthiness and ToBoolean(x)
 
@@ -358,6 +570,18 @@ ToArray : RuntimeValue → Array<RuntimeValue>
 | Nothing         | []                                  |
 | Drop            | ToLiquid(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
+
+### ToObject(x)
+
+```
+ToObject : RuntimeValue → Object<String → RuntimeValue>
+```
+
+| Input Type | Result                                  |
+| ---------- | --------------------------------------- |
+| Object     | identity                                |
+| Drop       | ToLiquid(x, default) if Object, else {} |
+| Any other  | {}                                      |
 
 ## Operators
 
@@ -816,4 +1040,89 @@ IsObject(x) =
 IsObject(x) =
     x is Object → true
     otherwise   → false
+```
+
+## Numeric Semantics
+
+### Number Type
+
+`Number` represents a decimal numeric value with arbitrary precision and exact decimal semantics.
+
+Implementations MUST perform numeric operations using a decimal arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT be used as the semantic numeric model.
+
+An implementation MAY use binary floating-point internally, but observable behavior MUST match exact decimal arithmetic.
+
+### Decimal Arithmetic Model
+
+The language defines numbers using base-10 decimal semantics:
+
+- Exact representation of finite decimal literals.
+- Exact addition, subtraction, and multiplication.
+- Exact division when representable as a finite decimal.
+- Deterministic rounding when required.
+
+This ensures:
+
+```
+0.1 + 0.2 == 0.3   → true
+```
+
+in all conforming implementations.
+
+Implementations MUST NOT introduce binary floating-point rounding artifacts.
+
+Example (required behavior):
+
+```
+0.1 + 0.2
+```
+
+MUST evaluate to a number equal to decimal `0.3`.
+
+It MUST NOT produce:
+
+```
+0.30000000000000004
+```
+
+### Division Semantics
+
+Division may produce a non-terminating decimal expansion.
+
+Example:
+
+```
+1 / 3
+```
+
+Implementations MUST use decimal division with a minimum precision of 28 decimal digits and MUST round using round-half-even (banker’s rounding), unless a higher precision is supported.
+
+The precision used MUST be consistent within an evaluation.
+
+### Numeric Equality
+
+Numeric equality is mathematical equality after decimal normalization.
+
+Examples:
+
+```
+1 == 1.0        → true
+0.30 == 0.3     → true
+```
+
+### String Conversion
+
+`ToString(Number)` MUST produce a canonical decimal representation:
+
+- No scientific notation.
+- No unnecessary trailing zeros.
+- No trailing decimal point.
+
+Examples:
+
+```
+1       → "1"
+1.0     → "1"
+0.300   → "0.3"
+1000    → "1000"
 ```
