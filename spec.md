@@ -119,33 +119,33 @@ ToLiquid : Drop × ContextHint → RuntimeValue
 Where:
 
 ```
-ContextHint ∈ { default, numeric, string, boolean, iterable, render, array }
+ContextHint ∈ { default, numeric, string, boolean, render, array, object }
 ```
 
 Constraints:
 
-- `ToLiquid(drop, boolean)` MUST return `Boolean` or `Nothing`.
 - `ToLiquid(drop, default)` MUST return `DataValue`.
-- `ToLiquid(drop, iterable)` MUST return `Array<RuntimeValue>`, a `Drop` that MUST implement the sequence protocol, or `Nothing`
+- `ToLiquid(drop, boolean)` MUST return `Boolean` or `Nothing`.
 - `ToLiquid(drop, numeric)` MUST return `Number` or `Nothing`.
 - `ToLiquid(drop, string)` MUST return `String` or `Nothing`.
 - `ToLiquid(drop, render)` MUST return `String` or `Nothing`.
 - `ToLiquid(drop, array)` MUST return `Array<RuntimeValue>` or `Nothing`.
+- `ToLiquid(drop, object)` MUST return `Object<String → RuntimeValue>` or `Nothing`.
 
 The result of `ToLiquid(drop, default)` MUST be a valid `DataValue` as defined above, meaning it MUST NOT contain `Drop` at any depth.
 
 The following table shows when each hint applies.
 
-| Context                          | Hint     |
-| -------------------------------- | -------- |
-| Arithmetic                       | numeric  |
-| String concatenation             | string   |
-| Boolean test (`if`, `and`, `or`) | boolean  |
-| Comparison                       | default  |
-| Rendering `{{ x }}`              | render   |
-| `for` iterable expression        | iterable |
-| Filter arguments (general)       | default  |
-| Used by `ToArray`                | array    |
+| Context                                      | Hint    |
+| -------------------------------------------- | ------- |
+| Arithmetic                                   | numeric |
+| String concatenation                         | string  |
+| Boolean test (`if`, `and`, `or`)             | boolean |
+| Comparison                                   | default |
+| Rendering `{{ x }}`                          | render  |
+| Filter arguments (general)                   | default |
+| Array literal spread, eager filter arguments | array   |
+| Object literal spread                        | object  |
 
 #### Sequence protocol
 
@@ -678,11 +678,11 @@ ToArray : RuntimeValue → Array<RuntimeValue>
 ToObject : RuntimeValue → Object<String → RuntimeValue>
 ```
 
-| Input Type | Result                                  |
-| ---------- | --------------------------------------- |
-| Object     | identity                                |
-| Drop       | ToLiquid(x, default) if Object, else {} |
-| Any other  | {}                                      |
+| Input Type | Result                               |
+| ---------- | ------------------------------------ |
+| Object     | identity                             |
+| Drop       | ToLiquid(x, object) or {} if Nothing |
+| Any other  | {}                                   |
 
 ## Operators
 

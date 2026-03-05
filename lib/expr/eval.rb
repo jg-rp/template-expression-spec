@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
+require "bigdecimal"
 require "json"
 require_relative "ast"
 
 module Expr
+  RE_INTEGER = /\A-?\d+(?:[eE]\+?\d+)?\Z/
+  RE_DECIMAL = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
+
   def self.evaluate(e, context)
     case e
     when AST::Ternary
@@ -88,22 +92,20 @@ module Expr
       result = {}
       e.items.each do |item|
         if item.is_a?(AST::Spread)
-          obj = evaluate(item.expr, context)
-          # XXX: Spread of non-hash is a no-op
-          if obj.is_a?(Hash)
-            result.merge!(obj)
-          elsif obj.respond_to?(:to_h)
-            result.merge!(obj.to_h)
-          end
+          result.merge!(to_object(evaluate(item.expr, context)))
         else
-          key = evaluate(item.key, context)
-          result[key] = evaluate(item.expr, context)
+          result[evaluate(item.key, context)] = evaluate(item.expr, context)
         end
       end
       result
     when AST::Range
-      # TODO: Lazy range drop?
-      raise "not implemented!"
+      start = to_number(evaluate(e.start, context))
+      stop = to_number(evaluate(e.stop, context))
+      if start == :nothing || stop == :nothing
+        []
+      else
+        (start...stop).to_a
+      end
     when AST::Variable
       # TODO: resolve
       raise "not implemented!"
@@ -129,18 +131,23 @@ module Expr
 
   def self.to_number(value)
     case value
-    when ::Integer, ::Float # TODO: BigDecimal, Numeric
+    when ::Float
+      BigDecimal(value)
+    when Numeric
       value
+    when ::String
+      case value
+      when RE_INTEGER
+        value.to_f.to_i
+      when RE_DECIMAL
+        BigDecimal(value)
+      else
+        :nothing
+      end
     when true
       1
     when false, nil, :nothing, ::Array, ::Hash
       :nothing
-    when ::String
-      begin
-        value.match?(/\A-?\d+(?:[eE]\+?\d+)?\Z/) ? value.to_f.to_i : Float(value)
-      rescue ::ArgumentError
-        :nothing
-      end
     else
       value.respond_to?(:to_liquid) ? value.to_liquid(:numeric) : :nothing
     end
@@ -154,8 +161,9 @@ module Expr
       JSON.generate(value)
     when nil, :nothing
       ""
+    when BigDecimal
+      value.to_s("F")
     else
-      # TODO: BigDecimal
       value.to_s
     end
   end
@@ -173,23 +181,85 @@ module Expr
     end
   end
 
+  def self.to_object(value)
+    if value.is_a?(Hash)
+      value
+    elsif value.respond_to?(:to_liquid)
+      obj = value.to_liquid(:object)
+      obj.is_a?(Hash) ? obj : {}
+    else
+      {}
+    end
+  end
+
   def self.truthy?(value)
     to_boolean(value)
   end
 
   def self.eq?(left, right)
-    # TODO:
-    raise "not implemented"
+    case [left, right]
+    in [:nothing, :nothing] | [nil, nil]
+      true
+    in [:nothing, _] | [_, :nothing]
+      false
+    in [Numeric, Numeric] | [Array, Array] | [Hash, Hash] | [String, String] | [Boolean, Boolean]
+      left == right
+    else
+      if left.respond_to?(:equals)
+        left.equals(right) == true
+      elsif right.respond_to?(:equals)
+        right.equals(left) == true
+      elsif left.respond_to?(:to_liquid) && right.respond_to?(:to_liquid)
+        eq?(left.to_liquid(:default), right.to_liquid(:default))
+      else
+        false
+      end
+    end
   end
 
   def self.lt?(left, right)
-    # TODO:
-    raise "not implemented"
+    case [left, right]
+    in [Numeric, Numeric] | [String, String]
+      left < right
+    else
+      if left.respond_to?(:less_than)
+        left.less_than(right) == true
+      elsif right.respond_to?(:less_than)
+        right.less_than(left) == true
+      elsif left.respond_to?(:to_liquid) && right.respond_to?(:to_liquid)
+        lt?(left.to_liquid(:default), right.to_liquid(:default))
+      else
+        false
+      end
+    end
   end
 
   def self.contains?(left, right)
-    # TODO:
-    raise "not implemented"
+    if left.respond_to?(:contains)
+      left.contains(right) == true
+    elsif left.is_a?(String) && right.is_a?(String)
+      left.include?(right)
+    elsif left.respond_to?(:iterate)
+      left.iterate do |item|
+        return true if eq?(item, right)
+      end
+      false
+    elsif left.is_a?(Hash)
+      left.key?(right)
+    elsif left.respond_to?(:each)
+      left.each do |item|
+        return true if eq?(item, right)
+      end
+      false
+    elsif left.respond_to(:to_liquid)
+      if right.respond_to?(:to_liquid)
+        contains?(left.to_liquid(:default), right.to_liquid(:default))
+      else
+        contains?(left.to_liquid(:default), right)
+      end
+    else
+      false
+    end
   end
 
   def self.apply_filter(expr)

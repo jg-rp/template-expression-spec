@@ -7,3 +7,5 @@ source "https://rubygems.org"
 gem "pestle", "~> 0.1.0"
 
 gem "rubocop", "~> 1.84"
+
+gem "bigdecimal", "~> 4.0"

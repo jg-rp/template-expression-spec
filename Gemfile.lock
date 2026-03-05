@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.3)
+    bigdecimal (4.0.1)
     json (2.18.1)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
@@ -38,6 +39,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  bigdecimal (~> 4.0)
   pestle (~> 0.1.0)
   rubocop (~> 1.84)
 
