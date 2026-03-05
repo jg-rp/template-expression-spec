@@ -2,6 +2,7 @@
 
 require_relative "expr/parser"
 require_relative "expr/eval"
+require_relative "expr/context"
 
 module Expr
   GRAMMAR = Pathname.new("expression.pest")

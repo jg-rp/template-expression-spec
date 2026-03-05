@@ -211,7 +211,7 @@ module Expr
     def parse_variable_segment(pair)
       case pair.rule
       when :name
-        pair.text
+        AST::Name.new(pair, pair.text)
       when :double_quoted, :single_quoted
         parse_string(pair)
       when :expr

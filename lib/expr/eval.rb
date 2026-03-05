@@ -107,8 +107,7 @@ module Expr
         (start...stop).to_a
       end
     when AST::Variable
-      # TODO: resolve
-      raise "not implemented!"
+      context.resolve(e.root, e.segments.map { |segment| evaluate(segment, context) })
     else
       raise "unexpected node #{e.inspect}"
     end
