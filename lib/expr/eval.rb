@@ -17,7 +17,7 @@ module Expr
         evaluate(e.else, context)
       end
     when AST::Filtered
-      apply_filter(e)
+      apply_filter(e, context)
     when AST::Coalesce
       left = evaluate(e.left, context)
       left == :nothing ? evaluate(e.right, context) : left
@@ -108,6 +108,11 @@ module Expr
       end
     when AST::Variable
       context.resolve(e.root, e.segments.map { |segment| evaluate(segment, context) })
+    when AST::Predicate
+      context.predicates[e.value]
+    when AST::Lambda
+      # TODO:
+      raise "not implemented"
     else
       raise "unexpected node #{e.inspect}"
     end
@@ -261,8 +266,29 @@ module Expr
     end
   end
 
-  def self.apply_filter(expr)
-    # TODO:
-    raise "not implemented"
+  def self.apply_filter(e, context)
+    filter = context.filters[e.filter.name]
+    return :nothing if filter.nil?
+
+    left = evaluate(e.left, context)
+
+    args = []
+    kw_args = {}
+
+    e.filter.args.each do |arg|
+      if arg.is_a?(AST::KeywordArg)
+        kw_args[arg.name] = evaluate(arg.expr, context)
+      else
+        args << evaluate(arg, context)
+      end
+    end
+
+    if kw_args.empty?
+      filter.call(left, *args)
+    else
+      filter.call(left, *args, **kw_args)
+    end
+  rescue ArgumentError, TypeError
+    :nothing
   end
 end

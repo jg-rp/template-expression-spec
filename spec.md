@@ -1013,17 +1013,6 @@ empty?(Nothing) = false
 
 The absence of a value (`Nothing`) is not considered blank.
 
-```
-IsBlank(x) =
-    x is Null
- OR x is String and trim(x) = ""
- OR x is Array and length(x) = 0
- OTHERWISE false
-
-blank?(Nothing) = false
-empty?(Nothing) = false
-```
-
 #### IsEmpty(x)
 
 `IsEmpty` is true for values that are empty collections or empty strings. As
