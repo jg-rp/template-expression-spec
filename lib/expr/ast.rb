@@ -1,181 +1,357 @@
 # frozen_string_literal: true
 
 module Expr
+  # Expression abstract syntax tree nodes.
   module AST
-    Ternary = Data.define(:token, :expr, :condition, :else)
-    Filtered = Data.define(:token, :left, :filter)
-
-    Coalesce = Data.define(:token, :left, :right)
-    Or = Data.define(:token, :left, :right)
-    And = Data.define(:token, :left, :right)
-    Not = Data.define(:token, :right)
-
-    Eq = Data.define(:token, :left, :right)
-    Ne = Data.define(:token, :left, :right)
-    Lt = Data.define(:token, :left, :right)
-    Le = Data.define(:token, :left, :right)
-    Gt = Data.define(:token, :left, :right)
-    Ge = Data.define(:token, :left, :right)
-
-    Contains = Data.define(:token, :left, :right)
-    In = Data.define(:token, :left, :right)
-
-    Add = Data.define(:token, :left, :right)
-    Sub = Data.define(:token, :left, :right)
-    Mul = Data.define(:token, :left, :right)
-    Div = Data.define(:token, :left, :right)
-    Mod = Data.define(:token, :left, :right)
-
-    Pos = Data.define(:token, :right)
-    Neg = Data.define(:token, :right)
-
-    Integer = Data.define(:token, :value)
-    Float = Data.define(:token, :value)
-    String = Data.define(:token, :segments)
-    Boolean = Data.define(:token, :value)
-    Null = Data.define(:token)
-
-    Array = Data.define(:token, :items)
-    Object = Data.define(:token, :items)
-    Spread = Data.define(:token, :expr)
-    Item = Data.define(:token, :key, :expr)
-
-    Range = Data.define(:token, :start, :stop)
-    Variable = Data.define(:token, :root, :segments)
-    Name = Data.define(:token, :value)
-    Predicate = Data.define(:token, :value)
-
-    Filter = Data.define(:token, :name, :args)
-    KeywordArg = Data.define(:token, :name, :expr)
-    Lambda = Data.define(:token, :params, :expr)
-
-    def self.children(e)
-      case e
-      when KeywordArg, Lambda, Spread
-        [e.expr]
-      when Ternary
-        if e.condition
-          [e.expr, e.condition, e.else]
+    Ternary = Data.define(:token, :expr, :condition, :else) do
+      def evaluate(context)
+        if Expr.truthy?(condition.evaluate(context))
+          expr.evaluate(context)
         else
-          [e.expr]
+          self.else.evaluate(context)
         end
-      when Filtered
-        [e.left, e.filter]
-      when Filter
-        e.args
-      when Coalesce, And, Or, Eq, Ne, Lt, Le, Gt, Ge, Contains, In, Add, Sub, Mul, Div, Mod
-        [e.left, e.right]
-      when Not, Pos, Neg
-        [e.right]
-      when Integer, Float, Boolean, Null, Name, Predicate
-        []
-      when String
-        e.segments.reject { |s| s.is_a?(::String) }
-      when Array, Object
-        e.items
-      when Item
-        [e.key, e.expr]
-      when Range
-        [e.start, e.stop]
-      when Variable
-        if e.segments
-          e.segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
+      end
+
+      def children = [expr, condition, self.else]
+      def to_s = "#{expr} if #{condition} else #{self.else}"
+    end
+
+    Filtered = Data.define(:token, :left, :filter) do
+      def evaluate(context)
+        filter_ = context.filters[filter.name]
+        return :nothing if filter_.nil?
+
+        lhs = left.evaluate(context)
+
+        args = []
+        kw_args = {}
+
+        filter.args.each do |arg|
+          if arg.is_a?(AST::KeywordArg)
+            kw_args[arg.name] = arg.expr.evaluate(context)
+          else
+            args << arg.evaluate(context)
+          end
+        end
+
+        if kw_args.empty?
+          filter_.call(lhs, *args)
         else
-          []
+          filter_.call(lhs, *args, **kw_args)
         end
-      else
-        raise "unknown expression #{e.class}"
+      rescue ArgumentError, TypeError
+        :nothing
+      end
+
+      def children = [left, filter]
+      def to_s = "#{left} | #{filter}"
+    end
+
+    Coalesce = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = left.evaluate(context)
+        lhs == :nothing ? right.evaluate(context) : lhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} ?? #{filter}"
+    end
+
+    Or = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = left.evaluate(context)
+        Expr.truthy?(lhs) ? lhs : right.evaluate(context)
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} or #{right}"
+    end
+
+    And = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = left.evaluate(context)
+        Expr.truthy?(lhs) ? right.evaluate(context) : lhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} and #{right}"
+    end
+
+    Not = Data.define(:token, :right) do
+      def evaluate(context)
+        !Expr.truthy?(right.evaluate(context))
+      end
+
+      def children = [right]
+      def to_s = "not #{filter}"
+    end
+
+    Eq = Data.define(:token, :left, :right) do
+      def evaluate(context) = Expr.eq?(left.evaluate(context), right.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} == #{right}"
+    end
+
+    Ne = Data.define(:token, :left, :right) do
+      def evaluate(context) = !Expr.eq?(left.evaluate(context), right.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} != #{right}"
+    end
+
+    Lt = Data.define(:token, :left, :right) do
+      def evaluate(context) = Expr.lt?(left.evaluate(context), right.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} < #{right}"
+    end
+
+    Le = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = left.evaluate(context)
+        rhs = right.evaluate(context)
+        Expr.lt?(lhs, rhs) || Expr.eq?(lhs, rhs)
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} <= #{right}"
+    end
+
+    Gt = Data.define(:token, :left, :right) do
+      def evaluate(context) = Expr.lt?(right.evaluate(context), left.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} > #{right}"
+    end
+
+    Ge = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = left.evaluate(context)
+        rhs = right.evaluate(context)
+        Expr.lt?(rhs, lhs) || Expr.eq?(lhs, rhs)
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} >= #{right}"
+    end
+
+    Contains = Data.define(:token, :left, :right) do
+      def evaluate(context) = Expr.contains?(left.evaluate(context), right.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} contains #{right}"
+    end
+
+    In = Data.define(:token, :left, :right) do
+      def evaluate(context) = Expr.contains?(right.evaluate(context), left.evaluate(context))
+      def children = [left, right]
+      def to_s = "#{left} in #{right}"
+    end
+
+    Add = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = Expr.to_number(left.evaluate(context))
+        rhs = Expr.to_number(right.evaluate(context))
+        lhs == :nothing || rhs == :nothing ? :nothing : lhs + rhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} + #{right}"
+    end
+
+    Sub = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = Expr.to_number(left.evaluate(context))
+        rhs = Expr.to_number(right.evaluate(context))
+        lhs == :nothing || rhs == :nothing ? :nothing : lhs - rhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} - #{right}"
+    end
+
+    Mul = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = Expr.to_number(left.evaluate(context))
+        rhs = Expr.to_number(right.evaluate(context))
+        lhs == :nothing || rhs == :nothing ? :nothing : lhs * rhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} * #{right}"
+    end
+
+    Div = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = Expr.to_number(left.evaluate(context))
+        rhs = Expr.to_number(right.evaluate(context))
+        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs / rhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} / #{right}"
+    end
+
+    Mod = Data.define(:token, :left, :right) do
+      def evaluate(context)
+        lhs = Expr.to_number(left.evaluate(context))
+        rhs = Expr.to_number(right.evaluate(context))
+        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs % rhs
+      end
+
+      def children = [left, right]
+      def to_s = "#{left} % #{right}"
+    end
+
+    Pos = Data.define(:token, :right) do
+      def evaluate(context)
+        Expr.to_number(right.evaluate(context))
+      end
+
+      def children = [right]
+      def to_s = "+#{right}"
+    end
+
+    Neg = Data.define(:token, :right) do
+      def evaluate(context)
+        rhs = Expr.to_number(right.evaluate(context))
+        rhs == :nothing ? rhs : -rhs
+      end
+
+      def children = [right]
+      def to_s = "-#{right}"
+    end
+
+    Integer = Data.define(:token, :value) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value.to_s
+    end
+
+    Float = Data.define(:token, :value) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value.to_s
+    end
+
+    String = Data.define(:token, :segments) do
+      def evaluate(context) = segments.map { |s| s.is_a?(::String) ? s : s.evaluate(context) }.join
+      def children = segments.reject { |s| s.is_a?(::String) }
+      def to_s = segments.map { |s| s.is_a?(::String) ? s : "${#{segment}}" }.join.inspect
+    end
+
+    Boolean = Data.define(:token, :value) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value.to_s
+    end
+
+    Null = Data.define(:token) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value.to_s
+    end
+
+    Array = Data.define(:token, :items) do
+      def evaluate(context)
+        items.map do |item|
+          if item.is_a?(AST::Spread)
+            Expr.to_array(item.expr.evaluate(context))
+          else
+            item.evaluate(context)
+          end
+        end
+      end
+
+      def children = items
+      def to_s = "[#{items.map(&:to_s).join(", ")}]"
+    end
+
+    Object = Data.define(:token, :items) do
+      def evaluate(context)
+        result = {}
+        items.each do |item|
+          if item.is_a?(AST::Spread)
+            result.merge!(Expr.to_object(item.expr.evaluate(context)))
+          else
+            result[item.key.evaluate(context)] = item.expr.evaluate(context)
+          end
+        end
+        result
+      end
+
+      def children = items
+      def to_s = "{#{items.map(&:to_s).join(", ")}}"
+    end
+
+    Spread = Data.define(:token, :expr) do
+      def evaluate(context) = expr.evaluate(context)
+      def children = [expr]
+      def to_s = "...#{expr}"
+    end
+
+    Item = Data.define(:token, :key, :expr) do
+      def evaluate(context) = expr.evaluate(context)
+      def children = [key, expr]
+      def to_s = "#{key}: #{expr}"
+    end
+
+    Range = Data.define(:token, :start, :stop) do
+      def evaluate(context)
+        a = Expr.to_number(start.evaluate(context))
+        b = Expr.to_number(stop.evaluate(context))
+        a == :nothing || b == :nothing ? [] : (a...b).to_a
+      end
+
+      def children = [start, stop]
+      def to_s = "(#{start}..#{stop})"
+    end
+
+    Variable = Data.define(:token, :root, :segments) do
+      def evaluate(context) = context.resolve(root, segments.map { |s| s.evaluate(context) })
+      def children = segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
+
+      def to_s
+        # TODO
+        root
       end
     end
 
-    def self.to_s(e)
-      case e
-      when Ternary
-        if e.condition
-          "#{to_s(e.expr)} if #{to_s(e.condition)} else #{to_s(e.else)}"
+    Name = Data.define(:token, :value) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value
+    end
+
+    Predicate = Data.define(:token, :value) do
+      def evaluate(context) = value
+      def children = []
+      def to_s = value
+    end
+
+    Filter = Data.define(:token, :name, :args) do
+      def evaluate(context) = :nothing
+      def children = args
+
+      def to_s
+        if args && !args.empty?
+          "#{name}: #{args.map(&:to_s).join(", ")}"
         else
-          to_s(e.expr)
+          name
         end
-      when Filtered
-        "#{to_s(e.left)} | #{to_s(e.filter)}"
-      when Filter
-        if e.args && !e.args.empty?
-          args = e.args.map { |arg| to_s(arg) }
-          "#{e.name}: #{args.join(", ")}"
-        else
-          e.name
-        end
-      when KeywordArg
-        "#{e.name}=#{to_s(e.expr)}"
-      when Coalesce
-        "#{to_s(e.left)} ?? #{to_s(e.right)}"
-      when And
-        "#{to_s(e.left)} and #{to_s(e.right)}"
-      when Or
-        "#{to_s(e.left)} or #{to_s(e.right)}"
-      when Not
-        "not #{to_s(e.right)}"
-      when Eq
-        "#{to_s(e.left)} == #{to_s(e.right)}"
-      when Ne
-        "#{to_s(e.left)} != #{to_s(e.right)}"
-      when Lt
-        "#{to_s(e.left)} < #{to_s(e.right)}"
-      when Le
-        "#{to_s(e.left)} <= #{to_s(e.right)}"
-      when Gt
-        "#{to_s(e.left)} > #{to_s(e.right)}"
-      when Ge
-        "#{to_s(e.left)} >= #{to_s(e.right)}"
-      when Contains
-        "#{to_s(e.left)} contains #{to_s(e.right)}"
-      when In
-        "#{to_s(e.left)} in #{to_s(e.right)}"
-      when Add
-        "#{to_s(e.left)} + #{to_s(e.right)}"
-      when Sub
-        "#{to_s(e.left)} - #{to_s(e.right)}"
-      when Mul
-        "#{to_s(e.left)} * #{to_s(e.right)}"
-      when Div
-        "#{to_s(e.left)} / #{to_s(e.right)}"
-      when Mod
-        "#{to_s(e.left)} % #{to_s(e.right)}"
-      when Pos
-        "+#{to_s(e.right)}"
-      when Neg
-        "-#{to_s(e.right)}"
-      when Integer, Float, Boolean
-        e.value.to_s
-      when String
-        e.segments.map do |segment|
-          segment.is_a?(::String) ? segment : "${#{to_s(segment)}}"
-        end.join.inspect
-      when Null
-        "null"
-      when Name, Predicate
-        e.value
-      when Array
-        items = e.items.map { |item| to_s(item) }
-        "[#{items.join(", ")}]"
-      when Object
-        items = e.items.map { |item| to_s(item) }
-        "{#{items.join(", ")}}"
-      when Item
-        "#{to_s(e.key)}: #{to_s(e.expr)}"
-      when Spread
-        "...#{to_s(e.expr)}"
-      when Range
-        "(#{to_s(e.start)}..#{to_s(e.stop)})"
-      when Variable
-        # TODO:
-        e.root
-      when Lambda
-        params = e.params.map { |p| to_s(p) }.join(",")
-        "(#{params}) => #{to_s(e.expr)}"
-      else
-        raise "unknown expression #{e.class} #{e.inspect}"
       end
+    end
+
+    KeywordArg = Data.define(:token, :name, :expr) do
+      def evaluate(context) = :nothing
+      def children = [expr]
+      def to_s = "#{name}=#{expr}"
+    end
+
+    Lambda = Data.define(:token, :params, :expr) do
+      def evaluate(context)
+        args = params.map(&:value)
+        Expr::Lambda.new(args, expr, context)
+      end
+
+      def children = [expr]
+      def to_s = "(#{params.map(&:to_s).join(",")}) => #{expr}"
     end
 
     def self.tree_view(e)
@@ -192,10 +368,10 @@ module Expr
                       "├── "
                     end
 
-        nodes << [prefix, connector, node.class.to_s, to_s(node)]
+        nodes << [prefix, connector, node.class.to_s, node.to_s]
         child_prefix = prefix + (is_last ? "    " : "│   ")
-        children(node).each_with_index do |child, i|
-          last = i == children(node).length - 1
+        node.children.each_with_index do |child, i|
+          last = i == node.children.length - 1
           visit.call(child, child_prefix, last)
         end
       end
