@@ -2,6 +2,7 @@
 
 require_relative "predicates/mock"
 require_relative "filters/mock"
+require_relative "chain_hash"
 
 module Expr
   class Context
@@ -9,6 +10,7 @@ module Expr
 
     def initialize(data)
       @data = data
+      @scope = ReadOnlyChainHash.new(@data)
       @filters = {}
       @predicates = {}
 
@@ -28,6 +30,7 @@ module Expr
       @filters["plus"] = Filters.method(:plus)
       @filters["times"] = Filters.method(:times)
       @filters["map"] = Filters.method(:map)
+      @filters["find"] = Filters.method(:find)
     end
 
     def setup_predicates
@@ -37,8 +40,7 @@ module Expr
     end
 
     def resolve(name, segments)
-      # TODO: scope for lambda expr
-      obj = @data.key?(name) ? @data[name] : :nothing
+      obj = @scope.fetch(name)
 
       # NOTE: We're not returning or breaking early because there might be a
       # trailing predicate.
@@ -58,12 +60,19 @@ module Expr
                   :nothing
                 end
               else
-                # A predicate
+                # A predicate?
                 segment.respond_to?(:call) ? segment.call(obj) : :nothing
               end
       end
 
       obj
+    end
+
+    def extend(namespace)
+      @scope << namespace
+      yield
+    ensure
+      @scope.pop
     end
   end
 end

@@ -59,8 +59,14 @@ module Expr
       lhs == :nothing || rhs == :nothing ? :nothing : lhs + rhs
     end
 
-    def self.map(left, key)
-      raise "not implemented"
+    def self.map(left, lambda)
+      lambda.broadcast(Expr.to_enumerable(left))
+    end
+
+    def self.find(left, lambda)
+      Expr.to_enumerable(left).each_with_index do |item, index|
+        return item if Expr.truthy?(lambda.call(item, index))
+      end
     end
   end
 end

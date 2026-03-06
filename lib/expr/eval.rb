@@ -4,9 +4,51 @@ require "bigdecimal"
 require "json"
 require_relative "ast"
 
+# TODO: rename me to Runtime
+
 module Expr
   RE_INTEGER = /\A-?\d+(?:[eE]\+?\d+)?\Z/
   RE_DECIMAL = /((?:-?\d+\.\d+(?:[eE][+-]?\d+)?)|(-?\d+[eE]-\d+))/
+
+  Lambda = Data.define(:params, :expr, :context) do
+    def broadcast(enum)
+      scope = {}
+      result = []
+
+      if params.length == 1
+        param = params.first
+
+        context.extend(scope) do
+          enum.each do |item|
+            scope[param] = item
+            result << Expr.evaluate(expr, context)
+          end
+        end
+      else
+        name_param = params.first
+        index_param = params[1]
+
+        context.extend(scope) do
+          enum.each_with_index do |item, index|
+            scope[index_param] = index
+            scope[name_param] = item
+            result << Expr.evaluate(expr, context)
+          end
+        end
+      end
+
+      result
+    end
+
+    def call(value, index)
+      scope = { params.first => value }
+      scope[params[1]] = index if params.length > 1
+
+      context.extend(scope) do
+        return Expr.evaluate(expr, context)
+      end
+    end
+  end
 
   def self.evaluate(e, context)
     case e
@@ -111,8 +153,8 @@ module Expr
     when AST::Predicate
       context.predicates[e.value]
     when AST::Lambda
-      # TODO:
-      raise "not implemented"
+      params = e.params.map(&:value)
+      Lambda.new(params, e.expr, context)
     else
       raise "unexpected node #{e.inspect}"
     end
@@ -193,6 +235,14 @@ module Expr
       obj.is_a?(Hash) ? obj : {}
     else
       {}
+    end
+  end
+
+  def self.to_enumerable(obj)
+    if obj.respond_to?(:iterate)
+      obj.iterate
+    else
+      to_array(obj)
     end
   end
 
