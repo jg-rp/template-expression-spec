@@ -64,6 +64,96 @@
       "name": "divide, by zero",
       "expression": "10 / 0",
       "result": ""
+    },
+    {
+      "name": "minus, integers",
+      "expression": "10 - 2",
+      "result": "8"
+    },
+    {
+      "name": "minus, integer and float",
+      "expression": "10 - 2.0",
+      "result": "8.0"
+    },
+    {
+      "name": "minus, float and integer",
+      "expression": "10.0 - 2",
+      "result": "8.0"
+    },
+    {
+      "name": "minus, floats",
+      "expression": "10.1 - 2.2",
+      "result": "7.9"
+    },
+    {
+      "name": "minus, floats as strings",
+      "expression": "\"10.1\" - \"2.2\"",
+      "result": "7.9"
+    },
+    {
+      "name": "minus, non numeric string left",
+      "expression": "\"foo\" - \"2.0\"",
+      "result": ""
+    },
+    {
+      "name": "minus, non numeric string right",
+      "expression": "\"10\" - \"foo\"",
+      "result": ""
+    },
+    {
+      "name": "minus, undefined left",
+      "expression": "nosuchthing - 2",
+      "result": ""
+    },
+    {
+      "name": "minus, undefined right",
+      "expression": "10 - nosuchthing",
+      "result": ""
+    },
+    {
+      "name": "modulo, integers",
+      "expression": "10 % 3",
+      "result": "1"
+    },
+    {
+      "name": "modulo, integer and float",
+      "expression": "10 % 3.0",
+      "result": "1.0"
+    },
+    {
+      "name": "modulo, float and integer",
+      "expression": "10.0 % 3",
+      "result": "1.0"
+    },
+    {
+      "name": "modulo, floats",
+      "expression": "10.1 % 7.0",
+      "result": "3.1"
+    },
+    {
+      "name": "modulo, floats as strings",
+      "expression": "\"10.1\" % \"7.0\"",
+      "result": "3.1"
+    },
+    {
+      "name": "modulo, non numeric string left",
+      "expression": "\"foo\" % \"7.0\"",
+      "result": ""
+    },
+    {
+      "name": "modulo, non numeric string right",
+      "expression": "10 % \"foo\"",
+      "result": ""
+    },
+    {
+      "name": "modulo, undefined left",
+      "expression": "nosuchthing % 2",
+      "result": ""
+    },
+    {
+      "name": "modulo, undefined right",
+      "expression": "10 % nosuchhting",
+      "result": ""
     }
   ]
 }

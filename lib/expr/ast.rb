@@ -197,7 +197,10 @@ module Expr
       def evaluate(context)
         lhs = Expr.to_number(left.evaluate(context))
         rhs = Expr.to_number(right.evaluate(context))
-        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs.to_d % rhs
+        return :nothing if lhs == :nothing || rhs == :nothing || rhs.zero?
+
+        result = lhs.to_d % rhs
+        result.frac.zero? && lhs.is_a?(::Integer) && rhs.is_a?(::Integer) ? result.to_i : result
       end
 
       def children = [left, right]

@@ -780,7 +780,7 @@ Membership tests (`contains` and `in`) determine whether a value appears in a co
 
 ### Arithmetic Operators
 
-Arithmetic operators are defined in terms of numeric conversion and can produce `Nothing`. Each operand is converted to a `Number` via the abstract function `ToNumber`.
+Arithmetic operators operate on decimal numbers and return `Nothing` when numeric coercion fails or when an operation is undefined (such as division or modulo by zero).
 
 ```
 +, -, *, /, % : EvalValue × EvalValue → Number | Nothing
@@ -807,6 +807,131 @@ For unary prefix operators:
 2. Otherwise apply numeric prefix operator.
 
 Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
+
+#### Division operator
+
+Division uses **true arithmetic division**.
+
+```
+/ : RuntimeValue × RuntimeValue → Number | Nothing
+```
+
+Evaluation proceeds as follows:
+
+1. Convert operands using `ToNumber`.
+
+```
+x' = ToNumber(x)
+y' = ToNumber(y)
+```
+
+2. If either conversion yields `Nothing`, the result is `Nothing`.
+
+3. If `y' = 0`, the result is `Nothing`.
+
+4. Otherwise compute the decimal quotient:
+
+```
+q = x' ÷ y'
+```
+
+using the decimal arithmetic model defined in the Numeric Semantics section.
+
+After computing `q`, the result is normalized:
+
+If `q` is mathematically an integer (i.e. it has no fractional component), the result MUST be represented as an integer value.
+
+Examples:
+
+```
+4 / 2  → 2
+6 / 3  → 2
+10 / 5 → 2
+```
+
+If the result has a fractional component, it is represented as a decimal number.
+
+Examples:
+
+```
+3 / 2 → 1.5
+5 / 2 → 2.5
+```
+
+When both operands are integers, the operation is **still true division**, not floor division.
+
+Examples:
+
+```
+5 / 2 → 2.5
+3 / 2 → 1.5
+1 / 2 → 0.5
+```
+
+Some divisions produce non-terminating decimal expansions.
+
+Example:
+
+```
+1 / 3
+```
+
+Implementations MUST compute the quotient using decimal arithmetic and MUST apply deterministic rounding as defined in the Numeric Semantics section.
+
+#### Modulo Operator
+
+The modulo operator computes the remainder of division.
+
+```
+% : RuntimeValue × RuntimeValue → Number | Nothing
+```
+
+Evaluation proceeds as follows:
+
+1. Convert operands using `ToNumber`.
+
+```
+x' = ToNumber(x)
+y' = ToNumber(y)
+```
+
+2. If either conversion yields `Nothing`, the result is `Nothing`.
+
+3. If `y' = 0`, the result is `Nothing`.
+
+4. Otherwise compute the remainder using **Python-style modulo semantics**:
+
+```
+r = x' - y' * floor(x' / y')
+```
+
+Where `floor` denotes mathematical floor.
+
+The result satisfies:
+
+```
+0 ≤ r < |y'|      if y' > 0
+-|y'| < r ≤ 0     if y' < 0
+```
+
+Equivalently:
+
+> The result has the **same sign as the divisor**.
+
+If the result has no fractional component, it MUST be represented as an integer.
+
+Examples:
+
+```
+5 % 2   → 1
+4 % 2   → 0
+-5 % 2  → 1
+-1 % 2  → 1
+5 % -2  → -1
+-5 % -2 → -1
+5.5 % 2 → 1.5
+5 % 2.5 → 0.0
+```
 
 ## Filters
 
@@ -1143,6 +1268,8 @@ IsObject(x) =
 Implementations MUST perform numeric operations using a decimal arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT be used as the semantic numeric model.
 
 An implementation MAY use binary floating-point internally, but observable behavior MUST match exact decimal arithmetic.
+
+Integer values are a subset of `Number`. A number is considered an integer when its decimal representation has no fractional component.
 
 ### Decimal Arithmetic Model
 
