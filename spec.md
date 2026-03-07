@@ -1,4 +1,4 @@
-# A Unified Expression Grammar for Liquid Templates
+# A Unified Expression Grammar for Templates Languages
 
 ## Abstract
 
@@ -1187,6 +1187,8 @@ Example:
 1 / 3
 ```
 
+TODO: Loosen precision requirements
+
 Implementations MUST use decimal division with a minimum precision of 28 decimal digits and MUST round using round-half-even (banker’s rounding), unless a higher precision is supported.
 
 The precision used MUST be consistent within an evaluation.
@@ -1209,6 +1211,9 @@ Examples:
 - No scientific notation.
 - No unnecessary trailing zeros.
 - No trailing decimal point.
+
+TODO: true division
+TODO: no decimal point when operands are integers and result is whole
 
 Examples:
 

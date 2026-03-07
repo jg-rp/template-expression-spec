@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "bigdecimal/util"
+
 module Expr
   module Filters
     def self.abs(left)
@@ -27,7 +29,10 @@ module Expr
     def self.divided_by(left, right)
       lhs = Expr.to_number(left)
       rhs = Expr.to_number(right)
-      lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs / rhs
+      return :nothing if lhs == :nothing || rhs == :nothing || rhs.zero?
+
+      result = lhs.to_d / rhs
+      result.frac.zero? && lhs.is_a?(::Integer) && rhs.is_a?(::Integer) ? result.to_i : result
     end
 
     def self.times(left, right)
@@ -50,7 +55,7 @@ module Expr
     def self.modulo(left, right)
       lhs = Expr.to_number(left)
       rhs = Expr.to_number(right)
-      lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs % rhs
+      lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs.to_d % rhs
     end
 
     def self.plus(left, right)

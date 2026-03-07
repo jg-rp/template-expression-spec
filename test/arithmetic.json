@@ -1,0 +1,69 @@
+{
+  "tests": [
+    {
+      "name": "divide, integers evenly",
+      "expression": "10 / 2",
+      "result": "5"
+    },
+    {
+      "name": "divide, integers, true division",
+      "expression": "9 / 2",
+      "result": "4.5"
+    },
+    {
+      "name": "divide, integer and float evenly",
+      "expression": "10 / 2.0",
+      "result": "5.0"
+    },
+    {
+      "name": "divide, integer and float",
+      "expression": "20 / 7.0",
+      "result": "2.857142857142857"
+    },
+    {
+      "name": "divide, float and integer",
+      "expression": "9.0 / 2",
+      "result": "4.5"
+    },
+    {
+      "name": "divide, floats",
+      "expression": "9.0 / 2.0",
+      "result": "4.5"
+    },
+    {
+      "name": "divide, integers as strings evenly",
+      "expression": "\"10\" / \"2\"",
+      "result": "5"
+    },
+    {
+      "name": "divide, integers as strings, true division",
+      "expression": "\"9\" / \"2\"",
+      "result": "4.5"
+    },
+    {
+      "name": "divide, non numeric string left",
+      "expression": "\"foo\" / \"2\"",
+      "result": ""
+    },
+    {
+      "name": "divide, non numeric string right",
+      "expression": "\"10\" / \"foo\"",
+      "result": ""
+    },
+    {
+      "name": "divide, undefined left",
+      "expression": "nosuchthing / 2",
+      "result": ""
+    },
+    {
+      "name": "divide, undefined right",
+      "expression": "10 / nosuchthing",
+      "result": ""
+    },
+    {
+      "name": "divide, by zero",
+      "expression": "10 / 0",
+      "result": ""
+    }
+  ]
+}

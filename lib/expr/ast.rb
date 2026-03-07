@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "bigdecimal/util"
+
 module Expr
   # Expression abstract syntax tree nodes.
   module AST
@@ -181,7 +183,10 @@ module Expr
       def evaluate(context)
         lhs = Expr.to_number(left.evaluate(context))
         rhs = Expr.to_number(right.evaluate(context))
-        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs / rhs
+        return :nothing if lhs == :nothing || rhs == :nothing || rhs.zero?
+
+        result = lhs.to_d / rhs
+        result.frac.zero? && lhs.is_a?(::Integer) && rhs.is_a?(::Integer) ? result.to_i : result
       end
 
       def children = [left, right]
@@ -192,7 +197,7 @@ module Expr
       def evaluate(context)
         lhs = Expr.to_number(left.evaluate(context))
         rhs = Expr.to_number(right.evaluate(context))
-        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs % rhs
+        lhs == :nothing || rhs == :nothing || rhs.zero? ? :nothing : lhs.to_d % rhs
       end
 
       def children = [left, right]
@@ -219,13 +224,13 @@ module Expr
     end
 
     Integer = Data.define(:token, :value) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value.to_s
     end
 
     Float = Data.define(:token, :value) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value.to_s
     end
@@ -237,13 +242,13 @@ module Expr
     end
 
     Boolean = Data.define(:token, :value) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value.to_s
     end
 
     Null = Data.define(:token) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value.to_s
     end
@@ -314,19 +319,19 @@ module Expr
     end
 
     Name = Data.define(:token, :value) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value
     end
 
     Predicate = Data.define(:token, :value) do
-      def evaluate(context) = value
+      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
       def children = []
       def to_s = value
     end
 
     Filter = Data.define(:token, :name, :args) do
-      def evaluate(context) = :nothing
+      def evaluate(context) = :nothing # rubocop: disable Lint/UnusedMethodArgument
       def children = args
 
       def to_s
@@ -339,7 +344,7 @@ module Expr
     end
 
     KeywordArg = Data.define(:token, :name, :expr) do
-      def evaluate(context) = :nothing
+      def evaluate(context) = :nothing # rubocop: disable Lint/UnusedMethodArgument
       def children = [expr]
       def to_s = "#{name}=#{expr}"
     end
