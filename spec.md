@@ -18,7 +18,7 @@ This document is based on Shopify's [Liquid](https://github.com/Shopify/liquid) 
 
 Historically, Liquid expressions have varied subtly depending on context - certain tags treated operators or filters differently, and precedence rules were not globally consistent.
 
-This document aims to replace ad hoc behavior with a single, context-independent grammar and a clear evaluation model.
+This document aims to replace ad hoc behavior with a single, context-independent grammar and a clear evaluation model. All operators, filters, and grouping constructs are valid in any expression context, with a single, well-defined precedence hierarchy.
 
 ### Terminology
 
@@ -34,6 +34,7 @@ This document aims to replace ad hoc behavior with a single, context-independent
 
 - _Filter_: TODO:
 - _Markup_: TODO:
+- _Lambda_: TODO:
 
 ### Overview of Liquid Expressions
 
@@ -44,8 +45,6 @@ Every operator, filter, and path resolution is a total function that maps inputs
 Formally, for every expression $e$ and environment $\rho$:
 
 $$⟦ e ⟧(\rho) \in RuntimeValue$$
-
-All operators, filters, and grouping constructs are valid in any expression context, with a single, well-defined precedence hierarchy.
 
 #### Literals
 
@@ -104,6 +103,96 @@ RuntimeValue =
 ```
 
 `Nothing` represents the absence of a value produced during evaluation and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.).
+
+## Numeric Types
+
+`Number` represents a decimal numeric value with arbitrary precision and exact decimal semantics.
+
+Implementations MUST perform numeric operations using a decimal arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT be used as the semantic numeric model.
+
+An implementation MAY use binary floating-point internally, but observable behavior MUST match exact decimal arithmetic.
+
+Integer values are a subset of `Number`. A number is considered an integer when its decimal representation has no fractional component.
+
+#### Decimal Arithmetic Model
+
+The language defines numbers using base-10 decimal semantics:
+
+- Exact representation of finite decimal literals.
+- Exact addition, subtraction, and multiplication.
+- Exact division when representable as a finite decimal.
+- Deterministic rounding when required.
+
+This ensures:
+
+```
+0.1 + 0.2 == 0.3   → true
+```
+
+in all conforming implementations.
+
+Implementations MUST NOT introduce binary floating-point rounding artifacts.
+
+Example (required behavior):
+
+```
+0.1 + 0.2
+```
+
+MUST evaluate to a number equal to decimal `0.3`.
+
+It MUST NOT produce:
+
+```
+0.30000000000000004
+```
+
+#### Division Semantics
+
+Division may produce a non-terminating decimal expansion.
+
+Example:
+
+```
+1 / 3
+```
+
+TODO: Loosen precision requirements
+
+Implementations MUST use decimal division with a minimum precision of 28 decimal digits and MUST round using round-half-even (banker’s rounding), unless a higher precision is supported.
+
+The precision used MUST be consistent within an evaluation.
+
+#### Numeric Equality
+
+Numeric equality is mathematical equality after decimal normalization.
+
+Examples:
+
+```
+1 == 1.0        → true
+0.30 == 0.3     → true
+```
+
+#### String Conversion
+
+`ToString(Number)` MUST produce a canonical decimal representation:
+
+- No scientific notation.
+- No unnecessary trailing zeros.
+- No trailing decimal point.
+
+TODO: true division
+TODO: no decimal point when operands are integers and result is whole
+
+Examples:
+
+```
+1       → "1"
+1.0     → "1"
+0.300   → "0.3"
+1000    → "1000"
+```
 
 ### Extension Types (Drops)
 
@@ -562,6 +651,182 @@ Examples:
 ```
 
 All such expressions MUST behave identically regardless of eager or lazy representation.
+
+## Variables and Paths
+
+Variable resolution proceeds as follows:
+
+- A bare `name` is looked up in the current environment (local/context variables). If present, that value is returned.
+- If the path contains segments (e.g. `a.b[c].d`), evaluate each selector in sequence. For a dotted segment `.name` perform a lookup as an object key or a property access on the current value; for a bracketed selector `[expr]` evaluate `expr` and use the resulting value as the key or index (strings and numbers are commonly used as keys/indices).
+- If an intermediate segment yields `Nothing`, subsequent segments evaluate to `Nothing` and the whole path yields `Nothing`.
+- Accessing a missing key on an object yields `Nothing` (not an error).
+- Numeric indices on arrays use `ToNumber` for the selector, and out‑of‑range accesses yield `Nothing`.
+
+Implementations SHOULD treat property access on host objects according to a well‑documented resolution order (e.g. keys first, then methods) and MUST avoid raising exceptions during lookup - missing or inaccessible values map to `Nothing`.
+
+### Predicates
+
+A predicate is an optional trailing path segment of the form `.predicate?`. Predicates are syntactically distinct from shorthand name segments in that they must end in a question mark `?` and they must be the last segment of a path.
+
+Note that `?` is not a valid character for a shorthand name segment. Should a template author need to reference a value by a key containing `?`, they must use bracketed syntax `some["thing?"]`.
+
+All predicates are total over `RuntimeValue` and MUST return `Boolean`.
+
+```
+Predicate : RuntimeValue → Boolean
+```
+
+For any predicate `.p?` and accompanying abstract function `IsP`:
+
+```
+x.p?
+```
+
+Is semantically equivalent to:
+
+```
+IsP(x)
+```
+
+#### IsBlank(x)
+
+`IsBlank` returns true for null-like empty textual or collection values.
+Note that `Nothing` is distinct from `Null` and is not considered blank.
+
+```
+IsBlank(x) =
+  x is Null
+ OR x is String and trim(x) = ""
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false
+
+blank?(Nothing) = false
+empty?(Nothing) = false
+```
+
+The absence of a value (`Nothing`) is not considered blank.
+
+#### IsEmpty(x)
+
+`IsEmpty` is true for values that are empty collections or empty strings. As
+with `IsBlank`, `Nothing` is not considered empty.
+
+```
+IsEmpty(x) =
+  x is String and length(x) = 0
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false
+```
+
+The absence of a value (`Nothing`) is not considered empty.
+
+```
+IsEmpty(x) =
+    x is String and length(x) = 0
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false
+```
+
+#### IsDefined(x)
+
+`IsDefined` distinguishes present values from the absence `Nothing`.
+
+```
+IsDefined(Nothing) → false
+Otherwise → true
+```
+
+```
+IsDefined(Nothing) → false
+Otherwise → true
+```
+
+#### IsString(x)
+
+```
+IsString(x) =
+  x is String → true
+  otherwise   → false
+```
+
+```
+IsString(x) =
+    x is String → true
+    otherwise   → false
+```
+
+#### IsNull(x)
+
+```
+IsNull(x) =
+  x is Null → true
+  otherwise → false
+```
+
+```
+IsNull(x) =
+    x is Null → true
+    otherwise → false
+```
+
+#### IsNumber(x)
+
+```
+IsNumber(x) =
+  x is Number → true
+  otherwise   → false
+```
+
+```
+IsNumber(x) =
+    x is Number → true
+    otherwise   → false
+```
+
+#### IsBoolean(x)
+
+```
+IsBoolean(x) =
+  x is Boolean → true
+  otherwise    → false
+```
+
+```
+IsBoolean(x) =
+    x is Boolean → true
+    otherwise    → false
+```
+
+#### IsArray(x)
+
+```
+IsArray(x) =
+  x is Array → true
+  otherwise  → false
+```
+
+```
+IsArray(x) =
+    x is Array → true
+    otherwise  → false
+```
+
+#### IsObject(x)
+
+```
+IsObject(x) =
+  x is Object → true
+  otherwise   → false
+```
+
+```
+IsObject(x) =
+    x is Object → true
+    otherwise   → false
+```
 
 ## Type Conversion
 
@@ -1109,271 +1374,3 @@ Lambdas act as closures, meaning they capture the lexical environment in which t
 - When evaluated by the filter, the body expression has access to the internal parameters passed into it by the filter.
 - The body expression also retains read-access to all variables, drops, and context values that were available in the surrounding template scope at the time the lambda was defined.
 - If a lambda parameter shares a name with a variable in the surrounding scope, the lambda parameter strictly shadows the outer variable for the duration of the lambda's execution.
-
-## Variables and Paths
-
-Variable resolution proceeds as follows:
-
-- A bare `name` is looked up in the current environment (local/context variables). If present, that value is returned.
-- If the path contains segments (e.g. `a.b[c].d`), evaluate each selector in sequence. For a dotted segment `.name` perform a lookup as an object key or a property access on the current value; for a bracketed selector `[expr]` evaluate `expr` and use the resulting value as the key or index (strings and numbers are commonly used as keys/indices).
-- If an intermediate segment yields `Nothing`, subsequent segments evaluate to `Nothing` and the whole path yields `Nothing`.
-- Accessing a missing key on an object yields `Nothing` (not an error).
-- Numeric indices on arrays use `ToNumber` for the selector, and out‑of‑range accesses yield `Nothing`.
-
-Implementations SHOULD treat property access on host objects according to a well‑documented resolution order (e.g. keys first, then methods) and MUST avoid raising exceptions during lookup - missing or inaccessible values map to `Nothing`.
-
-### Predicates
-
-A predicate is an optional trailing path segment of the form `.predicate?`. Predicates are syntactically distinct from shorthand name segments in that they must end in a question mark `?` and they must be the last segment of a path.
-
-Note that `?` is not a valid character for a shorthand name segment. Should a template author need to reference a value by a key containing `?`, they must use bracketed syntax `some["thing?"]`.
-
-All predicates are total over `RuntimeValue` and MUST return `Boolean`.
-
-```
-Predicate : RuntimeValue → Boolean
-```
-
-For any predicate `.p?` and accompanying abstract function `IsP`:
-
-```
-x.p?
-```
-
-Is semantically equivalent to:
-
-```
-IsP(x)
-```
-
-#### IsBlank(x)
-
-`IsBlank` returns true for null-like empty textual or collection values.
-Note that `Nothing` is distinct from `Null` and is not considered blank.
-
-```
-IsBlank(x) =
-  x is Null
- OR x is String and trim(x) = ""
- OR x is Array and length(x) = 0
- OR x is Object and size(x) = 0
- OTHERWISE false
-
-blank?(Nothing) = false
-empty?(Nothing) = false
-```
-
-The absence of a value (`Nothing`) is not considered blank.
-
-#### IsEmpty(x)
-
-`IsEmpty` is true for values that are empty collections or empty strings. As
-with `IsBlank`, `Nothing` is not considered empty.
-
-```
-IsEmpty(x) =
-  x is String and length(x) = 0
- OR x is Array and length(x) = 0
- OR x is Object and size(x) = 0
- OTHERWISE false
-```
-
-The absence of a value (`Nothing`) is not considered empty.
-
-```
-IsEmpty(x) =
-    x is String and length(x) = 0
- OR x is Array and length(x) = 0
- OR x is Object and size(x) = 0
- OTHERWISE false
-```
-
-#### IsDefined(x)
-
-`IsDefined` distinguishes present values from the absence `Nothing`.
-
-```
-IsDefined(Nothing) → false
-Otherwise → true
-```
-
-```
-IsDefined(Nothing) → false
-Otherwise → true
-```
-
-#### IsString(x)
-
-```
-IsString(x) =
-  x is String → true
-  otherwise   → false
-```
-
-```
-IsString(x) =
-    x is String → true
-    otherwise   → false
-```
-
-#### IsNull(x)
-
-```
-IsNull(x) =
-  x is Null → true
-  otherwise → false
-```
-
-```
-IsNull(x) =
-    x is Null → true
-    otherwise → false
-```
-
-#### IsNumber(x)
-
-```
-IsNumber(x) =
-  x is Number → true
-  otherwise   → false
-```
-
-```
-IsNumber(x) =
-    x is Number → true
-    otherwise   → false
-```
-
-#### IsBoolean(x)
-
-```
-IsBoolean(x) =
-  x is Boolean → true
-  otherwise    → false
-```
-
-```
-IsBoolean(x) =
-    x is Boolean → true
-    otherwise    → false
-```
-
-#### IsArray(x)
-
-```
-IsArray(x) =
-  x is Array → true
-  otherwise  → false
-```
-
-```
-IsArray(x) =
-    x is Array → true
-    otherwise  → false
-```
-
-#### IsObject(x)
-
-```
-IsObject(x) =
-  x is Object → true
-  otherwise   → false
-```
-
-```
-IsObject(x) =
-    x is Object → true
-    otherwise   → false
-```
-
-## Numeric Semantics
-
-### Number Type
-
-`Number` represents a decimal numeric value with arbitrary precision and exact decimal semantics.
-
-Implementations MUST perform numeric operations using a decimal arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT be used as the semantic numeric model.
-
-An implementation MAY use binary floating-point internally, but observable behavior MUST match exact decimal arithmetic.
-
-Integer values are a subset of `Number`. A number is considered an integer when its decimal representation has no fractional component.
-
-### Decimal Arithmetic Model
-
-The language defines numbers using base-10 decimal semantics:
-
-- Exact representation of finite decimal literals.
-- Exact addition, subtraction, and multiplication.
-- Exact division when representable as a finite decimal.
-- Deterministic rounding when required.
-
-This ensures:
-
-```
-0.1 + 0.2 == 0.3   → true
-```
-
-in all conforming implementations.
-
-Implementations MUST NOT introduce binary floating-point rounding artifacts.
-
-Example (required behavior):
-
-```
-0.1 + 0.2
-```
-
-MUST evaluate to a number equal to decimal `0.3`.
-
-It MUST NOT produce:
-
-```
-0.30000000000000004
-```
-
-### Division Semantics
-
-Division may produce a non-terminating decimal expansion.
-
-Example:
-
-```
-1 / 3
-```
-
-TODO: Loosen precision requirements
-
-Implementations MUST use decimal division with a minimum precision of 28 decimal digits and MUST round using round-half-even (banker’s rounding), unless a higher precision is supported.
-
-The precision used MUST be consistent within an evaluation.
-
-### Numeric Equality
-
-Numeric equality is mathematical equality after decimal normalization.
-
-Examples:
-
-```
-1 == 1.0        → true
-0.30 == 0.3     → true
-```
-
-### String Conversion
-
-`ToString(Number)` MUST produce a canonical decimal representation:
-
-- No scientific notation.
-- No unnecessary trailing zeros.
-- No trailing decimal point.
-
-TODO: true division
-TODO: no decimal point when operands are integers and result is whole
-
-Examples:
-
-```
-1       → "1"
-1.0     → "1"
-0.300   → "0.3"
-1000    → "1000"
-```
