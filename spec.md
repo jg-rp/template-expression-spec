@@ -14,7 +14,11 @@ Draft - specification in progress. Feedback and test cases are welcome.
 
 ## Introduction
 
-TODO:
+This document is based on Shopify's [Liquid](https://github.com/Shopify/liquid) project and other implementations derived from Shopify's reference implementation.
+
+Historically, Liquid expressions have varied subtly depending on context - certain tags treated operators or filters differently, and precedence rules were not globally consistent.
+
+This document aims to replace ad hoc behavior with a single, context-independent grammar and a clear evaluation model.
 
 ### Terminology
 
@@ -29,14 +33,7 @@ TODO:
   | `{% for product in collections.frontpage %}` | `collections.frontpage` |
 
 - _Filter_: TODO:
-
-### History
-
-This document is based on Shopify's [Liquid](https://github.com/Shopify/liquid) project and other implementations derived from Shopify's reference implementation.
-
-Historically, Liquid expressions have varied subtly depending on context - certain tags treated operators or filters differently, and precedence rules were not globally consistent.
-
-This document aims to replace ad hoc behavior with a single, context-independent grammar and a clear evaluation model.
+- _Markup_: TODO:
 
 ### Overview of Liquid Expressions
 
@@ -1082,6 +1079,36 @@ For every possible input tuple, a filter MUST return a `RuntimeValue` and MUST N
 If a filter implementation encounters an internal failure or unsupported input combination, it MUST return `Nothing`.
 
 Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the even of an unknown filter.
+
+### Lambda Expressions
+
+Lambda expressions provide a way to define anonymous, inline functions that are passed directly to filters. They allow filters to execute custom logic over collections, such as mapping values, filtering arrays, or applying custom sorting rules.
+
+**Structure**
+
+A lambda expression consists of an argument declaration, an arrow operator (`=>`), and a single expression body.
+
+- **Arguments:** The left side of the arrow defines the parameters. This can be a single variable name or a parenthesized, comma-separated list of variable names. Parentheses are required if there are zero parameters or multiple parameters.
+
+- **Body:** The right side of the arrow is a single expression that determines the return value of the lambda.
+
+- **Placement:** Lambdas can be passed to filters as standard positional arguments or assigned as the value of a keyword argument.
+
+**Evaluation and Invocation**
+
+Unlike standard filter arguments, a lambda expression is not evaluated immediately when the template engine processes the filter chain.
+
+- If a filter's signature declares a parameter with the `accepts_lambda` flag set to true, the lambda is passed to the filter as an opaque, callable `RuntimeValue`.
+- The receiving filter is responsible for invoking the lambda, providing the necessary arguments during the invocation (for example, passing each item of an array to the lambda one by one).
+- If a lambda is passed to a filter parameter that does not explicitly accept lambdas, the evaluation MUST yield `Nothing`.
+
+**Scope and Capture**
+
+Lambdas act as closures, meaning they capture the lexical environment in which they are defined.
+
+- When evaluated by the filter, the body expression has access to the internal parameters passed into it by the filter.
+- The body expression also retains read-access to all variables, drops, and context values that were available in the surrounding template scope at the time the lambda was defined.
+- If a lambda parameter shares a name with a variable in the surrounding scope, the lambda parameter strictly shadows the outer variable for the duration of the lambda's execution.
 
 ## Variables and Paths
 
