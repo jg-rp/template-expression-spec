@@ -79,7 +79,9 @@ module Expr
       end
     when true
       1
-    when false, nil, :nothing, ::Array, ::Hash
+    when false
+      0
+    when nil, :nothing, ::Array, ::Hash
       :nothing
     else
       value.respond_to?(:to_liquid) ? value.to_liquid(:numeric) : :nothing
@@ -88,7 +90,7 @@ module Expr
 
   def self.to_string(value)
     case value
-    when ::Sting
+    when ::String
       value
     when ::Hash, ::Array
       JSON.generate(value)

@@ -31,6 +31,8 @@ module Expr
       @filters["times"] = Filters.method(:times)
       @filters["map"] = Filters.method(:map)
       @filters["find"] = Filters.method(:find)
+      @filters["join"] = Filters.method(:join)
+      @filters["split"] = Filters.method(:split)
     end
 
     def setup_predicates

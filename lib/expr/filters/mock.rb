@@ -76,5 +76,13 @@ module Expr
         return item if Expr.truthy?(lambda.call(item, index))
       end
     end
+
+    def self.join(left, sep = " ")
+      Expr.to_enumerable(left).map { |i| Expr.to_string(i) }.join(Expr.to_string(sep))
+    end
+
+    def self.split(left, pattern)
+      Expr.to_string(left).split(Expr.to_string(pattern))
+    end
   end
 end

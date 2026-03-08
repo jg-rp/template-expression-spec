@@ -2,7 +2,7 @@
 
 // This rule is mostly used for testing the grammar. It is unlikely that
 // an `expr` will need to be parsed in isolation.
-expression = _{ SOI ~ expr ~ EOI }
+expression = _{ SOI ~ S ~ expr ~ S ~ EOI }
 
 S = _{ (" " | "\t" | "\r" | "\n")* }
 C = _{ name_char }
@@ -62,7 +62,7 @@ mul    =  { "*" }
 div    =  { "/" }
 mod    =  { "%" }
 
-test_op  = _{ eq | ne | lt | le | gt | ge | contains | in }
+test_op  = _{ eq | ne | le | ge | lt | gt | contains | in }
 eq       =  { "==" }
 ne       =  { "!=" }
 lt       =  { "<" }

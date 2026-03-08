@@ -154,6 +154,157 @@
       "name": "modulo, undefined right",
       "expression": "10 % nosuchhting",
       "result": ""
+    },
+    {
+      "name": "plus, integers",
+      "expression": "10 + 2",
+      "result": "12"
+    },
+    {
+      "name": "plus, integer and float",
+      "expression": "10 + 2.0",
+      "result": "12.0"
+    },
+    {
+      "name": "plus, floats",
+      "expression": "10.1 + 2.2",
+      "result": "12.3"
+    },
+    {
+      "name": "plus, floats as stings",
+      "expression": "\"10.1\" + \"2.2\"",
+      "result": "12.3"
+    },
+    {
+      "name": "plus, non numeric string left",
+      "expression": "\"foo\" + \"2.0\"",
+      "result": ""
+    },
+    {
+      "name": "plus, non numeric string right",
+      "expression": "\"10\" + \"foo\"",
+      "result": ""
+    },
+    {
+      "name": "plus, undefined left",
+      "expression": "nosuchthing + 2",
+      "result": ""
+    },
+    {
+      "name": "plus, undefined right",
+      "expression": "10 + nosuchthing",
+      "result": ""
+    },
+    {
+      "name": "plus, array literal",
+      "expression": "[1] + 10",
+      "result": ""
+    },
+    {
+      "name": "plus, string literals",
+      "expression": "\"foo\" + \"bar\"",
+      "result": ""
+    },
+    {
+      "name": "plus, object literal",
+      "expression": "{\"a\": 1} + 10",
+      "result": ""
+    },
+    {
+      "name": "times, integers",
+      "expression": "10 * 2",
+      "result": "20"
+    },
+    {
+      "name": "times, integer and float",
+      "expression": "10 * 2.0",
+      "result": "20.0"
+    },
+    {
+      "name": "times, floats",
+      "expression": "5 * 2.1",
+      "result": "10.5"
+    },
+    {
+      "name": "times, floats as stings",
+      "expression": "\"5\" * \"2.1\"",
+      "result": "10.5"
+    },
+    {
+      "name": "times, non numeric string left",
+      "expression": "\"foo\" * \"2.0\"",
+      "result": ""
+    },
+    {
+      "name": "times, non numeric string right",
+      "expression": "\"10\" * \"foo\"",
+      "result": ""
+    },
+    {
+      "name": "times, undefined left",
+      "expression": "nosuchthing * 2",
+      "result": ""
+    },
+    {
+      "name": "times, undefined right",
+      "expression": "10 * nosuchthing",
+      "result": ""
+    },
+    {
+      "name": "times, array literal",
+      "expression": "[1] * 10",
+      "result": ""
+    },
+    {
+      "name": "times, string literal",
+      "expression": "\"foo\" * 10",
+      "result": ""
+    },
+    {
+      "name": "times, object literal",
+      "expression": "{\"a\": 1} * 10",
+      "result": ""
+    },
+    {
+      "name": "times has higher precedence than plus",
+      "expression": "2 + 3 * 4",
+      "result": "14"
+    },
+    {
+      "name": "group terms so plus is evaluated before times",
+      "expression": "(2 + 3) * 4",
+      "result": "20"
+    },
+    {
+      "name": "divide has higher precedence than minus",
+      "expression": "4 - 3 / 2.0",
+      "result": "2.5"
+    },
+    {
+      "name": "group terms so minus is evaluated before divide",
+      "expression": "(4 - 3) / 2.0",
+      "result": "0.5"
+    },
+    {
+      "name": "unary negate",
+      "expression": "-(1+2)",
+      "result": "-3"
+    },
+    {
+      "name": "unary negate takes priority over infix plus",
+      "expression": "-1+2",
+      "result": "1"
+    },
+    {
+      "name": "unary plus, int as string",
+      "expression": "+a - 3",
+      "data": { "a": 42 },
+      "result": "39"
+    },
+    {
+      "name": "unary plus, undefined",
+      "expression": "+nosuchthing",
+      "result": ""
     }
   ]
 }

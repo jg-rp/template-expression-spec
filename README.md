@@ -172,3 +172,7 @@ Lambdas:
 Lambdas are higher-order values used exclusively as filter arguments. They are not part of the data model and cannot be returned from filters.
 
 This enables functional-style operations such as mapping, filtering, and aggregation without turning the language into a fully higher-order system.
+
+## Notable Differences
+
+- Arithmetic operators DO NOT default to zero when numeric coercion fails. Instead they evaluate to `Nothing`, and arithmetic expressions (along with their matching filters) evaluate to `Nothing` if either operand is `Nothing`, or when an operation is undefined (such as division or modulo by zero).
