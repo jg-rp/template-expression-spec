@@ -11,3 +11,5 @@
 .stackprof*
 flamegraph*
 dev*
+
+spec.html

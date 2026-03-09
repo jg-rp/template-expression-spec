@@ -13,19 +13,25 @@
     $for(css)$
     <link rel="stylesheet" href="$css$" />
     $endfor$
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body>
-    <header class="title-block">
-      <h1>$title$</h1>
-      $if(author)$
-      <p>$author$</p>
-      $endif$ $if(date)$
-      <p>$date$</p>
-      $endif$
-    </header>
-
     <div class="page">
+      <header class="title-block">
+        <h1>$title$</h1>
+        $if(author)$
+        <p>$author$</p>
+        $endif$ $if(date)$
+        <p>$date$</p>
+        $endif$
+      </header>
+
       <nav id="TOC">$table-of-contents$</nav>
 
       <main>$body$</main>

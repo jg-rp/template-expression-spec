@@ -4,11 +4,14 @@ META = spec/src/metadata.yaml
 
 PREAMBLE = spec/src/preamble.md
 SPEC = \
-	spec/src/intro.md \
-	spec/src/terminology.md \
-	spec/src/data_types_and_values.md
+	spec/src/introduction.md \
+	spec/src/data_types_and_values.md \
+	spec/src/literals.md \
+	spec/src/variables_and_paths.md \
+	spec/src/operators.md \
+	spec/src/filters.md
 
-CSS = spec/style.css
+CSS = style.css
 TEMPLATE = spec/template.html
 
 OUT = spec.html
