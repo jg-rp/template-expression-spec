@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>$title$</title>
+
+    $if(author)$
+    <meta name="author" content="$author$" />
+    $endif$
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    $for(css)$
+    <link rel="stylesheet" href="$css$" />
+    $endfor$
+  </head>
+
+  <body>
+    <header class="title-block">
+      <h1>$title$</h1>
+      $if(author)$
+      <p>$author$</p>
+      $endif$ $if(date)$
+      <p>$date$</p>
+      $endif$
+    </header>
+
+    <div class="page">
+      <nav id="TOC">$table-of-contents$</nav>
+
+      <main>$body$</main>
+    </div>
+
+    <script>
+      document.querySelectorAll("h1, h2, h3, h4, h5").forEach((h) => {
+        const section = h.closest("section[id]");
+        if (!section) return;
+
+        const id = section.id;
+
+        const a = document.createElement("a");
+        a.href = "#" + id;
+        a.className = "header-link";
+        a.textContent = "§";
+
+        h.appendChild(a);
+      });
+    </script>
+  </body>
+</html>
