@@ -6,10 +6,26 @@
       "result": "[1,2,3]"
     },
     {
-      "name": "literal, single element variable, trailing comma",
-      "expression": "[a,]",
+      "name": "literal, integers, extra whitespace",
+      "expression": "[ 1, 2,\t 3\n  ]",
+      "result": "[1,2,3]"
+    },
+    {
+      "name": "literal, single integer",
+      "expression": "[1]",
+      "result": "[1]"
+    },
+    {
+      "name": "literal, single variable",
+      "expression": "[a]",
       "data": { "a": "b" },
       "result": "[\"b\"]"
+    },
+    {
+      "name": "literal, single string",
+      "expression": "[\"a\",]",
+      "data": { "a": "b" },
+      "result": "[\"a\"]"
     },
     {
       "name": "empty",
@@ -20,6 +36,61 @@
       "name": "just a comma",
       "expression": "[,]",
       "result": "[]"
+    },
+    {
+      "name": "nested",
+      "expression": "[[1, 2, 3], ['a', 'b', 'c']]",
+      "result": "[[1,2,3],[\"a\",\"b\",\"c\"]]"
+    },
+    {
+      "name": "literal, trailing comma",
+      "expression": "[\"a\", \"b\",]",
+      "result": "[\"a\",\"b\"]"
+    },
+    {
+      "name": "literal, filter argument",
+      "expression": "[1, 2] | concat: [3, 4] | join: '-'",
+      "result": "1-2-3-4"
+    },
+    {
+      "name": "literal, spread, trailing",
+      "expression": "['a', ...x]",
+      "data": {
+        "x": [1, 2, 3]
+      },
+      "result": "[\"a\",1,2,3]"
+    },
+    {
+      "name": "literal, spread, middle",
+      "expression": "['a', ...x, 'b']",
+      "data": {
+        "x": [1, 2, 3]
+      },
+      "result": "[\"a\",1,2,3,\"b\"]"
+    },
+    {
+      "name": "literal, spread, leading",
+      "expression": "[...x, 'b']",
+      "data": {
+        "x": [1, 2, 3]
+      },
+      "result": "[1,2,3,\"b\"]"
+    },
+    {
+      "name": "literal, spread, nested",
+      "expression": "['a', ['b', ...x]]",
+      "data": {
+        "x": [1, 2, [3, 4]]
+      },
+      "result": "[\"a\",[\"b\",1,2,[3,4]]]"
+    },
+    {
+      "name": "literal, spread, only",
+      "expression": "[...x]",
+      "data": {
+        "x": [1, 2, 3]
+      },
+      "result": "[1,2,3]"
     }
   ]
 }

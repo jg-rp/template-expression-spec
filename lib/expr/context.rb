@@ -33,6 +33,7 @@ module Expr
       @filters["find"] = Filters.method(:find)
       @filters["join"] = Filters.method(:join)
       @filters["split"] = Filters.method(:split)
+      @filters["concat"] = Filters.method(:concat)
     end
 
     def setup_predicates

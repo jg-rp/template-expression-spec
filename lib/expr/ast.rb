@@ -258,13 +258,15 @@ module Expr
 
     Array = Data.define(:token, :items) do
       def evaluate(context)
-        items.map do |item|
+        result = []
+        items.each do |item|
           if item.is_a?(AST::Spread)
-            Expr.to_array(item.expr.evaluate(context))
+            result.concat(Expr.to_array(item.expr.evaluate(context)))
           else
-            item.evaluate(context)
+            result << item.evaluate(context)
           end
         end
+        result
       end
 
       def children = items

@@ -84,5 +84,9 @@ module Expr
     def self.split(left, pattern)
       Expr.to_string(left).split(Expr.to_string(pattern))
     end
+
+    def self.concat(left, right)
+      [*Expr.to_enumerable(left), *Expr.to_enumerable(right)]
+    end
   end
 end

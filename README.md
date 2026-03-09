@@ -173,6 +173,30 @@ Lambdas are higher-order values used exclusively as filter arguments. They are n
 
 This enables functional-style operations such as mapping, filtering, and aggregation without turning the language into a fully higher-order system.
 
-## Notable Differences
+## Notable Differences to Shopify/Liquid
 
 - Arithmetic operators DO NOT default to zero when numeric coercion fails. Instead they evaluate to `Nothing`, and arithmetic expressions (along with their matching filters) evaluate to `Nothing` if either operand is `Nothing`, or when an operation is undefined (such as division or modulo by zero).
+
+## Notable Differences to Liquid2
+
+- All array literals must be surrounded by square brackets. Square brackets where optional in some cases in Liquid2.
+
+## Deliberations
+
+### Array and Variable Disambiguation
+
+We use a trailing comma to differentiate array literals with a single string literal and a variable using bracketed syntax. `["some thing"]` is a variable where the variable name contains whitespace (or other reserved characters). `["some thing",]` is an array.
+
+An alternative would be to use a JSONPath-style root selector, `$`. `$` would be implicit for unambiguous expressions, but required to disambiguate single element array literals and variables. `title == $.title == $["title"]`. `["title"]` is an array.
+
+The former/current solution was chosen to avoid introducing a new symbol (`$`) and for backwards compatibility with Shopify/liquid.
+
+### Overloaded Arithmetic Operators
+
+An early draft of this spec included array and string repetition and concatenation using `*` and `+`. This was rejected to mitigate excessively large strings and arrays being generated programmatically by malicious template authors using `*`.
+
+### `liquid` Tags
+
+This specification does not play well with `{% liquid %}` tags, which are traditionally newline terminated.
+
+With the introduction of ternary and universal logical expressions, one might decide that `{% liquid %}` is less useful than before.
