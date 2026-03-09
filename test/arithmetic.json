@@ -197,7 +197,7 @@
     },
     {
       "name": "plus, array literal",
-      "expression": "[1] + 10",
+      "expression": "[1,] + 10",
       "result": ""
     },
     {
@@ -252,7 +252,7 @@
     },
     {
       "name": "times, array literal",
-      "expression": "[1] * 10",
+      "expression": "[1,] * 10",
       "result": ""
     },
     {

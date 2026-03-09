@@ -81,21 +81,20 @@ pipe     = { "|" }
 neg = { "-" }
 pos = { "+" }
 
+// We must try to match `variable` before `array_literal`. A bracket
+// expression containing exactly one string literal denotes a root variable.
+// All other bracket expressions denote array literals.
 primary = _{
-    literal
-  | variable
-  | ("(" ~ S ~ expr ~ S ~ ")")
-}
-
-literal = _{
     number
   | string_literal
   | true_literal
   | false_literal
   | null
+  | variable
   | array_literal
   | object_literal
   | range_literal
+  | ("(" ~ S ~ expr ~ S ~ ")")
 }
 
 string_literal = _{
@@ -173,7 +172,7 @@ object_item = {
 
 range_literal = { "(" ~ S ~ expr ~ S ~ ".." ~ S ~ expr ~ S ~ ")" }
 
-variable  = { name ~ (S ~ segment)* ~ ("." ~ predicate)? }
+variable  = { (name | "[" ~ S ~ string_literal ~ S ~ "]") ~ (S ~ segment)* ~ ("." ~ predicate)? }
 name      = { name_first ~ name_char* ~ !"?" }
 predicate = { name_first ~ name_char* ~ "?" }
 
