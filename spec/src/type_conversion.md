@@ -101,10 +101,35 @@ $$
 | --------------- | ----------------------------------- |
 | Array           | identity                            |
 | Object          | array of [key, value] pairs         |
+| String          | Array<String>                       |
 | Null            | []                                  |
 | Nothing         | []                                  |
 | Drop            | ToLiquid(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
+
+#### String Semantics
+
+If `x` is a `String`, `ToArray(x)` produces an array containing the string's Unicode scalar values in order.
+
+$$
+ToArray(String) → Array<String>
+$$
+
+Where each element is a **single Unicode scalar value encoded as a string of length 1** (not grapheme clusters).
+
+Example:
+
+$$
+ToArray("cat")
+→ ["c", "a", "t"]
+$$
+
+Unicode example:
+
+$$
+ToArray("😀a")
+→ ["😀", "a"]
+$$
 
 ### ToObject(x)
 

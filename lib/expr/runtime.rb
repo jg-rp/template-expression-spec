@@ -112,7 +112,7 @@ module Expr
     when ::Hash
       value.to_a
     when ::String
-      [value]
+      value.each_char.to_a
     else
       value.respond_to?(:each) ? value.each : [value]
     end
