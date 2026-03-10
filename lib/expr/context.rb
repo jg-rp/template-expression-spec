@@ -2,7 +2,7 @@
 
 require_relative "predicates/mock"
 require_relative "filters/mock"
-require_relative "chain_hash"
+require_relative "scope"
 
 module Expr
   class Context
@@ -34,6 +34,7 @@ module Expr
       @filters["join"] = Filters.method(:join)
       @filters["split"] = Filters.method(:split)
       @filters["concat"] = Filters.method(:concat)
+      @filters["compact"] = Filters.method(:compact)
     end
 
     def setup_predicates

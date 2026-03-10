@@ -1,0 +1,181 @@
+{
+  "tests": [
+    {
+      "name": "compact, array of objects",
+      "expression": "a | compact: i => i.title",
+      "data": {
+        "a": [
+          {
+            "title": "foo",
+            "name": "a"
+          },
+          {
+            "title": null,
+            "name": "b"
+          },
+          {
+            "title": "bar",
+            "name": "c"
+          }
+        ]
+      },
+      "result": "[{\"title\":\"foo\",\"name\":\"a\"},{\"title\":\"bar\",\"name\":\"c\"}]"
+    },
+    {
+      "name": "find, array of objects",
+      "expression": "a | find: i => i.title == 'bar'",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": "{\"title\":\"bar\"}"
+    },
+    {
+      "name": "find, array of objects, not found",
+      "expression": "a | find: i => i.title == '422'",
+      "data": {
+        "a": [
+          {
+            "title": "foo"
+          },
+          {
+            "title": "bar"
+          },
+          {
+            "title": "baz"
+          }
+        ]
+      },
+      "result": ""
+    },
+    {
+      "name": "map, array of objects",
+      "expression": "a | map: i => i.user.title | join: '#'",
+      "data": {
+        "a": [
+          {
+            "user": {
+              "title": "foo"
+            }
+          },
+          {
+            "user": {
+              "title": "bar"
+            }
+          },
+          {
+            "user": {
+              "title": "baz"
+            }
+          }
+        ]
+      },
+      "result": "foo#bar#baz"
+    },
+    {
+      "name": "map, array of objects, explicit parens",
+      "expression": "a | map: (i) => i.user.title | join: '#'",
+      "data": {
+        "a": [
+          {
+            "user": {
+              "title": "foo"
+            }
+          },
+          {
+            "user": {
+              "title": "bar"
+            }
+          },
+          {
+            "user": {
+              "title": "baz"
+            }
+          }
+        ]
+      },
+      "result": "foo#bar#baz"
+    },
+    {
+      "name": "map, array of objects, two params",
+      "expression": "a | map: (i, j) => i.user.title | join: '#'",
+      "data": {
+        "a": [
+          {
+            "user": {
+              "title": "foo"
+            }
+          },
+          {
+            "user": {
+              "title": "bar"
+            }
+          },
+          {
+            "user": {
+              "title": "baz"
+            }
+          }
+        ]
+      },
+      "result": "foo#bar#baz"
+    },
+    {
+      "name": "map, array of objects, map to pairs",
+      "expression": "a | map: (i, j) => [i.user.title, j]",
+      "data": {
+        "a": [
+          {
+            "user": {
+              "title": "foo"
+            }
+          },
+          {
+            "user": {
+              "title": "bar"
+            }
+          },
+          {
+            "user": {
+              "title": "baz"
+            }
+          }
+        ]
+      },
+      "result": "[[\"foo\",0],[\"bar\",1],[\"baz\",2]]"
+    },
+    {
+      "name": "map, contains",
+      "expression": "(a | map: i => i.user.title) contains 'bar'",
+      "data": {
+        "a": [
+          {
+            "user": {
+              "title": "foo"
+            }
+          },
+          {
+            "user": {
+              "title": "bar"
+            }
+          },
+          {
+            "user": {
+              "title": "baz"
+            }
+          }
+        ]
+      },
+      "result": "true"
+    }
+  ]
+}

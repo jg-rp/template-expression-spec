@@ -67,6 +67,13 @@ module Expr
       lhs == :nothing || rhs == :nothing ? :nothing : lhs + rhs
     end
 
+    def self.compact(left, lambda)
+      Expr.to_enumerable(left).each_with_index.reject do |item, index|
+        value = lambda.call(item, index)
+        value.nil? || value == :nothing
+      end.map(&:first)
+    end
+
     def self.map(left, lambda)
       lambda.broadcast(Expr.to_enumerable(left))
     end
@@ -75,6 +82,7 @@ module Expr
       Expr.to_enumerable(left).each_with_index do |item, index|
         return item if Expr.truthy?(lambda.call(item, index))
       end
+      :nothing
     end
 
     def self.join(left, sep = " ")
