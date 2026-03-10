@@ -7,6 +7,7 @@ SPEC = \
 	spec/src/introduction.md \
 	spec/src/data_types_and_values.md \
 	spec/src/literals.md \
+	spec/src/type_conversion.md \
 	spec/src/variables_and_paths.md \
 	spec/src/operators.md \
 	spec/src/filters.md
@@ -15,11 +16,12 @@ CSS = style.css
 TEMPLATE = spec/template.html
 
 OUT = spec.html
+CONCAT = spec.md
 
 PANDOC_FLAGS = \
 	--standalone \
 	--toc \
-	--toc-depth=4 \
+	--toc-depth=3 \
 	--number-sections \
 	--css=$(CSS) \
 	--template=$(TEMPLATE) \
@@ -37,9 +39,18 @@ $(OUT): $(SPEC) $(PREAMBLE) $(TEMPLATE) $(CSS)
 	$(PANDOC_FLAGS) \
 	-o $(OUT)
 
+$(CONCAT): $(SPEC) $(PREAMBLE) $(TEMPLATE) $(CSS)
+	$(PANDOC) \
+	$(META) \
+	$(PREAMBLE) \
+	$(SPEC) \
+	-t commonmark_x \
+	-o $(CONCAT)
+
 build: $(OUT)
+concat: $(CONCAT)
 
 clean:
-	rm -f $(OUT)
+	rm -f $(OUT) $(CONCAT)
 
-.PHONY: all clean build
+.PHONY: all clean build concat

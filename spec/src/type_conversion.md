@@ -1,6 +1,6 @@
-# Type Conversion
+## Type Conversion
 
-Liquid performs automatic type conversions in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
+Automatic type conversion is performed in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
 
 ```
 ToBoolean  : RuntimeValue → Boolean
@@ -26,7 +26,7 @@ TODO: turn this into a table
 
 Conversions are deterministic and must never raise errors; when a conversion cannot produce the requested target it returns `Nothing` where specified.
 
-## Truthiness and ToBoolean(x)
+### Truthiness and ToBoolean(x)
 
 The language adopts structural truthiness. Empty strings, empty arrays, empty objects, zero numbers, null, and absence (`Nothing`) are falsy. All other values are truthy. This rule is uniform across value types and does not depend on host-language semantics.
 
@@ -52,7 +52,7 @@ An evaluation result is truthy if it represents a non-empty, non-zero, non-null 
 | Object     | size(o) > 0                            |
 | Drop       | ToLiquid(x, boolean); false if Nothing |
 
-## ToNumber(x)
+### ToNumber(x)
 
 Returns either Integer or Decimal.
 
@@ -72,7 +72,7 @@ ToNumber  : RuntimeValue → Number | Nothing
 | Object     | Nothing                                     |
 | Drop       | ToLiquid(x, numeric)                        |
 
-## ToString(x)
+### ToString(x)
 
 ```
 ToString : RuntimeValue → String
@@ -90,7 +90,7 @@ ToString : RuntimeValue → String
 | Object     | JSON-formatted object                |
 | Drop       | ToLiquid(x, string); `""` if Nothing |
 
-## ToArray(x)
+### ToArray(x)
 
 ```
 ToArray : RuntimeValue → Array<RuntimeValue>
@@ -104,7 +104,7 @@ ToArray : RuntimeValue → Array<RuntimeValue>
 | Drop            | ToLiquid(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
 
-## ToObject(x)
+### ToObject(x)
 
 ```
 ToObject : RuntimeValue → Object<String → RuntimeValue>

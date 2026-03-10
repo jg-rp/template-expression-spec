@@ -156,7 +156,7 @@ The following table shows when each hint applies.
 | Array literal spread, eager filter arguments | array   |
 | Object literal spread                        | object  |
 
-## Sequence protocol
+### Sequence protocol
 
 A Drop MAY implement the `Sequence` protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
 
@@ -174,7 +174,7 @@ Constraints:
 - `slice()` MUST return a `Drop` implementing the `Sequence` protocol.
 - `iterate()` MUST yield exactly `length()` elements.
 
-## Equality Protocol
+### Equality Protocol
 
 A Drop MAY implement the `Equality` protocol for interaction with `==` and `!=` operators, without first coercing to a data value.
 
@@ -190,7 +190,7 @@ Equals(x) -> Boolean | Nothing
 
 `equals` MUST NOT throw an error.
 
-## Ordering Protocol
+### Ordering Protocol
 
 A Drop MAY implement the `Ordering` protocol for interaction with `<`, `>`, `<=`, and `>=` operators, without first coercing to a data value.
 
@@ -204,7 +204,7 @@ A Drop implements the `Ordering` protocol if it supports:
 LessThan(x) -> Boolean | Nothing
 ```
 
-## Membership Protocol
+### Membership Protocol
 
 A Drop MAY implement the `Membership` protocol for interaction with `in` and `contains` operators, without first coercing to a data value.
 
