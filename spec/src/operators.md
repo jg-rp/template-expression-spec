@@ -82,6 +82,8 @@ x >= y  = (y < x) or (x == y)
 
 ## Membership Operators
 
+TODO: see notes/membership.md
+
 Membership tests (`contains` and `in`) determine whether a value appears in a container. Semantics are:
 
 1. If `container` is a `Drop` and implements `Contains`, call `container.Contains(element)`. If it returns `Boolean`, use that value; if it returns `Nothing`, treat as `false`.

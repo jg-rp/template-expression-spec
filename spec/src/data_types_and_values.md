@@ -160,6 +160,8 @@ The following table shows when each hint applies.
 
 A Drop MAY implement the `Sequence` protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
 
+A Drop implementing the Sequence protocol is considered a **Sequence value**.
+
 A Drop implements the `Sequence` protocol if it supports:
 
 ```
@@ -220,8 +222,12 @@ Contains(x) -> Boolean | Nothing
 
 ## Iterables
 
-TODO:
+Some evaluation algorithms operate on _iterable_ values. An $Iterable$ is either and $Array$ or $Sequence$:
 
 $$
-Iterable = Array | Object | Sequence
+Iterable = Array<RuntimeValue> | Sequence
 $$
+
+Where $Sequence$ is a $Drop$ implementing the sequence protocol.
+
+Array and sequence drops MUST behave identically with respect to iteration semantics.

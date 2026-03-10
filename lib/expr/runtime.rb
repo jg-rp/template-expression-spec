@@ -109,7 +109,9 @@ module Expr
       value
     when nil, :nothing
       []
-    when ::Hash, ::String
+    when ::Hash
+      value.to_a
+    when ::String
       [value]
     else
       value.respond_to?(:each) ? value.each : [value]

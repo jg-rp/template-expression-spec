@@ -100,7 +100,7 @@ $$
 | Input Type      | Result                              |
 | --------------- | ----------------------------------- |
 | Array           | identity                            |
-| Object          | Iterable pairs                      |
+| Object          | array of [key, value] pairs         |
 | Null            | []                                  |
 | Nothing         | []                                  |
 | Drop            | ToLiquid(x, array) or [] if Nothing |
@@ -121,7 +121,7 @@ $$
 ### ToIterable(x)
 
 $$
-ToIterable : RuntimeValue → Sequence | Array<RuntimeValue>
+ToIterable : RuntimeValue → Iterable
 $$
 
 | Input Type      | Result     |
