@@ -217,3 +217,11 @@ A Drop implements the `Membership` protocol if it supports:
 ```
 Contains(x) -> Boolean | Nothing
 ```
+
+## Iterables
+
+TODO:
+
+$$
+Iterable = Array | Object | Sequence
+$$

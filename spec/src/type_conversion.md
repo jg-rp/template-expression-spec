@@ -2,13 +2,16 @@
 
 Automatic type conversion is performed in some contexts. Here we define abstract conversion functions for runtime values, each of which is deterministic and never throws an error.
 
-```
-ToBoolean  : RuntimeValue → Boolean
-ToNumber   : RuntimeValue → Number | Nothing
-ToString   : RuntimeValue → String
-ToArray    : RuntimeValue → Array<RuntimeValue>
-ToObject   : RuntimeValue → Object<String → RuntimeValue>
-```
+$$
+\begin{aligned}
+ToBoolean  \;&: RuntimeValue → Boolean \\
+ToNumber   \;&: RuntimeValue → Number | Nothing \\
+ToString   \;&: RuntimeValue → String \\
+ToArray    \;&: RuntimeValue → Array<RuntimeValue> \\
+ToObject   \;&: RuntimeValue → Object<String → RuntimeValue> \\
+ToIterable \;&: RuntimeValue → Sequence | Array<RuntimeValue> \\
+\end{aligned}
+$$
 
 Implicit conversions occur in the following contexts (each uses the corresponding abstract conversion function):
 
@@ -24,8 +27,6 @@ TODO: turn this into a table
 - Filter arguments (general): `ToLiquid(…, default)` unless a filter documents a different required hint
 - `ToArray` helper and sequence normalization: `ToArray`
 
-Conversions are deterministic and must never raise errors; when a conversion cannot produce the requested target it returns `Nothing` where specified.
-
 ### Truthiness and ToBoolean(x)
 
 The language adopts structural truthiness. Empty strings, empty arrays, empty objects, zero numbers, null, and absence (`Nothing`) are falsy. All other values are truthy. This rule is uniform across value types and does not depend on host-language semantics.
@@ -34,9 +35,9 @@ Conditions are evaluated by first evaluating the condition expression and then a
 
 The abstract operation `ToBoolean` is defined to be identical to `IsTruthy`.
 
-```
+$$
 ToBoolean, IsTruthy : RuntimeValue → Boolean
-```
+$$
 
 An evaluation result is truthy if it represents a non-empty, non-zero, non-null value.
 
@@ -56,9 +57,9 @@ An evaluation result is truthy if it represents a non-empty, non-zero, non-null 
 
 Returns either Integer or Decimal.
 
-```
+$$
 ToNumber  : RuntimeValue → Number | Nothing
-```
+$$
 
 | Input Type | Result                                      |
 | ---------- | ------------------------------------------- |
@@ -74,9 +75,9 @@ ToNumber  : RuntimeValue → Number | Nothing
 
 ### ToString(x)
 
-```
+$$
 ToString : RuntimeValue → String
-```
+$$
 
 | Input Type | Result                               |
 | ---------- | ------------------------------------ |
@@ -92,13 +93,14 @@ ToString : RuntimeValue → String
 
 ### ToArray(x)
 
-```
+$$
 ToArray : RuntimeValue → Array<RuntimeValue>
-```
+$$
 
 | Input Type      | Result                              |
 | --------------- | ----------------------------------- |
 | Array           | identity                            |
+| Object          | Iterable pairs                      |
 | Null            | []                                  |
 | Nothing         | []                                  |
 | Drop            | ToLiquid(x, array) or [] if Nothing |
@@ -106,12 +108,23 @@ ToArray : RuntimeValue → Array<RuntimeValue>
 
 ### ToObject(x)
 
-```
+$$
 ToObject : RuntimeValue → Object<String → RuntimeValue>
-```
+$$
 
 | Input Type | Result                               |
 | ---------- | ------------------------------------ |
 | Object     | identity                             |
 | Drop       | ToLiquid(x, object) or {} if Nothing |
 | Any other  | {}                                   |
+
+### ToIterable(x)
+
+$$
+ToIterable : RuntimeValue → Sequence | Array<RuntimeValue>
+$$
+
+| Input Type      | Result     |
+| --------------- | ---------- |
+| Sequence (Drop) | identity   |
+| Any other       | ToArray(x) |
