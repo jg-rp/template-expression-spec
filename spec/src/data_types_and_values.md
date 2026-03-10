@@ -1,33 +1,35 @@
 # Data Types and Values
 
-All expressions evaluate to a defined type. `DataValue` defines all possible kinds of value that can exist inside the template data model.
+All expressions evaluate to a defined type. $DataValue$ defines all possible kinds of value that can exist inside the template data model.
 
-```
-DataValue =
-    Null
-  | Boolean
-  | Number
-  | String
-  | Array<DataValue>
-  | Object<String → DataValue>
-```
+$$
+\begin{aligned}
+DataValue = \;& Null \\
+  | \;& Boolean \\
+  | \;& Number \\
+  | \;& String \\
+  | \;& Array\langle DataValue \rangle \\
+  | \;& Object\langle String \to DataValue \rangle \\
+\end{aligned}
+$$
 
-`RuntimeValue` describes the result of evaluating an expression. Note that `DataValue` is the subset of `RuntimeValue` that does not contain `Drop` or `Nothing`.
+$RuntimeValue$ describes the result of evaluating an expression. Note that $DataValue$ is the subset of $RuntimeValue$ that does not contain $Drop$ or $Nothing$.
 
-```
-RuntimeValue =
-    DataValue
-  | Array<RuntimeValue>
-  | Object<String → RuntimeValue>
-  | Drop
-  | Nothing
-```
+$$
+\begin{aligned}
+RuntimeValue = \;& DataValue \\
+  | \;& Array\langle RuntimeValue \rangle \\
+  | \;& Object\langle String \to RuntimeValue \rangle \\
+  | \;& Drop \\
+  | \;& Nothing
+\end{aligned}
+$$
 
-`Nothing` represents the absence of a value produced during evaluation and is distinct from `Null` (or implementation-specific `nil`, `None`, `undefined` etc.).
+$Nothing$ represents the absence of a value produced during evaluation and is distinct from $Null$ (or implementation-specific `nil`, `None`, `undefined` etc.).
 
 ## Numeric Types
 
-`Number` represents a decimal numeric value with arbitrary precision and exact decimal semantics.
+$Number$ represents a decimal numeric value with arbitrary precision and exact decimal semantics.
 
 Implementations MUST perform numeric operations using a decimal arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT be used as the semantic numeric model.
 
@@ -97,7 +99,7 @@ Examples:
 
 ### String Conversion
 
-`ToString(Number)` MUST produce a canonical decimal representation:
+$ToString(Number)$ MUST produce a canonical decimal representation:
 
 - No scientific notation.
 - No unnecessary trailing zeros.
@@ -119,15 +121,15 @@ Examples:
 
 Implementations may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
 
-```
+$$
 ToLiquid : Drop × ContextHint → RuntimeValue
-```
+$$
 
 Where:
 
-```
+$$
 ContextHint ∈ { default, numeric, string, boolean, render, array, object }
-```
+$$
 
 Constraints:
 

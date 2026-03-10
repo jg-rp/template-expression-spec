@@ -24,7 +24,8 @@ PANDOC_FLAGS = \
 	--css=$(CSS) \
 	--template=$(TEMPLATE) \
 	--section-divs \
-	--metadata linkReferences=true
+	--metadata linkReferences=true \
+	--mathjax
 
 all: $(OUT)
 

@@ -187,6 +187,10 @@ h4:hover .header-link {
       "main";
   }
 
+  main {
+    padding: 0 10px 0 10px;
+  }
+
   #TOC {
     position: relative;
     top: auto;
@@ -194,4 +198,32 @@ h4:hover .header-link {
     border-right: none;
     margin-bottom: 20px;
   }
+}
+
+/* Math Styles */
+
+.math.inline {
+  font-family: inherit;
+  /* background-color: #fffcf5; */
+  padding: 0 0.15em;
+  color: #222;
+  vertical-align: middle;
+}
+
+.math.display {
+  display: block;
+  font-family: inherit;
+  margin: 0.5em 0 1.5em 2em;
+  background-color: #fffaf0;
+  border-left: 2px solid #eaddca;
+  color: #332d2d;
+  text-align: left;
+  overflow-x: auto;
+  line-height: 1.2;
+}
+
+/* Ensure complex symbols like ⟦ ⟧ don't look cramped */
+.math {
+  line-height: 1;
+  letter-spacing: 0.02em;
 }
