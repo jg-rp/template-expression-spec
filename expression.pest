@@ -47,11 +47,12 @@ argument          =  { lambda_expr | keyword_argument | arg_expr }
 keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
 lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
 lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
-arg_expr          =  { arg_ternary_expr }
-arg_ternary_expr  =  { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
-arg_condition     =  { coalesce_expr }
-arg_consequence   =  { coalesce_expr }
-arg_alternative   =  { coalesce_expr }
+
+arg_expr         = { arg_ternary_expr }
+arg_ternary_expr = { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
+arg_condition    = { coalesce_expr }
+arg_consequence  = { coalesce_expr }
+arg_alternative  = { coalesce_expr }
 
 add_op = _{ add | sub }
 add    =  { "+" }

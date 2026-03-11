@@ -227,3 +227,11 @@ h4:hover .header-link {
   line-height: 1;
   letter-spacing: 0.02em;
 }
+
+.header-section-number::after {
+  content: ".";
+}
+
+.toc-section-number::after {
+  content: ".";
+}

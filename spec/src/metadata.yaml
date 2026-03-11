@@ -2,4 +2,8 @@
 title: "A Unified Expression Grammar for Template Languages"
 author: "Draft Specification"
 date: "2026-03-09"
+secPrefix:
+  - Section
+  - Sections
+nameInLink: true
 ---

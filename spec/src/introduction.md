@@ -26,7 +26,7 @@ This document aims to replace ad hoc behavior with a single, context-independent
 
 The Unified Expression Grammar is designed for consistency and reliability, where every syntactically valid expression is guaranteed to produce a result rather than an error.
 
-Every operator, filter, and path resolution is a total function that maps inputs to a defined runtime value. If a conversion or lookup cannot proceed normally, it yields `Nothing` - a distinct internal state representing the absence of a value, which is then handled deterministically by subsequent operations.
+Every operator, filter, and path resolution is a total function that maps inputs to a defined runtime value. If a conversion or lookup cannot proceed normally, it yields $Nothing$ - a distinct internal state representing the absence of a value, which is then handled deterministically by subsequent operations.
 
 Formally, for every expression $e$ and environment $\rho$:
 

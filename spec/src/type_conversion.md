@@ -19,7 +19,7 @@ TODO: turn this into a table
 
 - Arithmetic and numeric operators: `ToNumber`
 - Unary `+`/`-`: `ToNumber`
-- String concatenation (filters or template rendering): `ToString`
+- String concatenation (filters): `ToString`
 - Boolean conditions used by `if`, ternary `if` expressions, `and`, `or`, and
   `not`: `ToBoolean`
 - Comparisons that require primitive values: `ToLiquid(…, default)` then structural comparison; numeric comparisons use `ToNumber` when both sides are numeric or coercible to numeric.

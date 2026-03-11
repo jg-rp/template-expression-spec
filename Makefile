@@ -1,4 +1,5 @@
 PANDOC = pandoc
+CROSSREF = pandoc-crossref
 
 META = spec/src/metadata.yaml
 
@@ -6,6 +7,7 @@ PREAMBLE = spec/src/preamble.md
 SPEC = \
 	spec/src/introduction.md \
 	spec/src/data_types_and_values.md \
+	spec/src/drops.md \
 	spec/src/literals.md \
 	spec/src/type_conversion.md \
 	spec/src/variables_and_paths.md \
@@ -27,7 +29,8 @@ PANDOC_FLAGS = \
 	--template=$(TEMPLATE) \
 	--section-divs \
 	--metadata linkReferences=true \
-	--mathjax
+	--mathjax \
+	--filter $(CROSSREF)
 
 all: $(OUT)
 

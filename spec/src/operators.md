@@ -151,7 +151,7 @@ y' = ToNumber(y)
 q = x' ÷ y'
 ```
 
-using the decimal arithmetic model defined in the Numeric Semantics section.
+using the decimal arithmetic model defined in @sec:numeric_types.
 
 After computing `q`, the result is normalized:
 
