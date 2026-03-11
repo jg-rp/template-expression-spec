@@ -162,7 +162,7 @@ module Expr
 
     def parse_string_segment(pair)
       case pair.rule
-      when :unescaped_segment
+      when :unescaped_segment, :single_quote, :double_quote
         pair.text
       when :double_quoted_escaped, :single_quoted_escaped
         Expr.unescape(pair)

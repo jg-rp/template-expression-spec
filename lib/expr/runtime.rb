@@ -97,7 +97,7 @@ module Expr
     when nil, :nothing
       ""
     when BigDecimal
-      value.to_s("F")
+      value.to_f.to_s
     else
       value.to_s
     end

@@ -1,0 +1,174 @@
+{
+  "tests": [
+    {
+      "name": "literal, single quotes",
+      "expression": "'Hello'",
+      "result": "Hello"
+    },
+    {
+      "name": "literal, single quotes, empty",
+      "expression": "''",
+      "result": ""
+    },
+    {
+      "name": "literal, double quotes",
+      "expression": "\"Hello\"",
+      "result": "Hello"
+    },
+    {
+      "name": "literal, double quotes, empty",
+      "expression": "\"\"",
+      "result": ""
+    },
+    {
+      "name": "literal, single quotes, escape sequence",
+      "expression": "'Hello\\nWorld!'",
+      "result": "Hello\nWorld!"
+    },
+    {
+      "name": "literal, single quotes, escaped single quote",
+      "expression": "'Hello \\'World!\\''",
+      "result": "Hello 'World!'"
+    },
+    {
+      "name": "literal, double quotes, escape sequence",
+      "expression": "\"Hello\\nWorld!\"",
+      "result": "Hello\nWorld!"
+    },
+    {
+      "name": "literal, double quotes, escaped double quote",
+      "expression": "\"Hello \\\"World!\\\"\"",
+      "result": "Hello \"World!\""
+    },
+    {
+      "name": "literal, single quotes, contains double quote",
+      "expression": "'Hello \"World\"'",
+      "result": "Hello \"World\""
+    },
+    {
+      "name": "literal, double quotes, contains single quote",
+      "expression": "\"Hello 'World'\"",
+      "result": "Hello 'World'"
+    },
+    {
+      "name": "literal, double quotes, output start",
+      "expression": "\"Hello {{ World\"",
+      "result": "Hello {{ World"
+    },
+    {
+      "name": "literal, double quotes, output end",
+      "expression": "\"Hello }} World\"",
+      "result": "Hello }} World"
+    },
+    {
+      "name": "literal, double quotes, output markup",
+      "expression": "\"Hello {{ World }}\"",
+      "result": "Hello {{ World }}"
+    },
+    {
+      "name": "literal, single quotes, output start",
+      "expression": "'Hello {{ World'",
+      "result": "Hello {{ World"
+    },
+    {
+      "name": "literal, single quotes, output end",
+      "expression": "'Hello }} World'",
+      "result": "Hello }} World"
+    },
+    {
+      "name": "literal, single quotes, output markup",
+      "expression": "'Hello {{ World }}'",
+      "result": "Hello {{ World }}"
+    },
+    {
+      "name": "literal, double quotes, tag start",
+      "expression": "\"Hello {% World\"",
+      "result": "Hello {% World"
+    },
+    {
+      "name": "literal, double quotes, tag end",
+      "expression": "\"Hello %} World\"",
+      "result": "Hello %} World"
+    },
+    {
+      "name": "literal, double quotes, tag markup",
+      "expression": "\"Hello {% World %}\"",
+      "result": "Hello {% World %}"
+    },
+    {
+      "name": "literal, single quotes, tag start",
+      "expression": "'Hello {% World'",
+      "result": "Hello {% World"
+    },
+    {
+      "name": "literal, single quotes, tag end",
+      "expression": "'Hello %} World'",
+      "result": "Hello %} World"
+    },
+    {
+      "name": "literal, single quotes, tag markup",
+      "expression": "'Hello {% World %}'",
+      "result": "Hello {% World %}"
+    },
+    {
+      "name": "literal, double quotes, supplementary plane character",
+      "expression": "\"𝄞\"",
+      "result": "𝄞"
+    },
+    {
+      "name": "literal, single quotes, supplementary plane character",
+      "expression": "'𝄞'",
+      "result": "𝄞"
+    },
+    {
+      "name": "literal, double quotes, escaped reverse solidus",
+      "expression": "\"\\\\\"",
+      "result": "\\"
+    },
+    {
+      "name": "literal, single quotes, escaped reverse solidus",
+      "expression": "'\\\\'",
+      "result": "\\"
+    },
+    {
+      "name": "literal, double quotes, escaped solidus",
+      "expression": "\"\\/\"",
+      "result": "/"
+    },
+    {
+      "name": "literal, single quotes, escaped solidus",
+      "expression": "'\\/'",
+      "result": "/"
+    },
+    {
+      "name": "literal, double quotes, escaped ☺, upper case hex",
+      "expression": "\"\\u263A\"",
+      "result": "☺"
+    },
+    {
+      "name": "literal, single quotes, escaped ☺, upper case hex",
+      "expression": "'\\u263A'",
+      "result": "☺"
+    },
+    {
+      "name": "literal, double quotes, escaped ☺, lower case hex",
+      "expression": "\"\\u263a\"",
+      "result": "☺"
+    },
+    {
+      "name": "literal, single quotes, escaped ☺, lower case hex",
+      "expression": "'\\u263a'",
+      "result": "☺"
+    },
+    {
+      "name": "literal, double quotes, surrogate pair 😀",
+      "expression": "\"\\uD83D\\uDE00\"",
+      "result": "😀"
+    },
+    {
+      "name": "literal, single quotes,surrogate pair 😀",
+      "expression": "'\\uD83D\\uDE00'",
+      "result": "😀"
+    }
+  ]
+}

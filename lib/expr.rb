@@ -22,20 +22,6 @@ module Expr
   end
 
   def self.render(expr, data)
-    to_output_s(evaluate(expr, data))
-  end
-
-  # Return `value` as a string suitable for rendering to output.
-  def self.to_output_s(value)
-    case value
-    when Hash, Array
-      JSON.generate(value)
-    when BigDecimal
-      value.to_f.to_s
-    when :nothing
-      ""
-    else
-      value.to_s
-    end
+    to_string(evaluate(expr, data))
   end
 end

@@ -12,7 +12,7 @@ module Expr
         code_point = (scanner.captures&.first || raise).to_i(16)
         raise "unexpected low surrogate" if low_surrogate?(code_point)
 
-        if high_surrogate?(code)
+        if high_surrogate?(code_point)
           raise "expected a low surrogate" unless scanner.scan(RE_SLASH_U)
 
           low_surrogate = (scanner.captures&.first || raise).to_i(16)

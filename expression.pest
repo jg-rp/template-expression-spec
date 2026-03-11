@@ -107,17 +107,20 @@ single_quoted = { single_quoted_segment* }
 
 double_quoted_segment = _{
     interpolation
-  | "'"
+  | single_quote
   | double_quoted_escaped
   | unescaped_segment
 }
 
 single_quoted_segment = _{
     interpolation
-  | "\x22"
+  | double_quote
   | single_quoted_escaped
   | unescaped_segment
 }
+
+double_quote = { "\x22" }
+single_quote = { "'" }
 
 interpolation         = _{ "${" ~ expr ~ "}" }
 double_quoted_escaped =  { (ESC ~ "\x22" | ESC ~ escapable)+ }
@@ -198,13 +201,13 @@ double_quoted_name = { double_quoted_name_segment* }
 single_quoted_name = { single_quoted_name_segment* }
 
 double_quoted_name_segment = _{
-    "'"
+    single_quote
   | double_quoted_escaped_name_char
   | unescaped_name_segment
 }
 
 single_quoted_name_segment = _{
-    "\x22"
+    double_quote
   | single_quoted_escaped_name_char
   | unescaped_name_segment
 }
