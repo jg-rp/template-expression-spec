@@ -45,10 +45,10 @@ module Expr
 
     def resolve(name, segments)
       obj = @scope.fetch(name)
+      resolve_path(obj, segments)
+    end
 
-      # NOTE: We're not returning or breaking early because there might be a
-      # trailing predicate.
-
+    def resolve_path(obj, segments)
       segments.each do |segment|
         obj = case segment
               when String

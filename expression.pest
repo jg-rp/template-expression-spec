@@ -94,7 +94,7 @@ primary = _{
   | array_literal
   | object_literal
   | range_literal
-  | ("(" ~ S ~ expr ~ S ~ ")")
+  | parenthesized_expr
 }
 
 string_literal = _{
@@ -175,9 +175,13 @@ object_item = {
 
 range_literal = { "(" ~ S ~ expr ~ S ~ ".." ~ S ~ expr ~ S ~ ")" }
 
-variable  = { (name | "[" ~ S ~ string_literal ~ S ~ "]") ~ (S ~ segment)* ~ ("." ~ predicate)? }
-name      = { name_first ~ name_char* ~ !"?" }
-predicate = { name_first ~ name_char* ~ "?" }
+parenthesized_expr = { "(" ~ S ~ expr ~ S ~ ")" ~ path? }
+
+variable  =  { root ~ path? }
+root      = _{ name | "[" ~ S ~ string_literal ~ S ~ "]" }
+path      = _{ (S ~ segment)+ ~ predicate? }
+name      =  { name_first ~ name_char* ~ !"?" }
+predicate =  { "." ~ name_first ~ name_char* ~ "?" }
 
 name_first = _{
     ASCII_ALPHA

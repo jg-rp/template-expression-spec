@@ -74,6 +74,8 @@ module Expr
         AST::Boolean.new(pair, false)
       when :null_literal
         AST::Null.new(pair)
+      when :parenthesized_expr
+        parse_parenthesized_expr(pair)
       else
         raise "unexpected #{pair.rule.inspect} #{pair.text.inspect}"
       end
@@ -217,7 +219,7 @@ module Expr
       when :expr
         parse_expr(pair.stream)
       when :predicate
-        AST::Predicate.new(pair, pair.text)
+        AST::Predicate.new(pair, pair.text[1..]) # remove leading dot
       else
         raise "unexpected variable segment #{pair.rule.inspect} #{pair.text.inspect}"
       end
@@ -258,6 +260,12 @@ module Expr
       else
         raise "malformed ternary expression #{pair.text.inspect}"
       end
+    end
+
+    def parse_parenthesized_expr(pair)
+      expression, *segments = pair.children
+      expr = parse_expr(expression.stream)
+      AST::Parenthesized.new(pair, expr, segments.map { |s| parse_variable_segment(s) })
     end
   end
 end

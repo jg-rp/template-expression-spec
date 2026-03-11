@@ -5,6 +5,25 @@ require "bigdecimal/util"
 module Expr
   # Expression abstract syntax tree nodes.
   module AST
+    Parenthesized = Data.define(:token, :expr, :segments) do
+      def evaluate(context)
+        value = expr.evaluate(context)
+        if segments.empty?
+          value
+        else
+          context.resolve_path(value, segments.map { |s| s.evaluate(context) })
+        end
+      end
+
+      def children
+        path = segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
+        [expr, *path]
+      end
+
+      # TODO: segments
+      def to_s = "(#{expr})"
+    end
+
     Ternary = Data.define(:token, :expr, :condition, :else) do
       def evaluate(context)
         if Expr.truthy?(condition.evaluate(context))
@@ -330,7 +349,7 @@ module Expr
     end
 
     Predicate = Data.define(:token, :value) do
-      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
+      def evaluate(context) = context.predicates[value] || :nothing
       def children = []
       def to_s = value
     end

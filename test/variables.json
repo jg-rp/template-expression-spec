@@ -1,0 +1,94 @@
+{
+  "tests": [
+    {
+      "name": "shorthand",
+      "expression": "a",
+      "data": {
+        "a": 42
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed, single quotes",
+      "expression": "['a']",
+      "data": {
+        "a": 42
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed, double quotes",
+      "expression": "[\"a\"]",
+      "data": {
+        "a": 42
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed, not a name, double quotes",
+      "expression": "[\"some thing\"]",
+      "data": {
+        "some thing": 42
+      },
+      "result": "42"
+    },
+    {
+      "name": "shorthand selector",
+      "expression": "a.b",
+      "data": {
+        "a": { "b": 42 }
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed selector, single quotes",
+      "expression": "a['b']",
+      "data": {
+        "a": { "b": 42 }
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed selector, double quotes",
+      "expression": "a[\"b\"]",
+      "data": {
+        "a": { "b": 42 }
+      },
+      "result": "42"
+    },
+    {
+      "name": "predicate, defined",
+      "expression": "a.b.defined?",
+      "data": {
+        "a": { "b": 42 }
+      },
+      "result": "true"
+    },
+    {
+      "name": "bracketed then predicate, defined",
+      "expression": "['a']['b'].defined?",
+      "data": {
+        "a": { "b": 42 }
+      },
+      "result": "true"
+    },
+    {
+      "name": "parenthesized expression, shorthand selector",
+      "expression": "(a or b).c",
+      "data": {
+        "a": null,
+        "b": { "c": 42 }
+      },
+      "result": "42"
+    },
+    {
+      "name": "parenthesized expression, index selector",
+      "expression": "(a or b)[0]",
+      "data": {
+        "a": null,
+        "b": [42, 1, 2]
+      },
+      "result": "42"
+    }
+  ]
+}
