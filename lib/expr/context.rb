@@ -35,6 +35,8 @@ module Expr
       @filters["split"] = Filters.method(:split)
       @filters["concat"] = Filters.method(:concat)
       @filters["compact"] = Filters.method(:compact)
+      @filters["upcase"] = Filters.method(:upcase)
+      @filters["append"] = Filters.method(:append)
     end
 
     def setup_predicates

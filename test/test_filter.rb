@@ -3,12 +3,12 @@
 require "json"
 require "test_helper"
 
-class TestVariables < Minitest::Spec
+class TestFilters < Minitest::Spec
   make_my_diffs_pretty!
 
-  TEST_CASES = JSON.load_file("test/variable.json")
+  TEST_CASES = JSON.load_file("test/filter.json")
 
-  describe "variables" do
+  describe "filters" do
     TEST_CASES["tests"].each do |test_case|
       it test_case["name"] do
         if test_case["invalid"]

@@ -96,5 +96,13 @@ module Expr
     def self.concat(left, right)
       [*Expr.to_enumerable(left), *Expr.to_enumerable(right)]
     end
+
+    def self.upcase(left)
+      Expr.to_string(left).upcase
+    end
+
+    def self.append(left, right)
+      Expr.to_string(left) + Expr.to_string(right)
+    end
   end
 end

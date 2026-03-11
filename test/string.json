@@ -166,9 +166,99 @@
       "result": "😀"
     },
     {
-      "name": "literal, single quotes,surrogate pair 😀",
+      "name": "literal, single quotes, surrogate pair 😀",
       "expression": "'\\uD83D\\uDE00'",
       "result": "😀"
+    },
+    {
+      "name": "literal, single quotes, interpolated",
+      "expression": "'Hello, ${you}!'",
+      "data": { "you": "World" },
+      "result": "Hello, World!"
+    },
+    {
+      "name": "literal, double quotes, interpolated",
+      "expression": "\"Hello, ${you}!\"",
+      "data": { "you": "World" },
+      "result": "Hello, World!"
+    },
+    {
+      "name": "literal, single quotes, interpolated, end of string",
+      "expression": "'Hello, ${you}'",
+      "data": { "you": "World" },
+      "result": "Hello, World"
+    },
+    {
+      "name": "literal, double quotes, interpolated, end of string",
+      "expression": "\"Hello, ${you}\"",
+      "data": { "you": "World" },
+      "result": "Hello, World"
+    },
+    {
+      "name": "literal, single quotes, interpolated, start of string",
+      "expression": "'${you}!'",
+      "data": { "you": "World" },
+      "result": "World!"
+    },
+    {
+      "name": "literal, double quotes, interpolated, start of string",
+      "expression": "\"${you}!\"",
+      "data": { "you": "World" },
+      "result": "World!"
+    },
+    {
+      "name": "literal, single quotes, interpolated, only",
+      "expression": "'${you}'",
+      "data": { "you": "World" },
+      "result": "World"
+    },
+    {
+      "name": "literal, double quotes, interpolated, only",
+      "expression": "\"${you}\"",
+      "data": { "you": "World" },
+      "result": "World"
+    },
+    {
+      "name": "literal, interpolated, path",
+      "expression": "'Hello, ${you.there}!'",
+      "data": { "you": { "there": "World" } },
+      "result": "Hello, World!"
+    },
+    {
+      "name": "literal, interpolated, extra whitespace",
+      "expression": "'Hello, ${  \nyou.there \t }!'",
+      "data": { "you": { "there": "World" } },
+      "result": "Hello, World!"
+    },
+    {
+      "name": "literal, interpolated, path with quoted segment",
+      "expression": "\"Hello, ${you[\"there\"]}!\"",
+      "data": { "you": { "there": "World" } },
+      "result": "Hello, World!"
+    },
+    {
+      "name": "literal, interpolated, filter",
+      "expression": "\"Hello, ${you | upcase }!\"",
+      "data": { "you": "World" },
+      "result": "Hello, WORLD!"
+    },
+    {
+      "name": "literal, interpolated, filter argument",
+      "expression": "\"Hello \" | append: \"there ${you}!\"",
+      "data": { "you": "World" },
+      "result": "Hello there World!"
+    },
+    {
+      "name": "literal, escaped interpolation",
+      "expression": "'Hello, \\${you}'",
+      "data": { "you": "World" },
+      "result": "Hello, ${you}"
+    },
+    {
+      "name": "literal, interpolation, nested",
+      "expression": "'Hello, ${you | append: '${something}'}!'",
+      "data": { "you": "World", "something": " and Liquid" },
+      "result": "Hello, World and Liquid!"
     }
   ]
 }

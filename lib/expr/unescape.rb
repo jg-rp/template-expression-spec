@@ -2,6 +2,7 @@
 
 module Expr
   RE_SLASH_U = /\\u([0-9a-fA-F]{4})/
+  RE_ESCAPE_INTERPOLATION = /\\\$\{/
 
   def self.unescape(pair)
     unescaped = [] # : Array[String]
@@ -22,6 +23,11 @@ module Expr
         end
 
         unescaped << code_point.chr(Encoding::UTF_8)
+        next
+      end
+
+      if scanner.scan(RE_ESCAPE_INTERPOLATION)
+        unescaped << "${"
         next
       end
 

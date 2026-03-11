@@ -122,7 +122,7 @@ single_quoted_segment = _{
 double_quote = { "\x22" }
 single_quote = { "'" }
 
-interpolation         = _{ "${" ~ expr ~ "}" }
+interpolation         = _{ "${" ~ S ~ expr ~ S ~ "}" }
 double_quoted_escaped =  { (ESC ~ "\x22" | ESC ~ escapable)+ }
 single_quoted_escaped =  { (ESC ~ "'" | ESC ~ escapable)+ }
 unescaped_segment     =  { unescaped+ }
