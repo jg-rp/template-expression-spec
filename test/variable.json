@@ -89,6 +89,30 @@
         "b": [42, 1, 2]
       },
       "result": "42"
+    },
+    {
+      "name": "reserved word prefix",
+      "expression": "andrew",
+      "data": {
+        "andrew": 42
+      },
+      "result": "42"
+    },
+    {
+      "name": "reserved word match",
+      "expression": "and",
+      "data": {
+        "and": 7
+      },
+      "result": "7"
+    },
+    {
+      "name": "reserved word paths",
+      "expression": "and.or",
+      "data": {
+        "and": { "or": 42 }
+      },
+      "result": "42"
     }
   ]
 }
