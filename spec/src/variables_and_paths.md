@@ -38,7 +38,7 @@ Is semantically equivalent to:
 IsP(x)
 ```
 
-### IsBlank(x)
+#### IsBlank(x)
 
 `IsBlank` returns true for null-like empty textual or collection values.
 Note that `Nothing` is distinct from `Null` and is not considered blank.
@@ -57,7 +57,7 @@ empty?(Nothing) = false
 
 The absence of a value (`Nothing`) is not considered blank.
 
-### IsEmpty(x)
+#### IsEmpty(x)
 
 `IsEmpty` is true for values that are empty collections or empty strings. As
 with `IsBlank`, `Nothing` is not considered empty.
@@ -80,7 +80,7 @@ IsEmpty(x) =
  OTHERWISE false
 ```
 
-### IsDefined(x)
+#### IsDefined(x)
 
 `IsDefined` distinguishes present values from the absence `Nothing`.
 
@@ -94,7 +94,7 @@ IsDefined(Nothing) → false
 Otherwise → true
 ```
 
-### IsString(x)
+#### IsString(x)
 
 ```
 IsString(x) =
@@ -108,7 +108,7 @@ IsString(x) =
     otherwise   → false
 ```
 
-### IsNull(x)
+#### IsNull(x)
 
 ```
 IsNull(x) =
@@ -122,7 +122,7 @@ IsNull(x) =
     otherwise → false
 ```
 
-### IsNumber(x)
+#### IsNumber(x)
 
 ```
 IsNumber(x) =
@@ -136,7 +136,7 @@ IsNumber(x) =
     otherwise   → false
 ```
 
-### IsBoolean(x)
+#### IsBoolean(x)
 
 ```
 IsBoolean(x) =
@@ -150,7 +150,7 @@ IsBoolean(x) =
     otherwise    → false
 ```
 
-### IsArray(x)
+#### IsArray(x)
 
 ```
 IsArray(x) =
@@ -164,7 +164,7 @@ IsArray(x) =
     otherwise  → false
 ```
 
-### IsObject(x)
+#### IsObject(x)
 
 ```
 IsObject(x) =
