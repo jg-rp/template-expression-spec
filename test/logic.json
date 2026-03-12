@@ -26,6 +26,31 @@
       "result": "99"
     },
     {
+      "name": "coalesce, last value, nothing left",
+      "expression": "nosuchthing ?? 42",
+      "result": "42"
+    },
+    {
+      "name": "coalesce, last value, nothing right",
+      "expression": "99 ?? nosuchthing",
+      "result": "99"
+    },
+    {
+      "name": "coalesce, last value, nothing left and right",
+      "expression": "nosuchthing ?? nosuchthing",
+      "result": ""
+    },
+    {
+      "name": "coalesce, last value, false left",
+      "expression": "false ?? 42",
+      "result": "false"
+    },
+    {
+      "name": "coalesce, last value, true left",
+      "expression": "true ?? nosuchthing",
+      "result": "true"
+    },
+    {
       "name": "arithmetic and relational, truthy",
       "expression": "1 + 2 <= 3",
       "result": "true"
