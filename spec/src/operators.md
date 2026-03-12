@@ -58,7 +58,7 @@ We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and
     1. If `a` is Drop and implements `Equals` and `a.Equals(b)` is true.
     2. Else if `b` is Drop and implements `Equals` and `b.Equals(a)` is true.
     3. Else:
-       - Coerce both via `ToLiquid(…, default)`
+       - Coerce both via `ToLiquid(…, data)`
        - Compare `DataValue` structurally
 
 - A comparison using the operator `<` yields true if the comparison is between values that are both numbers or both strings and that satisfy the comparison:
@@ -68,7 +68,7 @@ We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and
   1. If `a` is `Drop` and implements `LessThan` and `a.LessThan(b)` is true.
   2. Else if `b` is `Drop` and implements `LessThan` and `b.LessThan(a)` is true.
   3. Else:
-     - Coerce both via `ToLiquid(…, default)`
+     - Coerce both via `ToLiquid(…, data)`
      - Attempt standard ordering
 
 `!=`, `>`, `<=` and `>=` are defined in terms of `==` and `<`.
@@ -90,7 +90,7 @@ Membership tests (`contains` and `in`) determine whether a value appears in a co
 2. Else if `container` is an `Array` or a `Sequence`: iterate its elements and compare each element to `element` using `==`. If any element compares equal then the result is `true`, otherwise `false`.
 3. Else if `container` is an `Object`: membership tests whether there exists a key equal to the `element` when the `element` is converted to `String` (or compared structurally to the keys as implementation prefers). Typical implementations coerce `element` to `String` and test key presence.
 4. Else if `container` is a `String` and `element` is a `String`: `contains` tests substring inclusion; `in` with swapped operands follows the same rule.
-5. Otherwise, coerce `container` via `ToLiquid(…, default)` and retry from the top. If no rule applies, return `false`.
+5. Otherwise, coerce `container` via `ToLiquid(…, data)` and retry from the top. If no rule applies, return `false`.
 
 `in` is defined as `element in container` (i.e. RHS is the container). Both `contains` and `in` produce a `Boolean` result.
 

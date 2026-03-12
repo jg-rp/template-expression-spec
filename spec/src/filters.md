@@ -62,7 +62,7 @@ ReturnSpec =
 If no signature metadata is provided, all arguments are treated as:
 
 ```
-hint = default
+hint = data
 optional = true
 variadic = false
 accepts_lambda = false

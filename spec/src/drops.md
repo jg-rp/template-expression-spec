@@ -2,6 +2,8 @@
 
 Implementations may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
 
+TODO: A Drop is anything implementing `ToLiquid`
+
 $$
 ToLiquid : Drop × ContextHint → RuntimeValue
 $$
@@ -9,19 +11,23 @@ $$
 Where:
 
 $$
-ContextHint ∈ { default, numeric, string, boolean, array, object }
+ContextHint ∈ { data, numeric, string, boolean, array, object }
 $$
 
-Constraints:
+With the following constraints:
 
-- `ToLiquid(drop, default)` MUST return `DataValue`.
-- `ToLiquid(drop, boolean)` MUST return `Boolean` or `Nothing`.
-- `ToLiquid(drop, numeric)` MUST return `Number` or `Nothing`.
-- `ToLiquid(drop, string)` MUST return `String` or `Nothing`.
-- `ToLiquid(drop, array)` MUST return `Array<RuntimeValue>` or `Nothing`.
-- `ToLiquid(drop, object)` MUST return `Object<String → RuntimeValue>` or `Nothing`.
+$$
+\begin{aligned}
+ToLiquid(drop, data)    \;& → DataValue \\
+ToLiquid(drop, boolean) \;& → Boolean | Nothing \\
+ToLiquid(drop, numeric) \;& → Number | Nothing \\
+ToLiquid(drop, string)  \;& → String | Nothing \\
+ToLiquid(drop, array)   \;& → Array\langle RuntimeValue \rangle | Nothing \\
+ToLiquid(drop, object)  \;& → Object\langle String \to RuntimeValue \rangle | Nothing \\
+\end{aligned}
+$$
 
-The result of `ToLiquid(drop, default)` MUST be a valid `DataValue` as defined above, meaning it MUST NOT contain `Drop` at any depth.
+The result of $ToLiquid(drop, data)$ MUST be a valid $DataValue$ as defined above, meaning it MUST NOT contain $Drop$ at any depth.
 
 The following table shows when each hint applies.
 
@@ -30,24 +36,26 @@ The following table shows when each hint applies.
 | Arithmetic                                   | numeric |
 | String concatenation                         | string  |
 | Boolean test (`if`, `and`, `or`)             | boolean |
-| Comparison                                   | default |
-| Filter arguments (general)                   | default |
+| Comparison                                   | data    |
+| Filter arguments (general)                   | data    |
 | Array literal spread, eager filter arguments | array   |
 | Object literal spread                        | object  |
 
 ### Sequence protocol
 
-A Drop MAY implement the `Sequence` protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
+A Drop MAY implement the $Sequence$ protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
 
-A Drop implementing the Sequence protocol is considered a **Sequence value**.
+A Drop implementing the $Sequence$ protocol is considered a **Sequence value**.
 
-A Drop implements the `Sequence` protocol if it supports:
+A Drop implements the $Sequence$ protocol if it supports:
 
-```
-length() → Number
-slice(offset, limit, reversed) → Drop
-iterate() → Iterator<RuntimeValue>
-```
+$$
+\begin{aligned}
+length() \;& \to Number \\
+slice(offset, limit, reversed) \;& \to Drop \\
+iterate() \;& \to Iterator\langle RuntimeValue \rangle \\
+\end{aligned}
+$$
 
 Constraints:
 

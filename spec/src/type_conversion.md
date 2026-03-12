@@ -4,12 +4,12 @@ Automatic type conversion is performed in some contexts. Here we define abstract
 
 $$
 \begin{aligned}
-ToBoolean  \;&: RuntimeValue → Boolean \\
-ToNumber   \;&: RuntimeValue → Number | Nothing \\
-ToString   \;&: RuntimeValue → String \\
-ToArray    \;&: RuntimeValue → Array<RuntimeValue> \\
-ToObject   \;&: RuntimeValue → Object<String → RuntimeValue> \\
-ToIterable \;&: RuntimeValue → Sequence | Array<RuntimeValue> \\
+ToBoolean  \;&: RuntimeValue \to Boolean \\
+ToNumber   \;&: RuntimeValue \to Number | Nothing \\
+ToString   \;&: RuntimeValue \to String \\
+ToArray    \;&: RuntimeValue \to Array\langle RuntimeValue \rangle \\
+ToObject   \;&: RuntimeValue \to Object\langle String \to RuntimeValue \rangle \\
+ToIterable \;&: RuntimeValue \to Sequence | Array\langle RuntimeValue \rangle \\
 \end{aligned}
 $$
 
@@ -22,9 +22,9 @@ TODO: turn this into a table
 - String concatenation (filters): `ToString`
 - Boolean conditions used by `if`, ternary `if` expressions, `and`, `or`, and
   `not`: `ToBoolean`
-- Comparisons that require primitive values: `ToLiquid(…, default)` then structural comparison; numeric comparisons use `ToNumber` when both sides are numeric or coercible to numeric.
+- Comparisons that require primitive values: `ToLiquid(…, data)` then structural comparison; numeric comparisons use `ToNumber` when both sides are numeric or coercible to numeric.
 - `for` iterable expressions: `ToArray` / `ToLiquid(…, iterable)`
-- Filter arguments (general): `ToLiquid(…, default)` unless a filter documents a different required hint
+- Filter arguments (general): `ToLiquid(…, data)` unless a filter documents a different required hint
 - `ToArray` helper and sequence normalization: `ToArray`
 
 ### Truthiness and ToBoolean(x)
