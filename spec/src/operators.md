@@ -1,4 +1,4 @@
-# Operators
+## Operators
 
 The following table lists operators from lowest to highest precedence. Operators within the same group are evaluated left-to-right (left-associative).
 
@@ -16,9 +16,9 @@ The following table lists operators from lowest to highest precedence. Operators
 | 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
 | 11 (Highest) | **Primary**               | Literals, Variables, `( expr )`                    |
 
-## Conditional and Logical Operators
+### Conditional and Logical Operators
 
-## Ternary Expressions
+### Ternary Expressions
 
 The ternary operator `consequence if condition else alternative` provides inline branching.
 
@@ -30,7 +30,7 @@ The ternary operator `consequence if condition else alternative` provides inline
 
 The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
 
-## Logical `and` / `or` / `not`
+### Logical `and` / `or` / `not` / `??`
 
 These operators handle boolean logic but return the **last evaluated operand** rather than a strict boolean, allowing them to act as value selectors.
 
@@ -38,7 +38,7 @@ These operators handle boolean logic but return the **last evaluated operand** r
 
 - **Not:** `not` always returns a strict `Boolean` result by negating the `ToBoolean` result of its operand.
 
-## Comparison Operators
+### Comparison Operators
 
 Comparison is **total**; if two types are fundamentally incomparable and no protocol is present, the result is `false` rather than an error.
 
@@ -80,7 +80,7 @@ x <= y  = (x < y) or (x == y)
 x >= y  = (y < x) or (x == y)
 ```
 
-## Membership Operators
+### Membership Operators
 
 TODO: see notes/membership.md
 
@@ -94,7 +94,7 @@ Membership tests (`contains` and `in`) determine whether a value appears in a co
 
 `in` is defined as `element in container` (i.e. RHS is the container). Both `contains` and `in` produce a `Boolean` result.
 
-## Arithmetic Operators
+### Arithmetic Operators
 
 Arithmetic operators operate on decimal numbers and return `Nothing` when numeric coercion fails or when an operation is undefined (such as division or modulo by zero).
 
@@ -124,7 +124,7 @@ For unary prefix operators:
 
 Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
 
-## Division operator
+### Division operator
 
 Division uses **true arithmetic division**.
 
@@ -194,7 +194,7 @@ Example:
 
 Implementations MUST compute the quotient using decimal arithmetic and MUST apply deterministic rounding as defined in the Numeric Semantics section.
 
-## Modulo Operator
+### Modulo Operator
 
 The modulo operator computes the remainder of division.
 

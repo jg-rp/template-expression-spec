@@ -6,10 +6,11 @@ META = spec/src/metadata.yaml
 PREAMBLE = spec/src/preamble.md
 SPEC = \
 	spec/src/introduction.md \
-	spec/src/data_types_and_values.md \
+	spec/src/data_model.md \
 	spec/src/drops.md \
-	spec/src/literals.md \
 	spec/src/type_conversion.md \
+	spec/src/syntax_and_semantics.md \
+	spec/src/literals.md \
 	spec/src/variables_and_paths.md \
 	spec/src/operators.md \
 	spec/src/filters.md

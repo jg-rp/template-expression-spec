@@ -1,4 +1,4 @@
-# Filters
+## Filters
 
 A filter is a **named total function** registered in the environment.
 
@@ -14,23 +14,42 @@ Where:
 FilterFunction : RuntimeValue × List<RuntimeValue> → RuntimeValue
 ```
 
-The pipe operator `|` represents function application, where the expression on the left is passed as the first argument to the filter on the right.
+Filters are transformations applied to a value via the pipe operator (`|`). While they are written linearly, they are semantically equivalent to nested function calls where the value to the left of the pipe is passed as the first argument.
 
-```
-expr | filter1: a, b | filter2: c
-```
+### The Input Value
 
-is equivalent to nested function calls where the previous expression is passed as the first argument to the next filter:
+Every filter application has at least one argument: the **input**. This is the value resulting from the expression immediately to the left of the pipe. In the conceptual mapping to a standard function, the input always occupies the first positional slot (index 0).
 
-```
-filter2(filter1(expr, a, b), c)
-```
+### Positional Arguments
 
-## Well-Typed Filters
+Positional arguments are additional values passed to a filter, identified by their sequence following the filter name.
+
+- **Ordering:** The first explicit argument provided in the template is treated as the second argument to the underlying function (index 1), the next as the third (index 2), and so on.
+- **Separators:** Arguments are separated by commas. While some implementations may allow whitespace as a delimiter for backward compatibility, commas are the canonical separator.
+- **Placement:** All positional arguments MUST appear before any keyword arguments.
+
+### Keyword Arguments
+
+Keyword arguments allow values to be passed to specific named parameters of a filter. This enhances readability for filters with multiple optional configuration flags.
+
+- **Structure:** A keyword argument consists of a name (identifier), followed by an assignment operator (`=` or `:`), and an expression.
+- **Semantic Equivalence:** The assignment operators `=` and `:` are treated as semantically identical. They serve only to bind the expression value to the named parameter.
+- **Ordering:** Keyword arguments may appear in any order relative to each other, provided they follow all positional arguments.
+- **Uniqueness:** A specific keyword name may only be used once within a single filter application.
+
+### Evaluation Model
+
+1. **Left-to-Right:** The input expression and all arguments (both positional and keyword) are evaluated in the order they appear in the source text.
+2. **Total Evaluation:** Every argument expression must be successfully evaluated to a value (which may be `Nothing`) before the filter itself is invoked.
+3. **Conceptual Mapping:** A filter application such as `input | filter: arg1, key=arg2` is conceptually evaluated as `filter(input, arg1, key: arg2)`.
+
+### Well-Typed Filters
 
 Filters are total functions over `RuntimeValue`. Implementations MAY associate optional type metadata with filter definitions to enable tooling, static diagnostics, or documentation. Such metadata MUST NOT alter runtime semantics.
 
-## Filter Signatures
+TODO: see filter_signatures_and_evaluation.md
+
+### Filter Signatures
 
 An implementation MAY register a signature for a filter:
 
@@ -68,7 +87,7 @@ variadic = false
 accepts_lambda = false
 ```
 
-## Argument Evaluation and Coercion
+### Argument Evaluation and Coercion
 
 Given:
 
@@ -96,7 +115,7 @@ Evaluation proceeds as follows:
 
 Coercion MUST be total. If coercion for any argument yields `Nothing`, the filter invocation MUST return `Nothing` unless the filter explicitly defines alternate behavior for `Nothing`.
 
-## Arity Mismatch
+### Arity Mismatch
 
 Filters are total and MUST NOT raise errors due to incorrect arity.
 
@@ -119,7 +138,7 @@ Arity handling rules:
 
 Under no circumstances does arity mismatch produce a runtime error.
 
-## Polymorphism
+### Polymorphism
 
 Filters MAY be polymorphic. A filter MAY define behavior for multiple categories of input values.
 
@@ -134,7 +153,7 @@ If a filter receives a value outside the categories it supports, it MUST return 
 
 Polymorphism does not imply static type checking. Any type metadata associated with a filter is advisory and MAY be used for diagnostics, but runtime semantics remain governed solely by the total evaluation rules of this specification.
 
-## Totality Requirement
+### Totality Requirement
 
 All filter functions MUST satisfy:
 
@@ -148,7 +167,7 @@ If a filter implementation encounters an internal failure or unsupported input c
 
 Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the even of an unknown filter.
 
-## Lambda Expressions
+### Lambda Expressions
 
 Lambda expressions provide a way to define anonymous, inline functions that are passed directly to filters. They allow filters to execute custom logic over collections, such as mapping values, filtering arrays, or applying custom sorting rules.
 

@@ -32,17 +32,17 @@ Formally, for every expression $e$ and environment $\rho$:
 
 $$⟦ e ⟧(\rho) \in RuntimeValue$$
 
-## Literals
+### Literals
 
 TODO: String interpolation
 
 TODO: Structured Literals and Spread
 
-## Operators
+### Operators
 
 TODO:
 
-## Filters
+### Filters
 
 Filters are first-class citizens integrated into the recursive structure of the grammar. They can be nested within parentheses, allowing the output of a pipeline to be used as an operand in arithmetic or comparison.
 
@@ -52,11 +52,11 @@ Filters are first-class citizens integrated into the recursive structure of the 
 
 TODO: lambda arguments
 
-## Ternary Expressions
+### Ternary Expressions
 
 TODO:
 
-## Extension Types (Drops)
+### Extension Types (Drops)
 
 Drops participate in the language's semantics through structured protocols:
 
