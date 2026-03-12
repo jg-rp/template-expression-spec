@@ -57,6 +57,24 @@
       "result": "42"
     },
     {
+      "name": "bracketed selector, singular query",
+      "expression": "a[b]",
+      "data": {
+        "a": { "c": 42 },
+        "b": "c"
+      },
+      "result": "42"
+    },
+    {
+      "name": "bracketed selector, singular query, segments",
+      "expression": "a[b.c['d']]",
+      "data": {
+        "a": { "e": 42 },
+        "b": { "c": { "d": "e" } }
+      },
+      "result": "42"
+    },
+    {
       "name": "predicate, defined",
       "expression": "a.b.defined?",
       "data": {
