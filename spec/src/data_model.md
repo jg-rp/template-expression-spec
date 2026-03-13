@@ -143,10 +143,10 @@ Examples:
 
 ## Iterables
 
-Some evaluation algorithms operate on _iterable_ values. An $Iterable$ is either and $Array$ or $Sequence$:
+Some evaluation algorithms operate on _iterable_ values. An $Iterable$ is either an $Array$ or $Sequence$:
 
 $$
-Iterable = Array<RuntimeValue> | Sequence
+Iterable = Array\langle RuntimeValue \rangle | Sequence
 $$
 
 Where $Sequence$ is a $Drop$ implementing the sequence protocol.

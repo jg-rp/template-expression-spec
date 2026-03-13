@@ -45,47 +45,11 @@ Keyword arguments allow values to be passed to specific named parameters of a fi
 
 ### Well-Typed Filters
 
-Filters are total functions over `RuntimeValue`. Implementations MAY associate optional type metadata with filter definitions to enable tooling, static diagnostics, or documentation. Such metadata MUST NOT alter runtime semantics.
+While filters are invoked dynamically, they may be accompanied by a **Signature**. This signature is a piece of metadata intended for tooling, static analysis, and ahead-of-time (AOT) validation.
 
-TODO: see filter_signatures_and_evaluation.md
-
-### Filter Signatures
-
-An implementation MAY register a signature for a filter:
-
-```
-FilterSignature =
-  parameters: List<ParameterSpec>
-  returns: ReturnSpec
-```
-
-Where:
-
-```
-ParameterSpec =
-  hint: ContextHint
-  optional: Boolean
-  variadic: Boolean
-  accepts_lambda: Boolean
-
-ReturnSpec =
-  hint: ContextHint
-```
-
-- `hint` specifies the coercion context used when preparing the argument.
-- `optional` indicates that the argument may be omitted.
-- `variadic` indicates that zero or more additional arguments are accepted.
-- `accepts_lambda` indicates that the argument position accepts a lambda expression without immediate evaluation.
-- `returns.hint` specifies the intended result category for documentation or tooling; it does not affect runtime coercion.
-
-If no signature metadata is provided, all arguments are treated as:
-
-```
-hint = data
-optional = true
-variadic = false
-accepts_lambda = false
-```
+- **Parse-Time Utility:** Signatures allow compilers or IDEs to provide autocomplete, verify argument counts, and check for the presence of required keyword arguments before the template is executed.
+- **Decoupling:** The execution engine MUST NOT depend on this metadata to perform a filter invocation. The engine's role is strictly to evaluate arguments and dispatch the resulting values to the filter implementation.
+- **Polymorphism:** Because signatures are for tooling, a single filter name may be associated with multiple signatures (overloading) or a variadic signature without affecting the runtime evaluation model.
 
 ### Argument Evaluation and Coercion
 
@@ -138,30 +102,19 @@ Arity handling rules:
 
 Under no circumstances does arity mismatch produce a runtime error.
 
-### Polymorphism
-
-Filters MAY be polymorphic. A filter MAY define behavior for multiple categories of input values.
-
-For example, a filter `length` MAY accept:
-
-- `String`
-- `Array`
-- `Object`
-- `Drop` implementing the `Sequence` protocol
-
-If a filter receives a value outside the categories it supports, it MUST return a defined result. The recommended behavior is to return `Nothing`, though filters MAY instead return another deterministic value (e.g., `0`) if documented.
-
-Polymorphism does not imply static type checking. Any type metadata associated with a filter is advisory and MAY be used for diagnostics, but runtime semantics remain governed solely by the total evaluation rules of this specification.
-
 ### Totality Requirement
 
-All filter functions MUST satisfy:
+All filters MUST be **total functions**. A filter is considered total if it returns a valid value for every possible combination of input and arguments.
+
+- **No Exceptions:** A filter must never throw an exception or halt the execution of the template.
+- **Fallback to Nothing:** If a transformation is mathematically or logically impossible (e.g., division by zero, or passing a `String` to a filter that only handles `Numbers` and cannot coerce the value), the filter MUST return `Nothing`.
+- **Consistency:** The return value of a failed filter application should be indistinguishable from a variable lookup that yielded no result, allowing the `??` (Null Coalescing) operator to handle the fallback gracefully.
+
+Formally, for every possible input tuple, a filter MUST return a `RuntimeValue` and MUST NOT raise an exception.
 
 ```
 FilterFunction : RuntimeValue × List<RuntimeValue> → RuntimeValue
 ```
-
-For every possible input tuple, a filter MUST return a `RuntimeValue` and MUST NOT raise an exception.
 
 If a filter implementation encounters an internal failure or unsupported input combination, it MUST return `Nothing`.
 
