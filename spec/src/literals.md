@@ -4,11 +4,64 @@ TODO:
 
 ### Null Literal
 
-TODO:
+#### Syntax
+
+```peg
+NullLiteral ← ("null" / "nil") !C
+```
+
+#### Semantics
+
+The null literal represents a deliberate "empty" value within the data model.
+
+- **Keywords:** The language provides two identical keywords, `null` and `nil`, to support different developer preferences. They are semantically indistinguishable.
+
+- **Evaluation:** A null literal always evaluates to a value of type `Null`.
+
+- **Relation to Nothing:** `Null` is a concrete value that can be stored in variables or returned by filters. It is distinct from `Nothing`, which is the internal signal used to represent evaluation failures, missing variables, or out-of-bounds access.
+
+- **Truthiness:** In a boolean context, `Null` is always "falsy" (see @sec:truthy).
+
+#### Examples
+
+| Expression            | Evaluation  | Notes                                                                     |
+| --------------------- | ----------- | ------------------------------------------------------------------------- |
+| `null`                | `null`      | Evaluates to the Null type.                                               |
+| `nil`                 | `null`      | Identical to `null`.                                                      |
+| `user.id == null`     | `true`      | Returns true if `id` is explicitly null.                                  |
+| `(null ?? "default")` | `"default"` | The null coalescing operator treats `Null` as a trigger for the fallback. |
+| `(null or "default")` | `"default"` | The logical `or` operator treats `Null` as a trigger for the fallback.    |
 
 ### Boolean Literals
 
-TODO:
+#### Syntax
+
+```peg
+BooleanLiteral ← ("true" / "false") !C
+```
+
+Note: The negative lookahead `!C` ensures that identifiers beginning with a boolean keyword (e.g., `true_value`) are not incorrectly parsed as literals.
+
+#### Semantics
+
+Boolean literals represent the two logical truth values.
+
+- **Keywords**: The language recognizes the lowercase keywords `true` and `false`.
+
+- **Evaluation**: These literals evaluate to a value of type `Boolean`.
+
+- **Case Sensitivity**: Boolean keywords are case-sensitive. `True` or `TRUE` are not recognized as boolean literals and will be interpreted as identifiers (variable names).
+
+- **Truthiness**: The literal `true` is always "truthy," and the literal `false` is always "falsy" (see @sec:truthy).
+
+#### Examples
+
+| Expression        | Evaluation | Notes                                                                      |
+| ----------------- | ---------- | -------------------------------------------------------------------------- |
+| `true`            | `true`     | Evaluates to the Boolean `true` value.                                     |
+| `false`           | `false`    | Evaluates to the Boolean `false` value.                                    |
+| `not true`        | `false`    | The logical `not` operator inverts the boolean value.                      |
+| `(true ?? false)` | `true`     | The null coalescing operator returns the first non-null/non-nothing value. |
 
 ### Numeric Literals
 

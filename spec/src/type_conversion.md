@@ -27,7 +27,7 @@ TODO: turn this into a table
 - Filter arguments (general): `ToLiquid(…, data)` unless a filter documents a different required hint
 - `ToArray` helper and sequence normalization: `ToArray`
 
-### Truthiness and ToBoolean(x)
+### Truthiness and ToBoolean(x) {#sec:truthy}
 
 The language adopts structural truthiness. Empty strings, empty arrays, empty objects, zero numbers, null, and absence (`Nothing`) are falsy. All other values are truthy. This rule is uniform across value types and does not depend on host-language semantics.
 

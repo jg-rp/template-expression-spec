@@ -12,9 +12,46 @@ Implementations SHOULD treat property access on host objects according to a well
 
 ### Identifiers
 
+#### Syntax
+
+```peg
+Identifier      ← IdentifierFirst IdentifierChar* !"?"
+IdentifierFirst ← [a-zA-Z_] / [\u{80}-\u{D7FF}] / [\u{E000}-\u{10FFFF}]
+IdentifierChar  ← IdentifierFirst / [0-9]
+```
+
+Note: The negative lookahead `!"?"` ensures that an identifier is not immediately followed by a question mark. This reserves that specific syntactic pattern for **Predicates** (see @sec:predicates).
+
+#### Semantics
+
+Identifiers are the names used to reference variables, properties, filters, and keyword arguments.
+
+- **Case Sensitivity**: Identifiers are strictly case-sensitive. `myVariable` and `myvariable` are treated as two distinct identifiers.
+
+- **Initial Character**: An identifier MUST start with an alphabetic character (a-z, A-Z), an underscore (`_`), or a supported non-ASCII Unicode character. It cannot start with a digit.
+
+- **Character Set**: After the first character, identifiers may contain any combination of alphanumeric characters, underscores, and supported Unicode ranges.
+
+- **Unicode Support**: The language supports a wide range of Unicode characters in identifiers, specifically excluding surrogates and certain control characters, allowing for localized variable and filter naming.
+
+- **Relationship to Predicates**: A sequence of characters that would otherwise be a valid identifier is NOT considered an `Identifier` if it is followed by a `?`. Such sequences are instead parsed as part of a `Predicate`.
+
+#### Examples
+
+| Identifier  | Validity    | Notes                                                      |
+| ----------- | ----------- | ---------------------------------------------------------- |
+| `user_name` | Valid       | Standard snake_case identifier.                            |
+| `_secret`   | Valid       | Starts with an underscore.                                 |
+| `item2`     | Valid       | Contains a digit (but not at the start).                   |
+| `dâtâ`      | Valid       | Contains non-ASCII Unicode characters.                     |
+| `2fast`     | **Invalid** | Cannot start with a digit.                                 |
+| `is_valid?` | **Invalid** | Matches the syntax for a **Predicate**, not an Identifier. |
+
+### Variable and Path Resolution
+
 TODO:
 
-### Predicates
+### Predicates {#sec:predicates}
 
 A predicate is an optional trailing path segment of the form `.predicate?`. Predicates are syntactically distinct from shorthand name segments in that they must end in a question mark `?` and they must be the last segment of a path.
 
