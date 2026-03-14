@@ -6,21 +6,19 @@ TODO:
 
 #### Syntax
 
+The language provides two semantically indistinguishable keywords, `null` and `nil`, to support different developer preferences.
+
 ```peg
 NullLiteral ← ("null" / "nil") !C
 ```
 
+Note: The negative lookahead `!C` ensures that identifiers beginning with a Null keyword (e.g., `nullify`) are not incorrectly parsed as literals.
+
 #### Semantics
 
-The null literal represents a deliberate "empty" value within the data model.
+The null literal represents a deliberate "empty" value within the data model. It is a concrete data value. It is distinct from `Nothing`, which is the internal signal used to represent evaluation failures, missing variables, or out-of-bounds access.
 
-- **Keywords:** The language provides two identical keywords, `null` and `nil`, to support different developer preferences. They are semantically indistinguishable.
-
-- **Evaluation:** A null literal always evaluates to a value of type `Null`.
-
-- **Relation to Nothing:** `Null` is a concrete value that can be stored in variables or returned by filters. It is distinct from `Nothing`, which is the internal signal used to represent evaluation failures, missing variables, or out-of-bounds access.
-
-- **Truthiness:** In a boolean context, `Null` is always "falsy" (see @sec:truthy).
+A null literal always evaluates to a value of type `Null`. In a boolean context, `Null` is always "falsy" (see @sec:truthy).
 
 #### Examples
 
@@ -36,7 +34,9 @@ The null literal represents a deliberate "empty" value within the data model.
 
 #### Syntax
 
-```peg
+The language recognizes the lowercase keywords `true` and `false`.
+
+```{.peg}
 BooleanLiteral ← ("true" / "false") !C
 ```
 
@@ -44,15 +44,9 @@ Note: The negative lookahead `!C` ensures that identifiers beginning with a bool
 
 #### Semantics
 
-Boolean literals represent the two logical truth values.
+Boolean literals represent the two logical truth values. They evaluate to a value of type `Boolean`. Boolean keywords are case-sensitive. `True` or `TRUE` are not recognized as boolean literals and will be interpreted as identifiers (variable names).
 
-- **Keywords**: The language recognizes the lowercase keywords `true` and `false`.
-
-- **Evaluation**: These literals evaluate to a value of type `Boolean`.
-
-- **Case Sensitivity**: Boolean keywords are case-sensitive. `True` or `TRUE` are not recognized as boolean literals and will be interpreted as identifiers (variable names).
-
-- **Truthiness**: The literal `true` is always "truthy," and the literal `false` is always "falsy" (see @sec:truthy).
+The literal `true` is always "truthy," and the literal `false` is always "falsy" (see @sec:truthy).
 
 #### Examples
 

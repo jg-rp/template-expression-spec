@@ -11,6 +11,7 @@ SPEC = \
 	spec/src/type_conversion.md \
 	spec/src/syntax_and_semantics.md \
 	spec/src/literals.md \
+	spec/src/identifiers.md \
 	spec/src/variables_and_paths.md \
 	spec/src/operators.md \
 	spec/src/filters.md
