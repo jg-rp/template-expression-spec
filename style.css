@@ -270,7 +270,7 @@ pre {
   background-color: #fffaf0;
   border-left: 4px solid #eaddca;
   font-family: inherit;
-  font-size: 0.9em;
+  /* font-size: 0.9em; */
   text-align: left;
   line-height: 1.2;
 }
