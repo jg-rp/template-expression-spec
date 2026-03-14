@@ -59,21 +59,38 @@ The literal `true` is always "truthy," and the literal `false` is always "falsy"
 
 ### Numeric Literals
 
-Numeric literals are parsed as exact decimal values.
+#### Syntax
 
-Examples:
+Numeric literals take the form of:
 
-```
-1        → exact integer
-1.0      → exact decimal
-0.01     → exact decimal
+- An integer part - must be either a single `0` or a non-zero digit followed by any number of digits. Leading zeros are not permitted (e.g., `05` is invalid).
+- An optional fractional part - a decimal point followed by one or more digits.
+- An optional exponent part using either `e` or `E`.
+
+```peg
+NumberLiteral ← Integer Fraction? Exponent? !C
+Integer       ← "0" / [1-9] [0-9]*
+Fraction      ← "." [0-9]+
+Exponent      ← [eE] [+-]? [0-9]+
 ```
 
-Trailing zeros are not semantically significant:
+Syntactically, the `NumberLiteral` itself is unsigned. Negative numbers are represented by applying the unary negation operator (`-`) to a literal. See @sec:arithmetic.
 
-```
-1.0 == 1  → true
-```
+#### Semantics
+
+Regardless of the notation used (standard or scientific), all numeric literals resolve to the `Number` type and are stored using exact decimal semantics. An exponent does not "coerce" the number into a floating-point type; `1e2` and `100` are semantically and type-identical.
+
+#### Examples
+
+| Expression | Evaluation  | Notes                                                      |
+| ---------- | ----------- | ---------------------------------------------------------- |
+| `0`        | `0`         | Single zero integer.                                       |
+| `42`       | `42`        | Positive integer without leading zeros.                    |
+| `0.001`    | `0.001`     | Decimal fraction.                                          |
+| `1.23e4`   | `12300`     | Scientific notation (positive exponent).                   |
+| `5E-3`     | `0.005`     | Scientific notation (negative exponent, case-insensitive). |
+| `-10.5`    | `-10.5`     | Unary negation applied to a literal.                       |
+| `05`       | **Invalid** | Leading zeros are not allowed in the integer part.         |
 
 ### String Literals
 

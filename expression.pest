@@ -156,7 +156,7 @@ non_surrogate = _{
 high_surrogate = _{ ^"D" ~ ("8" | "9" | ^"A" | ^"B") ~ ASCII_HEX_DIGIT{2} }
 low_surrogate  = _{ ^"D" ~ (^"C" | ^"D" | ^"E" | ^"F") ~ ASCII_HEX_DIGIT{2} }
 
-number = { int ~ frac? ~ exp? }
+number = { int ~ frac? ~ exp? ~ !C }
 int    = { "0" | (ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*) }
 frac   = { "." ~ ASCII_DIGIT+ }
 exp    = { ^"e" ~ ("-" | "+")? ~ ASCII_DIGIT+ }

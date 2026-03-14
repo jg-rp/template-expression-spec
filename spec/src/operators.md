@@ -94,7 +94,7 @@ Membership tests (`contains` and `in`) determine whether a value appears in a co
 
 `in` is defined as `element in container` (i.e. RHS is the container). Both `contains` and `in` produce a `Boolean` result.
 
-### Arithmetic Operators
+### Arithmetic Operators {#sec:arithmetic}
 
 Arithmetic operators operate on decimal numbers and return `Nothing` when numeric coercion fails or when an operation is undefined (such as division or modulo by zero).
 

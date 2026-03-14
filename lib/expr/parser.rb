@@ -145,13 +145,13 @@ module Expr
         AST::Integer.new(pair, int.text.to_i)
       in :number, [int, [:frac, _], *]
         AST::Float.new(pair, pair.text.to_f)
-      in :number, [int, [:expr, _]]
+      in :number, [int, [:exp, _]]
         text = pair.text
         if text.include?("-")
           # negative exponent
-          AST::Float.new(text.to_f)
+          AST::Float.new(pair, text.to_f)
         else
-          AST::Integer.new(text.to_f.to_i)
+          AST::Integer.new(pair, text.to_f.to_i)
         end
       else
         raise "expected :number, found #{pair.rule.inspect}"
