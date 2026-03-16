@@ -30,13 +30,13 @@ A null literal always evaluates to a value of type `Null`. In a boolean context,
 
 #### Examples
 
-| Expression            | Evaluation  | Notes                                                                     |
-| --------------------- | ----------- | ------------------------------------------------------------------------- |
-| `null`                | `null`      | Evaluates to the Null type.                                               |
-| `nil`                 | `null`      | Identical to `null`.                                                      |
-| `user.id == null`     | `true`      | Returns true if `id` is explicitly null.                                  |
-| `(null ?? "default")` | `"default"` | The null coalescing operator treats `Null` as a trigger for the fallback. |
-| `(null or "default")` | `"default"` | The logical `or` operator treats `Null` as a trigger for the fallback.    |
+| Expression            | Evaluation  | Notes                                                                  |
+| --------------------- | ----------- | ---------------------------------------------------------------------- |
+| `null`                | `null`      | Evaluates to the Null type.                                            |
+| `nil`                 | `null`      | Identical to `null`.                                                   |
+| `user.id == null`     | `true`      | Returns true if `id` is explicitly null.                               |
+| `(null ?? "default")` | `null`      | The coalescing operator tests for `Nothing`. `null` is a data value.   |
+| `(null or "default")` | `"default"` | The logical `or` operator treats `Null` as a trigger for the fallback. |
 
 ### Boolean Literals
 

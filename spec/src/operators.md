@@ -16,27 +16,108 @@ The following table lists operators from lowest to highest precedence. Operators
 | 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
 | 11 (Highest) | **Primary**               | Literals, Variables, `( expr )`                    |
 
-### Conditional and Logical Operators
-
 ### Ternary Expressions
 
-The ternary operator `consequence if condition else alternative` provides inline branching.
+#### Syntax
 
-- **Evaluation:** The `condition` is evaluated first and converted via `ToBoolean`.
+The ternary expression follows a "Python-style" postfix conditional syntax. It is the top-level expression in the grammar.
 
-- **Short-circuiting:** Only the branch corresponding to the truthiness of the condition is evaluated; the other branch MUST NOT be evaluated.
+```peg
+TernaryExpression ← PipeExpression ( "if" !C PipeExpression "else" !C PipeExpression )?
+PipeExpression    ← CoalesceExpression Filter*
+```
 
-- **Recursive Binding:** While `ternary_expr` has the lowest precedence, its components (`consequence`, `alternative`) are bound to `pipe_expr`, allowing pipelines to exist within either branch without parentheses.
+The keywords `if` and `else` are followed by a negative lookahead `!C` to ensure they are not parsed as prefixes of identifiers.
 
-The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
+By requiring all three components—the consequence, the condition, and the alternative—to be `PipeExpression` types, the grammar strictly forbids nested ternary expressions without explicit grouping via parentheses.
 
-### Logical `and` / `or` / `not` / `??`
+#### Semantics
 
-These operators handle boolean logic but return the **last evaluated operand** rather than a strict boolean, allowing them to act as value selectors.
+Ternary expressions allow for branching logic within a single line. They prioritize the "happy path" by placing the consequence first.
 
-- **Short-circuiting:** `and` returns the first falsy value or the last value; `or` returns the first truthy value or the last value.
+1. The **Condition** (`PipeExpression`) is evaluated first.
+2. The result is coerced to a Boolean via **ToBoolean(x)**.
+3. If `true`, the **Consequence** is evaluated and returned; the alternative is short-circuited.
+4. If `false`, the **Alternative** is evaluated and returned; the consequence is short-circuited.
 
-- **Not:** `not` always returns a strict `Boolean` result by negating the `ToBoolean` result of its operand.
+Because each part is a `PipeExpression`, you can apply filters directly within the branches without extra grouping (e.g., `user.name | upcase if user.name.defined? else "ANONYMOUS"`).
+
+Note: The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
+
+#### Examples
+
+TODO: better examples
+
+| Expression                    | Evaluation  | Notes                                                    |
+| ----------------------------- | ----------- | -------------------------------------------------------- |
+| `"Hi" if true else "Bye"`     | `"Hi"`      | Basic usage.                                             |
+| `a if b else c if d else e`   | **Invalid** | Syntax error: `c if d else e` is not a `PipeExpression`. |
+| `a if b else (c if d else e)` | —           | Valid: Parentheses restore the `Expression` context.     |
+
+### Nothing Coalescing Operator
+
+#### Syntax
+
+The Nothing coalescing operator (`??`) is a binary operator used to provide a fallback for unresolved paths or missing data.
+
+```peg
+CoalesceExpression ← OrExpression ( S "??" S OrExpression )*
+```
+
+#### Semantics
+
+The `??` operator evaluates its operands from left to right and returns the first value that is not `Nothing`.
+
+The operator triggers a fallback **only** if the left-hand side evaluates to `Nothing` (the signal for a failed resolution or non-existent variable). If the left-hand side is any value other than `Nothing` (including `false`, `0`, or `""`), the right-hand side is not evaluated.
+
+`??` binds more loosely than logical `or`, meaning `a or b ?? c` is evaluated as `(a or b) ?? c`.
+
+#### Examples
+
+Given a context: `{"id": 0, "status": null}`
+
+| Expression                  | Evaluation   | Notes                                        |
+| --------------------------- | ------------ | -------------------------------------------- |
+| `id ?? 1`                   | `0`          | `0` is not `Nothing`.                        |
+| `status ?? "active"`        | `null`       | `null` is valid data; no fallback.           |
+| `missing_var ?? "fallback"` | `"fallback"` | `Nothing` triggers the fallback.             |
+| `user.profile.id ?? 1`      | `1`          | Failed path resolution results in `Nothing`. |
+| `null ?? "fallback"`        | `null`       | Consistent with the "Null is Data" rule.     |
+
+### Logical Operators
+
+#### Syntax
+
+Logical operators perform boolean algebra and support short-circuit evaluation.
+
+```peg
+OrExpression     ← AndExpression ( S "or" !C S AndExpression )*
+AndExpression    ← PrefixExpression ( S "and" !C S PrefixExpression )*
+PrefixExpression ← NotExpression / TestExpression
+NotExpression    ← "not" !C S PrefixExpression
+```
+
+#### Semantics
+
+Logical operators rely on the $IsTruthy(x)$ abstract function to evaluate operands (see @sec:truthy).
+
+`or` returns the first **truthy** operand. If all operands are falsy, it returns the result of the last operand. Short-circuits if a truthy value is found.
+
+`and` returns the first **falsy** operand. If all operands are truthy, it returns the result of the last operand. Short-circuits if a falsy value is found.
+
+`not` is a unary operator that returns `true` if the operand is falsy, and `false` if the operand is truthy.
+
+#### Examples
+
+| Expression             | Evaluation   | Notes                                                          |
+| ---------------------- | ------------ | -------------------------------------------------------------- |
+| `true or false`        | `true`       | Standard boolean logic.                                        |
+| `null or "default"`    | `"default"`  | `null` is falsy.                                               |
+| `0 or "fallback"`      | `"fallback"` | `0` is falsy.                                                  |
+| `"hi" and true`        | `true`       | `"hi"` is truthy; `and` returns the last value.                |
+| `missing_var and true` | `Nothing`    | `Nothing` is falsy; `and` returns the first falsy value found. |
+| `not null`             | `true`       | `null` is falsy, so `not null` is `true`.                      |
+| `not 0`                | `true`       | `0` is falsy.                                                  |
 
 ### Comparison Operators
 
