@@ -35,14 +35,13 @@ To determine if a selector can be applied, the language distinguishes between tw
 
 #### The Resolution Chain
 
-1. **The Variable Root:** Resolution starts by looking up the `VariableRoot` in the current execution context.
-2. **Segment Traversal:** For each subsequent `Segment` (Dot or Bracket):
+1. Resolution starts by looking up the `VariableRoot` in the current execution context.
+2. For each subsequent `Segment` (Dot or Bracket):
    - If the current value is **Structural**, the engine attempts to resolve the selector against it (e.g., looking up a key in an Object or an index in an Array). If selector lookup fails (key not found, index out of bounds or non string/integer selector), the segment resolves to `Nothing`.
    - If the current value is **Non-Structural**, the segment resolves to `Nothing`.
-
-3. **Path Termination:**
-   - **Standard Path:** If the variable does not end in a predicate, the final value of the last segment is the result of the expression. If any segment in the chain resolved to `Nothing`, the entire variable expression resolves to `Nothing`.
-   - **Predicate Path:** If the variable ends in a `Predicate`, the predicate is invoked using the result of the preceding segment as its input.
+3. Path Termination:
+   - Standard Path: If the variable does not end in a predicate, the final value of the last segment is the result of the expression. If any segment in the chain resolved to `Nothing`, the entire variable expression resolves to `Nothing`.
+   - Predicate Path: If the variable ends in a `Predicate`, the predicate is invoked using the result of the preceding segment as its input.
 
 #### Predicates {#sec:predicates}
 
@@ -52,7 +51,7 @@ $$
 Predicate : RuntimeValue → Boolean
 $$
 
-For any predicate $.p?$ and accompanying abstract function $IsP$, $x.p?$ is semantically equivalent to $IsP(x)$.
+For any predicate $.p?$ and accompanying abstract function $IsP$, `x.p?` is semantically equivalent to $IsP(x)$.
 
 Unlike standard segments, **Predicates** are specifically designed to handle the absence of a value.
 
