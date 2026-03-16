@@ -53,7 +53,7 @@ An evaluation result is truthy if it represents a non-empty, non-zero, non-null 
 | Object     | size(o) > 0                            |
 | Drop       | ToLiquid(x, boolean); false if Nothing |
 
-### ToNumber(x)
+### ToNumber(x) {#sec:to_number}
 
 Returns either Integer or Decimal.
 

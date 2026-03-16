@@ -1,7 +1,5 @@
 ## Literals
 
-TODO:
-
 ```peg
 Literal ← NumberLiteral /
           StringLiteral /
@@ -225,9 +223,29 @@ ObjectKey     ← Identifier / QuotedName
 QuotedName    ← ( "\"" DoubleQuotedName "\"" ) / ( "'" SingleQuotedName "'" )
 ```
 
-TODO: define DoubleQuotedName and SingleQuotedName
+`QuotedName` follows the same escaping rules as `StringLiteral` but **does not support interpolation**. This ensures that object keys are statically determinable at parse-time.
 
-_Note: `QuotedName` follows the same escaping rules as `StringLiteral` but **does not support interpolation**. This ensures that object keys are statically determinable at parse-time._
+```peg
+QuotedName         ← DoubleQuotedName / SingleQuotedName
+
+DoubleQuotedName   ← "\"" ( DoubleEscapedName / NameSourceChar / "'")* "\""
+SingleQuotedName   ← "'"  ( SingleEscapedName / NameSourceChar / "\"")* "'"
+
+DoubleEscapedName  ← "\\" ( "\"" / EscapableNameChar )
+DoubleEscapedName  ← "\\" ( "'" / EscapableNameChar )
+
+EscapableNameChar  ← "b" / "f" / "n" / "r" / "t" / "/" / "\\" / ("u" ~ HexChar)
+
+NameSourceChar     ← " " /
+                     "!" /
+                     "#" /
+                     "$" /
+                     "%" /
+                     "&" /
+                     [\u0028-\u0058] /
+                     [\u005D-\uD7FF] /
+                     [\uE000-\u0010FFFF]
+```
 
 #### Semantics
 
@@ -265,104 +283,40 @@ Given a context: `{"base": {"id": 1, "role": "guest"}}`
 
 ### Range Literals
 
-A range literal denotes a finite sequence of consecutive integers.
+#### Syntax
 
-Syntactic form:
+Range literals consist of two expressions separated by a double-dot (`..`), enclosed in parentheses.
 
-```
-range_literal ::= "(" start ".." end ")"
-```
-
-Where:
-
-- `start` and `end` are arbitrary expressions.
-- `..` binds as a primary expression.
-- Parentheses MUST be used.
-
-Examples:
-
-```
-(1..5)
-((1 + 1)..10)
-(a..b)
+```peg
+RangeLiteral ← "(" S Expression S ".." S Expression S ")"
 ```
 
-#### Evaluation Semantics
+#### Semantics
 
-A range literal is syntactic sugar for a finite integer sequence.
+A range literal constructs an immutable, inclusive sequence of integers.
 
-Evaluation proceeds as follows:
-
-1. Evaluate `start` to `v_start`.
-2. Evaluate `end` to `v_end`.
-3. Apply numeric coercion:
-
-   ```
-   n_start = ToNumber(v_start)
-   n_end   = ToNumber(v_end)
-   ```
-
-4. If either coercion yields `Nothing`, the range evaluates to an empty sequence.
-
-5. Otherwise:
-   - Convert both numbers to integers using implementation-defined truncation toward zero.
-
-   - If `n_start ≤ n_end`, the sequence contains all integers `n` such that:
-
-     ```
-     n_start ≤ n ≤ n_end
-     ```
-
-   - If `n_start > n_end`, the result is an empty sequence.
-
-A range literal never evaluates to `Nothing`. A malformed range is an empty collection, not an absent value.
-
-An implementation MAY define an upper limit to the number of items in a range to guard against excessively large array materialization.
-
-#### Result Representation
-
-A range literal evaluates to a `RuntimeValue` that behaves as a finite sequence of integers.
+1. The `start` (left) and `end` (right) expressions are evaluated eagerly before coercing both values to numbers using $ToNumber$ (see @sec:to_number).
+2. If a value is a decimal, truncate toward zero.
+3. If either expression evaluates to `Nothing`, the range literal evaluates to an empty sequence.
+4. The range is inclusive of both the start and end values.
+5. If `start > end`, the range results in an **empty sequence**. It does not count backward.
 
 Implementations MAY represent this value as:
 
-1. An eager `Array<RuntimeValue>`, or
-2. A `Drop` implementing the `Sequence` protocol.
+1. An eager $Array\langle RuntimeValue \rangle$, or
+2. A $Drop$ implementing the $Sequence$ protocol.
 
 The observable behavior MUST be indistinguishable.
 
-#### Interaction with the Sequence Protocol
+Implementations MAY define an upper limit to the number of items in a range to guard against excessively large array materialization.
 
-If a range is represented as a `Drop`, it MUST implement the `Sequence` protocol:
+#### Examples
 
-```
-length()  → max(0, n_end - n_start + 1)
-iterate() → yields each integer in increasing order
-slice(offset, limit, reversed) → another range-like Drop
-```
-
-The `for` tag and any sequence-aware filters MUST:
-
-1. First check whether the value implements the `Sequence` protocol.
-2. If so, use `length()` and `iterate()` directly.
-3. Otherwise, fall back to `ToArray`.
-
-This ensures that lazy range implementations are not forced into eager materialization.
-
-#### Interaction with Filters and Operators
-
-Because a range evaluates to a sequence value, it:
-
-- May be piped into filters.
-- May be compared structurally.
-- May be used with `contains` / `in`.
-- May be passed to `ToArray`.
-
-Examples:
-
-```
-(1..5) | length
-3 in (1..5)
-(1..5) == [1,2,3,4,5]
-```
-
-All such expressions MUST behave identically regardless of eager or lazy representation.
+| Expression        | Evaluation        | Notes                                                     |
+| ----------------- | ----------------- | --------------------------------------------------------- |
+| `(1..5)`          | `[1, 2, 3, 4, 5]` | Standard ascending inclusive range.                       |
+| `(5..1)`          | `[]`              | Start is greater than end; results in empty sequence.     |
+| `(1.2..3.8)`      | `[1, 2, 3]`       | Values are coerced to integers before generation.         |
+| `(1..1)`          | `[1]`             | Single-item sequence.                                     |
+| `(0..user.count)` | `[0, 1, 2]`       | Dynamic range (assuming `user.count` is 2).               |
+| `(1..null)`       | `[]`              | `null` coerces to `Nothing`, resulting in an empty range. |
