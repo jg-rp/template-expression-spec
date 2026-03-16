@@ -149,7 +149,7 @@ When a string is evaluated, from left to right:
 
 - If the segment is unescaped text, append it to the result.
 - If the segment is one or more escape sequences, append decoded escape sequences to the result.
-- If the segment is an expression, resolve the expression and convert it to a string using $ToString$ (@sec:to_string).
+- If the segment is an expression, resolve the expression and convert it to a string using $ToString$ (@sec:to_string), and append the string to the result.
 
 There is no semantic difference between single- and double-quoted strings beyond delimiter rules.
 
@@ -170,123 +170,98 @@ Invalid Unicode escape sequences make the string literal invalid at parse time.
 
 ### Array Literals
 
-An array literal is defined as:
+#### Syntax
 
-```
-array_literal =
-  "[" ~ S ~ (item ~ (S ~ "," ~ S ~ item)*)? ~ S ~ ","? ~ S ~ "]"
+Array literals consist of a comma separated sequence of expressions, surrounded by square brackets.
 
-item =
-    spread_expr
-  | expr
-
-spread_expr =
-    "..." ~ expr
+```peg
+ArrayLiteral ← "[" S (ArrayItem (S "," S ArrayItem)*)? S ","? S "]"
+ArrayItem    ← SpreadExpr / Expression
+SpreadExpr   ← "..." Expression
 ```
 
-Trailing commas are permitted.
+Trailing commas are permitted. If an array literal contains a single `StringLiteral` item, it must be followed by a comma to syntactically differentiate it from a root variable using bracket notation.
 
-#### Evaluation Semantics
+#### Semantics
 
-Evaluation proceeds left-to-right.
+An array literal constructs an immutable ordered collections of values. They are evaluated eagerly from left to right. Each `Expression` is resolved to a value and inserted into a new Array instance, $Array\langle RuntimeValue \rangle$.
 
-Let:
+Arrays are heterogenous; they may contain values of any type, including other arrays and objects.
 
-```
-[ e1, e2, ..., en ]
-```
+##### The Spread Operator
 
-Each `ei` is either:
+The spread operator `...` allows for the expansion of an iterable into the array literal.
 
-- A normal expression
-- A spread expression `...x`
+1. The expression following `...` is evaluated and coerced via **ToIterable(x)** (see @sec:to_iterable).
+2. Each of the elements in the resulting iterable is inserted into the new array at the current position.
 
-We construct a result list:
+Note that $ToIterable$ is total; the spread operator can not fail.
 
-```
-Result = []
-```
+#### Examples
 
-For each item in order:
+Given a context: `{"low": [1, 2], "high": [4, 5]}`
 
-- if normal item
-  1. Evaluate `expr` to `v`.
-  2. Append `v` to `Result` (`Nothing` is appended as a normal element).
-
-- if spread item
-  1. Evaluate `expr` to `v`.
-  2. Normalize via:
-
-     ```
-     elements = ToArray(v)
-     ```
-
-  3. Append each element of `elements` to `Result`.
-
-The final result is `Array<RuntimeValue>`. Array literals always evaluate to an eager `Array`.
+| Expression             | Evaluation         | Notes                                                |
+| ---------------------- | ------------------ | ---------------------------------------------------- |
+| `[1, 2, 3]`            | `[1, 2, 3]`        | A simple array of numbers.                           |
+| `[1, "two", true]`     | `[1, "two", true]` | A heterogeneous array.                               |
+| `[...low, 3, ...high]` | `[1, 2, 3, 4, 5]`  | Spread operators merging two arrays with a literal.  |
+| `[1, , 2]`             | **Invalid**        | Empty items between commas are not permitted.        |
+| `[1, 2,]`              | `[1, 2]`           | Trailing comma is ignored.                           |
+| `[...null]`            | `[]`               | `Null` is coerced to an empty array by $ToIterable$. |
+| `[1, missing_var, 3]`  | `[1, Nothing, 3]`  | Arrays can contain `Nothing`.                        |
 
 ### Object Literals
 
-An object literal is defined as:
+#### Syntax
 
-```
-object_literal =
-  "{" ~ S ~ (object_item ~ (S ~ "," ~ S ~ object_item)*)? ~ S ~ ","? ~ S ~ "}"
+Object literals consist of a comma-separated sequence of key-value pairs or spread expressions, surrounded by curly braces.
 
-object_item =
-    spread_expr
-  | (quoted_name | name) ~ S ~ ":" ~ S ~ expr
-```
-
-Trailing commas are permitted.
-
-#### Evaluation Semantics
-
-Evaluation proceeds left-to-right.
-
-We construct:
-
-```
-Result = {}
+```peg
+ObjectLiteral ← "{" S (ObjectItem (S "," S ObjectItem)*)? S ","? S "}"
+ObjectItem    ← SpreadExpr / KeyValuePair
+KeyValuePair  ← ObjectKey S ":" S Expression
+ObjectKey     ← Identifier / QuotedName
+QuotedName    ← ( "\"" DoubleQuotedName "\"" ) / ( "'" SingleQuotedName "'" )
 ```
 
-A mapping:
+TODO: define DoubleQuotedName and SingleQuotedName
 
-```
-Object<String → RuntimeValue>
-```
+_Note: `QuotedName` follows the same escaping rules as `StringLiteral` but **does not support interpolation**. This ensures that object keys are statically determinable at parse-time._
 
-For item in order:
+#### Semantics
 
-- if keyed property `key : expr`
-  1. Evaluate `expr` → `v`.
-  2. Determine key string:
-  - If `quoted_name`, use literal string.
-  - If `name`, use its identifier text.
-  3. Insert into `Result`:
+An object literal constructs an immutable collection of key-value pairs, $Object\langle String, RuntimeValue \rangle$.
 
-     ```
-     Result[key] = v
-     ```
+The literal is evaluated eagerly from left to right. If the same key is defined multiple times (either via direct assignment or via the spread operator), the **last** value evaluated takes precedence.
 
-     If the key already exists, it is overwritten.
+Once constructed, the object and its key-set cannot be modified.
 
-- if spread property `...expr`
-  1. Evaluate `expr` → `v`.
-  2. Convert via abstract operation `ToObject`:
+##### Key Resolution
 
-     ```
-     source = ToObject(v)
-     ```
+- If a key is an `Identifier`, it is treated as a literal string (e.g., `{ name: "Alice" }` uses the string `"name"` as the key).
+- If a key is a `QuotedName`, the quotes are stripped and the interior is processed for escapes to produce the string key.
 
-  3. For each key-value pair in `source`:
+##### The Spread Operator
 
-     ```
-     for (k, v) in source:
-         Result[k] = v
-     ```
+The spread operator `...` allows for the merging of another object into the one being constructed.
 
-     If the key already exists, it is overwritten.
+1. The expression following `...` is evaluated and coerced via **ToObject(x)** (see @sec:to_object).
+2. Each key-value pair in the resulting object is inserted into the new object.
+3. If the value cannot be coerced into an object, the spread is ignored (as $ToObject$ is total).
+
+#### Examples
+
+Given a context: `{"base": {"id": 1, "role": "guest"}}`
+
+| Expression                   | Evaluation                   | Notes                                                     |
+| ---------------------------- | ---------------------------- | --------------------------------------------------------- |
+| `{ name: "Bob", age: 30 }`   | `{"name": "Bob", "age": 30}` | Standard object with identifier keys.                     |
+| `{ "First Name": "Bob" }`    | `{"First Name": "Bob"}`      | Quoted keys allow for whitespace and reserved characters. |
+| `{ ...base, role: "admin" }` | `{"id": 1, "role": "admin"}` | The `role` key from `base` is overwritten by the literal. |
+| `{ a: 1, a: 2 }`             | `{"a": 2}`                   | Last key wins rule applies.                               |
+| `{ ...null, count: 0 }`      | `{"count": 0}`               | Spreading a non-object value results in an empty merge.   |
+| `{ "${name}": 1 }`           | **Invalid**                  | Object keys do not support interpolation.                 |
 
 ### Range Literals
 

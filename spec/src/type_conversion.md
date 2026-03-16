@@ -131,7 +131,7 @@ ToArray("😀a")
 → ["😀", "a"]
 $$
 
-### ToObject(x)
+### ToObject(x) {#sec:to_object}
 
 $$
 ToObject : RuntimeValue → Object<String → RuntimeValue>
@@ -143,7 +143,7 @@ $$
 | Drop       | ToLiquid(x, object) or {} if Nothing |
 | Any other  | {}                                   |
 
-### ToIterable(x)
+### ToIterable(x) {#sec:to_iterable}
 
 $$
 ToIterable : RuntimeValue → Iterable
