@@ -121,122 +121,164 @@ Logical operators rely on the $IsTruthy(x)$ abstract function to evaluate operan
 
 ### Comparison Operators
 
+#### Syntax
+
+Comparison operators `==`, `!=`, `<=`, `>=`, `<`, `>` test for equality and ordering.
+
+```peg
+TestExpression ← ArithmeticExpression ( S TestOperator S ArithmeticExpression )?
+TestOperator   ← "==" / "!=" / "<=" / ">=" / "<" / ">" / ("in" !C) / ("contains" !C)
+```
+
+#### Semantics
+
 Comparison is **total**; if two types are fundamentally incomparable and no protocol is present, the result is `false` rather than an error.
 
-```
+$$
 ==, !=, <, >, <=, >= : RuntimeValue × RuntimeValue → Boolean
-```
+$$
 
 We first define `==` and `<`, then `!=`, `>`, `<=` and `>=` in terms of `==` and `<`.
 
-- A comparison using the operator `==` evaluates to true if the comparison is between:
-  - `Nothing` and `Nothing`.
-  - numbers, where the numbers compare equal using an implementation-specific equality.
-  - equal primitive data values
-  - arrays of the same length where each element of the first array is equal to the corresponding element in the second array.
-  - objects with the same collection of names and, for each of those names, the associated values are equal.
-  - drops:
-    1. If `a` is Drop and implements `Equals` and `a.Equals(b)` is true.
-    2. Else if `b` is Drop and implements `Equals` and `b.Equals(a)` is true.
-    3. Else:
-       - Coerce both via `ToLiquid(…, data)`
-       - Compare `DataValue` structurally
+A comparison using the operator `==` evaluates to true if the comparison is between:
 
-- A comparison using the operator `<` yields true if the comparison is between values that are both numbers or both strings and that satisfy the comparison:
-  - For numbers: numeric ordering is used. Integers and floating values are compared by their numeric value; implementations may use a single representation (e.g. IEEE 754 BigDecimal) but comparisons must behave as the mathematical numeric ordering (smaller → less-than).
-  - For strings: by default strings are ordered by Unicode scalar (code point) order. Implementations MAY provide an option to use the Unicode Collation Algorithm (UCA) for locale sensitive ordering, but the canonical spec semantics are Unicode code point ordering to ensure deterministic results.
-- Or, if either operand is a drop:
+- `Nothing` and `Nothing`.
+- two values that represent the same data.
+- arrays of the same length where each element of the first array is equal to the corresponding element in the second array.
+- objects with the same collection of names and, for each of those names, the associated values are equal.
+- drops:
+  1. If `a` is a drop and implements $Equals$ and `a.Equals(b)` is true.
+  2. If `b` is a drop and implements $Equals$ and `b.Equals(a)` is true.
+  3. Otherwise coerce both via $ToLiquid(…, data)$ and compare the results.
+
+A comparison using the operator `<` yields true if the comparison is between values that are both numbers, both strings or either is a $Drop$ and that satisfy the comparison:
+
+- For numbers: numeric ordering is used. Integers and floating values are compared by their numeric value; implementations may use a single representation (e.g. IEEE 754 BigDecimal) but comparisons must behave as the mathematical numeric ordering (smaller → less-than).
+- For strings: by default strings are ordered by Unicode scalar (code point) order. Implementations MAY provide an option to use the Unicode Collation Algorithm (UCA) for locale sensitive ordering, but the canonical spec semantics are Unicode code point ordering to ensure deterministic results.
+- For drops:
   1. If `a` is `Drop` and implements `LessThan` and `a.LessThan(b)` is true.
-  2. Else if `b` is `Drop` and implements `LessThan` and `b.LessThan(a)` is true.
-  3. Else:
-     - Coerce both via `ToLiquid(…, data)`
-     - Attempt standard ordering
+  2. If `b` is `Drop` and implements `LessThan` and `b.LessThan(a)` is true.
+  3. Otherwise coerce both via $ToLiquid(…, data)$ and attempt standard ordering on the results.
 
 `!=`, `>`, `<=` and `>=` are defined in terms of `==` and `<`.
 
-```
-x != y  = not (x == y)
-x > y   = y < x
-x <= y  = (x < y) or (x == y)
-x >= y  = (y < x) or (x == y)
-```
+$$
+\begin{aligned}
+x \;\texttt{!=}\; y &\to \text{not}(x \;\texttt{==}\; y) \\
+x \;\texttt{>}\; y  &\to y \;\texttt{<}\; x \\
+x \;\texttt{<=}\; y &\to (x \;\texttt{<}\; y) \;\text{or}\; (x \;\texttt{==}\; y) \\
+x \;\texttt{>=}\; y &\to (y \;\texttt{<}\; x) \;\text{or}\; (x \;\texttt{==}\; y)
+\end{aligned}
+$$
+
+#### Examples
+
+| Expression     | Evaluation | Notes                                          |
+| -------------- | ---------- | ---------------------------------------------- |
+| `0 == 0.0`     | `true`     | Numeric normalization.                         |
+| `"" == null`   | `false`    | Different types, both are falsy but not equal. |
+| `5 > "2"`      | `false`    | Type mismatch defaults to `false`.             |
+| `(1 + 1) == 2` | `true`     | Arithmetic is resolved before comparison.      |
 
 ### Membership Operators
 
-TODO: see notes/membership.md
+#### Syntax
 
-Membership tests (`contains` and `in`) determine whether a value appears in a container. Semantics are:
+```peg
+TestExpression ← ArithmeticExpression ( S TestOperator S ArithmeticExpression )?
+TestOperator   ← "==" / "!=" / "<=" / ">=" / "<" / ">" / ("in" !C) / ("contains" !C)
+```
 
-1. If `container` is a `Drop` and implements `Contains`, call `container.Contains(element)`. If it returns `Boolean`, use that value; if it returns `Nothing`, treat as `false`.
-2. Else if `container` is an `Array` or a `Sequence`: iterate its elements and compare each element to `element` using `==`. If any element compares equal then the result is `true`, otherwise `false`.
-3. Else if `container` is an `Object`: membership tests whether there exists a key equal to the `element` when the `element` is converted to `String` (or compared structurally to the keys as implementation prefers). Typical implementations coerce `element` to `String` and test key presence.
-4. Else if `container` is a `String` and `element` is a `String`: `contains` tests substring inclusion; `in` with swapped operands follows the same rule.
-5. Otherwise, coerce `container` via `ToLiquid(…, data)` and retry from the top. If no rule applies, return `false`.
+#### Semantics
 
-`in` is defined as `element in container` (i.e. RHS is the container). Both `contains` and `in` produce a `Boolean` result.
+Membership operators `in` and `contains` determine whether a value appears in a container. Both operators return $Boolean$.
+
+- `element in container`
+- `container contains element`
+
+These forms are semantically equivalent with operands reversed.
+
+Evaluation proceeds as follows.
+
+1. If `container` is a `Drop` that implements the $Membership$ protocol, call `contains(element)`:
+   - If the result is `Boolean`, return that value.
+   - If the result is `Nothing`, continue evaluation.
+2. If `container` and element are both $String$:
+   - Test for substring inclusion. Return `true` if `element` occurs within `container`, otherwise `false`.
+3. If `container` is an `Object`, membership tests for the existence of a key.
+   - Return `true` if `key` exists in the object, otherwise `false`.
+4. Otherwise coerce to an iterable using $ToIterable$ and iterate the resulting sequence.
+   - Return `true` if `key` exists in the sequence, otherwise `false`.
+
+#### Examples
+
+| Expression           | Evaluation | Notes                                    |
+| -------------------- | ---------- | ---------------------------------------- |
+| `3 in [1,2,3]`       | `true`     | Array is iterable.                       |
+| `3 in (1..5) `       | `true`     | Range literals are iterable.             |
+| `5 in 5`             | `true`     | `5` is coerced to `[5]` by $ToIterable$. |
+| `"a" in "cat"`       | `true`     | Substring membership.                    |
+| `"name" in {name:1}` | `true`     | Object property membership.              |
 
 ### Arithmetic Operators {#sec:arithmetic}
 
-Arithmetic operators operate on decimal numbers and return `Nothing` when numeric coercion fails or when an operation is undefined (such as division or modulo by zero).
+#### Syntax
+
+TODO: define PrimaryExpression
+
+```peg
+ArithmeticExpression ← AddExpression
+AddExpression        ← MulExpression ( S ( "+" / "-" ) S MulExpression )*
+MulExpression        ← UnaryExpression ( S ( "*" / "/" / "%" ) S UnaryExpression )*
+UnaryExpression      ← NegExpression / PosExpression / PrimaryExpression
+NegExpression        ← "-" UnaryExpression
+PosExpression        ← "+" UnaryExpression
+```
+
+#### Semantics
+
+Arithmetic is performed using the **Decimal Arithmetic Model** to ensure exact precision for base-10 decimals, avoiding the rounding errors typical of binary floating-point systems.
+
+All arithmetic operators are total. Operands are coerced to numbers via $ToNumber$. If an operand resolves to `Nothing`, the entire arithmetic operation resolves to `Nothing`.
 
 ```
 +, -, *, /, % : EvalValue × EvalValue → Number | Nothing
 + , - (unary) : EvalValue → Number | Nothing
 ```
 
-For any infix arithmetic operator `⊗ ∈ { +, −, *, /, % }`:
-
-```
-x ⊗ y = ToNumber(x) ⊗ₙ ToNumber(y)
-```
-
-1. If either operand is `Nothing` after `ToNumber(operand)`, the result is `Nothing`.
-2. Otherwise apply numeric operator, or `Nothing` if divide by zero.
-
-For unary prefix operators:
-
-```
-+x = ToNumber(x)
--x = - ToNumber(x)
-```
-
-1. If the operand is `Nothing` after `ToNumber(operand)`, the result is `Nothing`.
-2. Otherwise apply numeric prefix operator.
-
 Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
 
-### Division operator
+##### Division operator
 
-Division uses **true arithmetic division**.
-
-```
-/ : RuntimeValue × RuntimeValue → Number | Nothing
-```
-
-Evaluation proceeds as follows:
+Division uses **true arithmetic division**. Evaluation proceeds as follows:
 
 1. Convert operands using `ToNumber`.
-
-```
-x' = ToNumber(x)
-y' = ToNumber(y)
-```
-
 2. If either conversion yields `Nothing`, the result is `Nothing`.
+3. If the right hand side is equal to `0`, the result is `Nothing`.
+4. Otherwise compute the decimal quotient using the decimal arithmetic model defined in @sec:numeric_types.
+5. Normalize; if the result is mathematically an integer (i.e. it has no fractional component), the result MUST be represented as an integer value.
 
-3. If `y' = 0`, the result is `Nothing`.
+##### Modulo Operator
 
-4. Otherwise compute the decimal quotient:
+The modulo operator computes the remainder of division. Evaluation proceeds as follows:
 
-```
-q = x' ÷ y'
-```
+1. Convert operands using $ToNumber$.
+2. If either conversion yields `Nothing`, the result is `Nothing`.
+3. If the right hand side is equal to `0`, the result is `Nothing`.
+4. Otherwise compute the remainder using $r = x' - y' * floor(x' / y')$. The result has the **same sign as the divisor**.
+5. If the result has no fractional component, it MUST be represented as an integer.
 
-using the decimal arithmetic model defined in @sec:numeric_types.
+#### Examples
 
-After computing `q`, the result is normalized:
+TODO:
 
-If `q` is mathematically an integer (i.e. it has no fractional component), the result MUST be represented as an integer value.
+| Expression    | Evaluation | Notes                                    |
+| ------------- | ---------- | ---------------------------------------- |
+| `0.1 + 0.2`   | `0.3`      | Exact decimal arithmetic.                |
+| `10 / 4`      | `2.5`      | Exact division (no integer truncation).  |
+| `"Item " + 1` | `"Item 1"` | String concatenation takes precedence.   |
+| `10 / 0`      | `Nothing`  | Division by zero is handled safely.      |
+| `5 * "abc"`   | `Nothing`  | Incompatible types resolve to `Nothing`. |
 
 Examples:
 
@@ -274,48 +316,6 @@ Example:
 ```
 
 Implementations MUST compute the quotient using decimal arithmetic and MUST apply deterministic rounding as defined in the Numeric Semantics section.
-
-### Modulo Operator
-
-The modulo operator computes the remainder of division.
-
-```
-% : RuntimeValue × RuntimeValue → Number | Nothing
-```
-
-Evaluation proceeds as follows:
-
-1. Convert operands using `ToNumber`.
-
-```
-x' = ToNumber(x)
-y' = ToNumber(y)
-```
-
-2. If either conversion yields `Nothing`, the result is `Nothing`.
-
-3. If `y' = 0`, the result is `Nothing`.
-
-4. Otherwise compute the remainder using **Python-style modulo semantics**:
-
-```
-r = x' - y' * floor(x' / y')
-```
-
-Where `floor` denotes mathematical floor.
-
-The result satisfies:
-
-```
-0 ≤ r < |y'|      if y' > 0
--|y'| < r ≤ 0     if y' < 0
-```
-
-Equivalently:
-
-> The result has the **same sign as the divisor**.
-
-If the result has no fractional component, it MUST be represented as an integer.
 
 Examples:
 

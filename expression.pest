@@ -33,8 +33,8 @@ test_expr     = _{ add_expr ~ (S ~ test_op ~ S ~ add_expr)? }
 add_expr      = _{ mul_expr ~ (S ~ add_op ~ S ~ mul_expr)* }
 mul_expr      = _{ unary_expr ~ (S ~ mul_op ~ S ~ unary_expr)* }
 unary_expr    = _{ neg_expr | pos_expr | primary }
-neg_expr      = _{ neg ~ S ~ unary_expr }
-pos_expr      = _{ pos ~ S ~ unary_expr }
+neg_expr      = _{ neg ~ unary_expr }
+pos_expr      = _{ pos ~ unary_expr }
 
 condition   = { pipe_expr }
 consequence = { pipe_expr }
