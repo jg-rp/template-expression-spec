@@ -73,7 +73,7 @@ $$
 | Object     | Nothing                                     |
 | Drop       | ToLiquid(x, numeric)                        |
 
-### ToString(x)
+### ToString(x) {#sec:to_string}
 
 $$
 ToString : RuntimeValue → String

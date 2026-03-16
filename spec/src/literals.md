@@ -2,6 +2,16 @@
 
 TODO:
 
+```peg
+Literal ← NumberLiteral /
+          StringLiteral /
+          BooleanLiteral /
+          NullLiteral /
+          ArrayLiteral /
+          ObjectLiteral /
+          RangeLiteral
+```
+
 ### Null Literal
 
 #### Syntax
@@ -94,106 +104,69 @@ Regardless of the notation used (standard or scientific), all numeric literals r
 
 ### String Literals
 
-A string literal represents a sequence of Unicode scalar values.
+#### Syntax
 
-String literals:
+Both single and double quoted strings are supported. Both forms allow interpolation.
 
-- May be delimited by single (`'`) or double (`"`) quotes.
-- Support JavaScript-style escape sequences.
-- Support JavaScript-style interpolation using `${expr}`.
-- Are evaluated left-to-right.
-- Are total and never produce `Nothing`.
+Escape sequences follow JSON syntax, with the addition of an escaped single quote for single quoted strings, and `\${` to escape string interpolation.
 
-Two forms are supported:
+```peg
+StringLiteral  ← DoubleQuoted / SingleQuoted
 
+DoubleQuoted   ← "\"" (Interpolation / DoubleEscaped / Unescaped / "'")* "\""
+SingleQuoted   ← "'"  (Interpolation / SingleEscaped / Unescaped / "\"")* "'"
+
+Interpolation  ← "${" Expression "}"
+
+DoubleEscaped  ← "\\" ( "\"" / Escapable )
+SingleEscaped  ← "\\" ( "'" / Escapable )
+
+Unescaped      ← LiteralDollar / SourceChar
+LiteralDollar  ← "$" ! "{"
+
+Escapable      ← "b" / "f" / "n" / "r" / "t" / "/" / "\\" / ("u" ~ HexChar) / "${"
+HexChar        ← NonSurrogate / HighSurrogate "\\u" LowSurrogate
+HighSurrogate  ← [Dd] [AaBb89] [0-9A-Fa-f]{2}
+LowSurrogate   ← [Dd] [CcDdEeFf] [0-9A-Fa-f]{2}
+NonSurrogate   ← [AaBbCcEeFf0-9] [0-9A-Fa-f]{3} /
+                 [Dd] [0-7] [0-9A-Fa-f]{2}
+
+SourceChar     ← " " /
+                 "!" /
+                 "#" /
+                 "%" /
+                 "&" /
+                 [\u0028-\u0058] /
+                 [\u005D-\uD7FF] /
+                 [\uE000-\u0010FFFF]
 ```
-"double quoted"
-'single quoted'
-```
 
-The delimiter determines which quote character must be escaped.
+#### Semantics
 
-Both forms support:
+String literals represent sequences of Unicode scalar values (not grapheme clusters). They support both simple static text and dynamic content via interpolation.
 
-- Escape sequences
-- Interpolation
+When a string is evaluated, from left to right:
+
+- If the segment is unescaped text, append it to the result.
+- If the segment is one or more escape sequences, append decoded escape sequences to the result.
+- If the segment is an expression, resolve the expression and convert it to a string using $ToString$ (@sec:to_string).
 
 There is no semantic difference between single- and double-quoted strings beyond delimiter rules.
 
 Invalid Unicode escape sequences make the string literal invalid at parse time.
 
-#### Evaluation Model
+#### Examples
 
-A string literal is evaluated as a sequence of segments:
-
-- Raw text segments
-- Escape sequences
-- Interpolation segments
-
-Evaluation proceeds left-to-right.
-
-We construct:
-
-```
-Result = ""
-```
-
-For each segment:
-
-- if raw text segment
-  1. Append literal Unicode characters to `Result`
-
-- if escape sequences
-  1. Append decoded escape sequence to `Result`.
-
-  Escape sequences are interpreted according to JavaScript-style rules.
-
-  Supported escapes:
-
-  | Escape         | Meaning                  |
-  | -------------- | ------------------------ |
-  | `\\`           | backslash                |
-  | `\"`           | double quote             |
-  | `\'`           | single quote             |
-  | `\n`           | line feed (U+000A)       |
-  | `\r`           | carriage return (U+000D) |
-  | `\t`           | tab (U+0009)             |
-  | `\b`           | backspace                |
-  | `\f`           | form feed                |
-  | `\/`           | slash                    |
-  | `\uXXXX`       | Unicode code unit        |
-  | `\uXXXX\uYYYY` | surrogate pair           |
-  | `\${`          | literal `${`             |
-
-  Escape evaluation rules:
-  - `\uXXXX` MUST produce the corresponding Unicode scalar value.
-  - Surrogate pairs MUST be combined into a single scalar.
-
-  Implementations MUST decode escape sequences at parse time. Invalid escape sequences MUST throw an error at parse time.
-
-- if interpolation `${ expr }`
-  1. Evaluate `expr` to `v`.
-  2. Convert `v `to string `s = ToString(v)`
-  3. Append `s` to `Result`
-
-  Interpolation NEVER propagates `Nothing`. `ToString(Nothing) → ""`
-
-##### Examples
-
-```
-"hello"
-'world'
-
-"line\nbreak"
-'quote: \''
-"quote: \""
-
-"${1 + 2}"        → "3"
-"${1 / 0}"        → ""
-
-"\u0041"          → "A"
-"\uD83D\uDE00"    → "😀"
-```
+| Expression          | Evaluation              | Notes                                                |
+| ------------------- | ----------------------- | ---------------------------------------------------- |
+| `"Hello"`           | `"Hello"`               | Simple double-quoted string.                         |
+| `'Alice\'s House'`  | `"Alice's House"`       | Escaped single quote in a single-quoted string.      |
+| `"Cost: $100"`      | `"Cost: $100"`          | Raw `$` is literal because it isn't followed by `{`. |
+| `"Hi ${user.name}"` | `"Hi Alice"`            | Interpolates the value of `user.name`.               |
+| `"Value: \${1}"`    | `"Value: ${1}"`         | Escaped `${` prevents interpolation.                 |
+| `"\u00A9"`          | `"©"`                   | Unicode escape for the Copyright symbol.             |
+| `"Line\nBreak"`     | A string with a newline | Standard escape sequence.                            |
+| `"\uD83D\uDE00"`    | `"😀"`                  | Decoded surrogate pair.                              |
 
 ### Array Literals
 

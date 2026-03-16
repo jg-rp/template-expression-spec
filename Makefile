@@ -25,7 +25,7 @@ CONCAT = spec.md
 PANDOC_FLAGS = \
 	--standalone \
 	--toc \
-	--toc-depth=3 \
+	--toc-depth=4 \
 	--number-sections \
 	--css=$(CSS) \
 	--template=$(TEMPLATE) \
