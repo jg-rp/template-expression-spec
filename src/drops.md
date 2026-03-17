@@ -41,7 +41,7 @@ The following table shows when each hint applies.
 | Array literal spread, eager filter arguments | array   |
 | Object literal spread                        | object  |
 
-### Sequence protocol
+### Sequence Protocol
 
 A Drop MAY implement the $Sequence$ protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
 
@@ -67,31 +67,31 @@ Constraints:
 
 A Drop MAY implement the `Equality` protocol for interaction with `==` and `!=` operators, without first coercing to a data value.
 
-```
+$$
 Equals : Drop × RuntimeValue → Boolean | Nothing
-```
+$$
 
 A Drop implements the `Equality` protocol if it supports:
 
-```
+$$
 Equals(x) -> Boolean | Nothing
-```
+$$
 
-`equals` MUST NOT throw an error.
+`Equals` MUST NOT throw an error.
 
 ### Ordering Protocol
 
 A Drop MAY implement the `Ordering` protocol for interaction with `<`, `>`, `<=`, and `>=` operators, without first coercing to a data value.
 
-```
+$$
 LessThan : Drop × RuntimeValue → Boolean | Nothing
-```
+$$
 
 A Drop implements the `Ordering` protocol if it supports:
 
-```
+$$
 LessThan(x) -> Boolean | Nothing
-```
+$$
 
 ### Membership Protocol
 

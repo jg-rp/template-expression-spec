@@ -91,6 +91,8 @@ The operator triggers a fallback **only** if the left-hand side evaluates to `No
 
 `??` binds more loosely than logical `or`, meaning `a or b ?? c` is evaluated as `(a or b) ?? c`.
 
+And `??` operator binds more tightly than the pipe operator (`|`), so `a ?? b | f` is evaluated as `(a ?? b) | f`.
+
 #### Examples
 
 Given a context: `{"id": 0, "status": null}`
@@ -259,8 +261,8 @@ Arithmetic is performed using the **Decimal Arithmetic Model** to ensure exact p
 All arithmetic operators are total. Operands are coerced to numbers via $ToNumber$. If an operand resolves to `Nothing`, the entire arithmetic operation resolves to `Nothing`.
 
 ```
-+, -, *, /, % : EvalValue × EvalValue → Number | Nothing
-+ , - (unary) : EvalValue → Number | Nothing
++, -, *, /, % : RuntimeValue × RuntimeValue → Number | Nothing
++ , - (unary) : RuntimeValue → Number | Nothing
 ```
 
 Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.

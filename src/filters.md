@@ -86,7 +86,7 @@ Filters MUST NOT raise errors due to incorrect arity:
 
 3. **Variadic Parameters** If a variadic parameter is declared, all remaining arguments are collected into a list and passed as separate positional arguments or as an array, according to the implementation's calling convention.
 
-Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the even of an unknown filter.
+Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the event of an unknown filter.
 
 ### Examples
 

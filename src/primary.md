@@ -4,7 +4,7 @@
 
 ```peg
 PrimaryExpression       ← Variable / Literal / ParenthesizedExpression
-ParenthesizedExpression ← "(" S Expression S ")"
+ParenthesizedExpression ← "(" S Expression S ")" Path?
 ```
 
 ### Semantics

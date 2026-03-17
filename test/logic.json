@@ -86,6 +86,12 @@
       "result": "true"
     },
     {
+      "name": "coalesce binds more tightly than pipe",
+      "expression": "a ?? b | upcase",
+      "data": { "a": "a", "b": "b" },
+      "result": "A"
+    },
+    {
       "name": "filter arguments",
       "expression": "a | split: b or ',' | join: c or '#' ",
       "data": {

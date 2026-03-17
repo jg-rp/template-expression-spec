@@ -232,7 +232,7 @@ DoubleQuotedName   ← "\"" ( DoubleEscapedName / NameSourceChar / "'")* "\""
 SingleQuotedName   ← "'"  ( SingleEscapedName / NameSourceChar / "\"")* "'"
 
 DoubleEscapedName  ← "\\" ( "\"" / EscapableNameChar )
-DoubleEscapedName  ← "\\" ( "'" / EscapableNameChar )
+SingleEscapedName  ← "\\" ( "'" / EscapableNameChar )
 
 EscapableNameChar  ← "b" / "f" / "n" / "r" / "t" / "/" / "\\" / ("u" ~ HexChar)
 
