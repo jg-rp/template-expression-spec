@@ -24,7 +24,7 @@ The ternary expression follows a "Python-style" postfix conditional syntax. It i
 
 ```peg
 TernaryExpression ← PipeExpression ( "if" !C PipeExpression "else" !C PipeExpression )?
-PipeExpression    ← CoalesceExpression Filter*
+PipeExpression    ← CoalesceExpression ( S "|" S FilterInvocation )*
 ```
 
 The keywords `if` and `else` are followed by a negative lookahead `!C` to ensure they are not parsed as prefixes of identifiers.
@@ -44,15 +44,34 @@ Because each part is a `PipeExpression`, you can apply filters directly within t
 
 Note: The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
 
+```
+a | plus: 42 if b else c | append: 'x'
+```
+
+is parsed as:
+
+```
+a | plus: (42 if b else c) | append: 'x'
+```
+
+**NOT**
+
+```
+(a | plus: 42) if b else c | append: 'x'
+```
+
 #### Examples
 
 TODO: better examples
 
-| Expression                    | Evaluation  | Notes                                                    |
-| ----------------------------- | ----------- | -------------------------------------------------------- |
-| `"Hi" if true else "Bye"`     | `"Hi"`      | Basic usage.                                             |
-| `a if b else c if d else e`   | **Invalid** | Syntax error: `c if d else e` is not a `PipeExpression`. |
-| `a if b else (c if d else e)` | —           | Valid: Parentheses restore the `Expression` context.     |
+| Expression                         | Evaluation  | Notes                                                    |
+| ---------------------------------- | ----------- | -------------------------------------------------------- |
+| `"Hi" if true else "Bye"`          | `"Hi"`      | Basic usage.                                             |
+| `a if b else c if d else e`        | **Invalid** | Syntax error: `c if d else e` is not a `PipeExpression`. |
+| `a if b else (c if d else e)`      | —           | Valid: Parentheses restore the `Expression` context.     |
+| `'a' \| upcase if true else 'b'`   | `"A"`       |                                                          |
+| `'a' if false else 'b' \| upcase`  | `"B"`       |                                                          |
+| `('a' if true else 'b') \| upcase` | `"A"`       |                                                          |
 
 ### Nothing Coalescing Operator
 
@@ -270,62 +289,16 @@ The modulo operator computes the remainder of division. Evaluation proceeds as f
 
 #### Examples
 
-TODO:
-
-| Expression    | Evaluation | Notes                                    |
-| ------------- | ---------- | ---------------------------------------- |
-| `0.1 + 0.2`   | `0.3`      | Exact decimal arithmetic.                |
-| `10 / 4`      | `2.5`      | Exact division (no integer truncation).  |
-| `"Item " + 1` | `"Item 1"` | String concatenation takes precedence.   |
-| `10 / 0`      | `Nothing`  | Division by zero is handled safely.      |
-| `5 * "abc"`   | `Nothing`  | Incompatible types resolve to `Nothing`. |
-
-Examples:
-
-```
-4 / 2  → 2
-6 / 3  → 2
-10 / 5 → 2
-```
-
-If the result has a fractional component, it is represented as a decimal number.
-
-Examples:
-
-```
-3 / 2 → 1.5
-5 / 2 → 2.5
-```
-
-When both operands are integers, the operation is **still true division**, not floor division.
-
-Examples:
-
-```
-5 / 2 → 2.5
-3 / 2 → 1.5
-1 / 2 → 0.5
-```
-
-Some divisions produce non-terminating decimal expansions.
-
-Example:
-
-```
-1 / 3
-```
-
-Implementations MUST compute the quotient using decimal arithmetic and MUST apply deterministic rounding as defined in the Numeric Semantics section.
-
-Examples:
-
-```
-5 % 2   → 1
-4 % 2   → 0
--5 % 2  → 1
--1 % 2  → 1
-5 % -2  → -1
--5 % -2 → -1
-5.5 % 2 → 1.5
-5 % 2.5 → 0.0
-```
+| Expression   | Evaluation | Notes                                                                   |
+| ------------ | ---------- | ----------------------------------------------------------------------- |
+| `4 / 2`      | `2`        | Integer representation.                                                 |
+| `0.1 + 0.2`  | `0.3`      | Exact decimal arithmetic.                                               |
+| `10 / 4`     | `2.5`      | True division (no integer truncation).                                  |
+| `"Item" + 1` | `Nothing`  | `"Item"` coerces to `Nothing`. `+` is not overloaded for concatenation. |
+| `10 / 0`     | `Nothing`  | Division by zero is handled safely.                                     |
+| `5 * "abc"`  | `Nothing`  | Incompatible types resolve to `Nothing`.                                |
+| `5 % 2`      | `1`        |                                                                         |
+| `4 % 2`      | `0`        |                                                                         |
+| `-5 % 2`     | `1`        |                                                                         |
+| `5 % -2`     | `-1`       |                                                                         |
+| `5.5 % 2`    | `1.5`      |                                                                         |

@@ -1,4 +1,4 @@
-# Data Model
+# Type System for Template Expressions
 
 The expression language operates on a data model that is conceptually "JSON-like". Every expression, when evaluated, resolves to a value belonging to one of the fundamental types defined in this section.
 
