@@ -8,7 +8,9 @@ This document aims to replace ad hoc behavior with a single, composable, context
 
 ## Terminology
 
-- _Expression_: An expression is the fundamental unit of computation within a Liquid template, representing a sequence of identifiers, literals, and operators that resolves to a value. They appear within output delimiters to render data directly to the page (e.g., `{{ user.name | upcase }}`), inside conditional tags to govern template logic (e.g., `{% if item.price > 100 %}`), and as the data sources for iterations (e.g., `{% for product in collections.frontpage %}`)
+- _Template_: TODO":
+
+- _Expression_: An expression is the fundamental unit of computation within a template, representing a sequence of identifiers, literals, and operators that resolves to a value. They appear within output delimiters to render data directly to the page (e.g., `{{ user.name | upcase }}`), inside conditional tags to govern template logic (e.g., `{% if item.price > 100 %}`), and as the data sources for iterations (e.g., `{% for product in collections.frontpage %}`)
 
   For each of the preceding examples, this tables isolates the expression part of the markup to illustrate some of the places an expression can appear.
 
@@ -19,6 +21,7 @@ This document aims to replace ad hoc behavior with a single, composable, context
   | `{% for product in collections.frontpage %}` | `collections.frontpage` |
 
 - _Filter_: TODO:
+- _Tag_: TODO:
 - _Markup_: TODO:
 - _Lambda_: TODO:
 
@@ -32,33 +35,8 @@ Formally, for every expression $e$ and environment $\rho$:
 
 $$⟦ e ⟧(\rho) \in RuntimeValue$$
 
-### Literals
+TODO: Short overview of expression literals including string interpolation, structured literals and the spread operator
 
-TODO: String interpolation
+TODO: Short overview of operators, including ternary expressions
 
-TODO: Structured Literals and Spread
-
-### Operators
-
-TODO:
-
-### Filters
-
-Filters are first-class citizens integrated into the recursive structure of the grammar. They can be nested within parentheses, allowing the output of a pipeline to be used as an operand in arithmetic or comparison.
-
-```
-(x | upper) == 'FOO'
-```
-
-TODO: lambda arguments
-
-### Ternary Expressions
-
-TODO:
-
-### Extension Types (Drops)
-
-Drops participate in the language's semantics through structured protocols:
-
-- **Context-Aware Coercion**: Drops use `ToLiquid` with context hints (numeric, string, boolean, etc.) to provide the most appropriate value for the current operation.
-- **Behavioral Protocols**: Implementations can opt into specific protocols - **Sequence**, **Equality**, **Ordering**, and **Membership** - allowing developer-defined objects to behave like native arrays or comparable primitives without losing their internal complexity.
+TODO: Short overview of filters

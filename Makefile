@@ -14,7 +14,9 @@ SPEC = \
 	src/identifiers.md \
 	src/variables_and_paths.md \
 	src/operators.md \
-	src/filters.md
+	src/primary.md \
+	src/filters.md \
+	src/appendix.md
 
 CSS = style.css
 TEMPLATE = template.html

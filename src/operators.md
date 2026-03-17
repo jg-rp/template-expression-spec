@@ -243,8 +243,6 @@ Evaluation proceeds as follows.
 
 #### Syntax
 
-TODO: define PrimaryExpression
-
 ```peg
 ArithmeticExpression ← AddExpression
 AddExpression        ← MulExpression ( S ( "+" / "-" ) S MulExpression )*
