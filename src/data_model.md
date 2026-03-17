@@ -2,14 +2,13 @@
 
 The expression language operates on a data model that is conceptually "JSON-like". Every expression, when evaluated, resolves to a value belonging to one of the fundamental types defined in this section.
 
-The data model is designed for safe, predictable evaluation in template contexts. It follows these core principles:
+The core types - `Null`, `Boolean`, `Number`, `String`, `Array`, and `Object` - map directly to JSON types. Any valid JSON document can be represented naturally within this expression language.
 
-- **Superset of JSON:** The core types - `Null`, `Boolean`, `Number`, `String`, `Array`, and `Object` - map directly to JSON types. Any valid JSON document can be represented naturally within this expression language.
-- **The `Nothing` Value:** Beyond standard JSON types, the language includes a special `Nothing` value. This value represents the absence of a result (e.g., a failed variable lookup or an invalid operation). While similar to `Null`, it specifically denotes "no value" rather than a "value of null."
-- **Immutability:** All values in the data model are immutable. Operations that appear to "modify" a value (such as filter applications) always return a new value.
-- **Host Integration (Drops):** To allow templates to interact with complex application logic, the language supports "Drops". These are opaque extension types provided by the host environment that can implement specific protocols for iteration, property access, or equality.
+All values in the data model are immutable. Operations that appear to "modify" a value (such as filter applications) always return a new value.
 
-## Data Type Definition
+To allow templates to interact with complex application logic, the language supports "Drops". These are opaque extension types provided by the host environment that can implement specific protocols for iteration, property access, or equality.
+
+## Values
 
 $DataValue$ defines all possible kinds of value that can exist inside the template data model.
 
@@ -37,19 +36,6 @@ RuntimeValue = \;& DataValue \\
 $$
 
 $Nothing$ represents the absence of a value produced during evaluation and is distinct from $Null$ (or implementation-specific `nil`, `None`, `undefined` etc.).
-
-## Summary of Types
-
-| Type        | Description                                                 | JSON Equivalent |
-| ----------- | ----------------------------------------------------------- | --------------- |
-| **Nothing** | Represents the absence of a value or an evaluation failure. | N/A             |
-| **Null**    | Represents a deliberate "empty" value.                      | `null`          |
-| **Boolean** | Logical `true` or `false`.                                  | `true`, `false` |
-| **Number**  | An exact decimal representation (see @sec:numeric_types).   | `number`        |
-| **String**  | A sequence of Unicode characters.                           | `string`        |
-| **Array**   | An ordered list of values.                                  | `array`         |
-| **Object**  | A collection of key-value pairs (where keys are Strings).   | `object`        |
-| **Drop**    | A host-provided extension type.                             | N/A             |
 
 ## Numeric Types {#sec:numeric_types}
 
@@ -129,7 +115,7 @@ $ToString(Number)$ MUST produce a canonical decimal representation:
 - No unnecessary trailing zeros.
 - No trailing decimal point.
 
-TODO: true division
+TODO: true division  
 TODO: no decimal point when operands are integers and result is whole
 
 Examples:
@@ -152,3 +138,17 @@ $$
 Where $Sequence$ is a $Drop$ implementing the sequence protocol.
 
 Array and sequence drops MUST behave identically with respect to iteration semantics.
+
+## Data Type Summary
+
+| Type         | Description                                                 | JSON Equivalent |
+| ------------ | ----------------------------------------------------------- | --------------- |
+| **Nothing**  | Represents the absence of a value or an evaluation failure. | N/A             |
+| **Null**     | Represents a deliberate "empty" value.                      | `null`          |
+| **Boolean**  | Logical `true` or `false`.                                  | `true`, `false` |
+| **Number**   | An exact decimal representation (see @sec:numeric_types).   | `number`        |
+| **String**   | A sequence of Unicode characters.                           | `string`        |
+| **Array**    | An ordered list of values.                                  | `array`         |
+| **Object**   | A collection of key-value pairs (where keys are Strings).   | `object`        |
+| **Drop**     | A host-provided extension type.                             | N/A             |
+| **Iterable** | An array or drop implementing the sequence protocol         | N/A             |
