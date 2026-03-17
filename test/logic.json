@@ -93,7 +93,7 @@
     },
     {
       "name": "filter arguments",
-      "expression": "a | split: b or ',' | join: c or '#' ",
+      "expression": "a | split: b or ',' | join: c or '#'",
       "data": {
         "a": "1,2,3,4",
         "b": null,

@@ -40,13 +40,13 @@ module Expr
     end
 
     def parse(expression)
-      pairs = @parser.parse(:expression, expression)
+      pairs = @parser.parse(:expr, expression)
       parse_expr(pairs.first.stream)
     end
 
     def parse_primary(pair)
       case pair.rule
-      when :expr, :arg_expr
+      when :expression, :arg_expr
         parse_expr(pair.stream)
       when :ternary_expr, :arg_ternary_expr
         parse_ternary(pair)
@@ -168,7 +168,7 @@ module Expr
         pair.text
       when :double_quoted_escaped, :single_quoted_escaped
         Expr.unescape(pair)
-      when :expr
+      when :expression
         parse_expr(pair.stream)
       else
         raise "unexpected string segment #{pair.rule.inspect} #{pair.text.inspect}"
@@ -181,7 +181,7 @@ module Expr
 
     def parse_array_item(pair)
       case pair.rule
-      when :expr
+      when :expression
         parse_expr(pair.stream)
       when :spread_expr
         AST::Spread.new(pair, parse_expr(pair.inner.first.stream))
@@ -216,7 +216,7 @@ module Expr
         AST::Name.new(pair, pair.text)
       when :double_quoted, :single_quoted
         parse_string(pair)
-      when :expr
+      when :expression
         parse_expr(pair.stream)
       when :predicate
         AST::Predicate.new(pair, pair.text[1..]) # remove leading dot
