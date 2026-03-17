@@ -1,20 +1,20 @@
 ## Operators
 
-The following table lists operators from lowest to highest precedence. Operators within the same group are evaluated left-to-right (left-associative).
+The following table lists operators from highest to lowest precedence. Operators within the same group are evaluated left-to-right (left-associative).
 
 | Precedence   | Operator Type             | Syntax                                             |
 | ------------ | ------------------------- | -------------------------------------------------- |
-| 1 (Lowest)   | **Ternary**               | `consequence if condition else alternative`        |
-| 2            | **Pipe (Filter)**         | `expr \| filter`                                   |
-| 3            | **Nothing Coalesce**      | `??`                                               |
-| 4            | **Logical OR**            | `or`                                               |
-| 5            | **Logical AND**           | `and`                                              |
-| 6            | **Logical NOT**           | `not`                                              |
-| 7            | **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
-| 8            | **Additive**              | `+`, `-`                                           |
-| 9            | **Multiplicative**        | `*`, `/`, `%`                                      |
-| 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
 | 11 (Highest) | **Primary**               | Literals, Variables, `( expr )`                    |
+| 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
+| 9            | **Multiplicative**        | `*`, `/`, `%`                                      |
+| 8            | **Additive**              | `+`, `-`                                           |
+| 7            | **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
+| 6            | **Logical NOT**           | `not`                                              |
+| 5            | **Logical AND**           | `and`                                              |
+| 4            | **Logical OR**            | `or`                                               |
+| 3            | **Nothing Coalesce**      | `??`                                               |
+| 2            | **Pipe (Filter)**         | `expr \| filter`                                   |
+| 1 (Lowest)   | **Ternary**               | `consequence if condition else alternative`        |
 
 ### Ternary Expressions
 
