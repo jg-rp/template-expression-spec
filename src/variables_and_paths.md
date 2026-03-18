@@ -1,4 +1,4 @@
-## Variables and Paths
+## Variables and Paths {#sec:variables}
 
 ### Syntax
 
@@ -33,7 +33,7 @@ To determine if a selector can be applied, the language distinguishes between tw
 
 - **Non-Structural Values:** Scalar or terminal values that do not support internal navigation. This includes $Strings$, $Number$, $Boolean$, $Null$, and $Nothing$.
 
-#### The Resolution Chain
+#### The Resolution Chain {#sec:variable_resolution}
 
 1. Resolution starts by looking up the `VariableRoot` in the current execution context.
 2. For each subsequent `Segment` (Dot or Bracket):

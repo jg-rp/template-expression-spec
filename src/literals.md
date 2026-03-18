@@ -1,4 +1,4 @@
-## Literals
+## Literals {#sec:literals}
 
 ```peg
 Literal ← NumberLiteral /
