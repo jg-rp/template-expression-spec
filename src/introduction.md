@@ -6,6 +6,8 @@ Historically, Liquid expressions have varied subtly depending on context - certa
 
 This document aims to replace ad hoc behavior with a single, composable, context-independent grammar and a clear evaluation model. All operators, filters, and grouping constructs are valid in any expression context, with a single, well-defined precedence hierarchy.
 
+Compatibility with existing Liquid implementations is explicitly not a goal.
+
 ## Terminology
 
 - _Template_: TODO":

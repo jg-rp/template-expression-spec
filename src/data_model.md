@@ -135,20 +135,20 @@ $$
 Iterable = Array\langle RuntimeValue \rangle | Sequence
 $$
 
-Where $Sequence$ is a $Drop$ implementing the sequence protocol.
+Where $Sequence$ is a $Drop$ implementing the Sequence protocol.
 
 Array and sequence drops MUST behave identically with respect to iteration semantics.
 
 ## Data Type Summary
 
-| Type         | Description                                                 | JSON Equivalent |
-| ------------ | ----------------------------------------------------------- | --------------- |
-| **Nothing**  | Represents the absence of a value or an evaluation failure. | N/A             |
-| **Null**     | Represents a deliberate "empty" value.                      | `null`          |
-| **Boolean**  | Logical `true` or `false`.                                  | `true`, `false` |
-| **Number**   | An exact decimal representation (see @sec:numeric_types).   | `number`        |
-| **String**   | A sequence of Unicode characters.                           | `string`        |
-| **Array**    | An ordered list of values.                                  | `array`         |
-| **Object**   | A collection of key-value pairs (where keys are Strings).   | `object`        |
-| **Drop**     | A host-provided extension type.                             | N/A             |
-| **Iterable** | An array or drop implementing the sequence protocol         | N/A             |
+| Type         | Description                                               | JSON Equivalent |
+| ------------ | --------------------------------------------------------- | --------------- |
+| **Nothing**  | Represents the absence of a data value.                   | N/A             |
+| **Null**     | Represents a deliberate "empty" data value.               | `null`          |
+| **Boolean**  | Logical `true` or `false`.                                | `true`, `false` |
+| **Number**   | An exact decimal representation (see @sec:numeric_types). | `number`        |
+| **String**   | A sequence of Unicode characters.                         | `string`        |
+| **Array**    | An ordered list of values.                                | `array`         |
+| **Object**   | A collection of key-value pairs (where keys are Strings). | `object`        |
+| **Drop**     | A host-provided extension type.                           | N/A             |
+| **Iterable** | An array, or drop implementing the sequence protocol      | N/A             |

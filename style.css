@@ -198,7 +198,7 @@ h4:hover .header-link {
   /* background-color: #fffcf5; */
   padding: 0 0.15em;
   color: #222;
-  vertical-align: middle;
+  /* vertical-align: middle; */
 }
 
 /* .math.display {

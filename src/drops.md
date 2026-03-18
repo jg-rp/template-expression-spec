@@ -2,7 +2,7 @@
 
 Implementations may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
 
-TODO: A Drop is anything implementing `ToLiquid`
+$Drop$ is defined as an object implementing $ToLiquid$.
 
 $$
 ToLiquid : Drop × ContextHint → RuntimeValue
@@ -43,11 +43,9 @@ The following table shows when each hint applies.
 
 ### Sequence Protocol
 
-A Drop MAY implement the $Sequence$ protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
+A Drop MAY implement the Sequence protocol to facilitate lazy iteration with the `for` tag or sequence aware filters.
 
-A Drop implementing the $Sequence$ protocol is considered a **Sequence value**.
-
-A Drop implements the $Sequence$ protocol if it supports:
+$Sequence$ is defined as a $Drop$ that supports the following abstract behavior.
 
 $$
 \begin{aligned}
@@ -59,35 +57,37 @@ $$
 
 Constraints:
 
-- `length()` MUST reflect the current logical sequence.
-- `slice()` MUST return a `Drop` implementing the `Sequence` protocol.
-- `iterate()` MUST yield exactly `length()` elements.
+- $length()$ MUST reflect the current logical sequence.
+- $slice()$ MUST return a Drop implementing the Sequence protocol.
+- $iterate()$ MUST yield exactly `length()` elements.
 
 ### Equality Protocol
 
-A Drop MAY implement the `Equality` protocol for interaction with `==` and `!=` operators, without first coercing to a data value.
+A Drop MAY implement the Equality protocol for interaction with `==` and `!=` operators, without first coercing to a data value.
+
+$Equals$ MUST NOT throw an error.
 
 $$
 Equals : Drop × RuntimeValue → Boolean | Nothing
 $$
 
-A Drop implements the `Equality` protocol if it supports:
+A Drop implements the Equality protocol if it supports:
 
 $$
 Equals(x) -> Boolean | Nothing
 $$
 
-`Equals` MUST NOT throw an error.
-
 ### Ordering Protocol
 
-A Drop MAY implement the `Ordering` protocol for interaction with `<`, `>`, `<=`, and `>=` operators, without first coercing to a data value.
+A Drop MAY implement the Ordering protocol for interaction with `<`, `>`, `<=`, and `>=` operators, without first coercing to a data value.
+
+$LessThan$ MUST NOT throw and error.
 
 $$
 LessThan : Drop × RuntimeValue → Boolean | Nothing
 $$
 
-A Drop implements the `Ordering` protocol if it supports:
+A Drop implements the Ordering protocol if it supports:
 
 $$
 LessThan(x) -> Boolean | Nothing
@@ -95,14 +95,16 @@ $$
 
 ### Membership Protocol
 
-A Drop MAY implement the `Membership` protocol for interaction with `in` and `contains` operators, without first coercing to a data value.
+A Drop MAY implement the Membership protocol for interaction with `in` and `contains` operators, without first coercing to a data value.
 
-```
+$Contains$ MUST NOT throw an error.
+
+$$
 Contains : Drop × RuntimeValue → Boolean | Nothing
-```
+$$
 
-A Drop implements the `Membership` protocol if it supports:
+A Drop implements the Membership protocol if it supports:
 
-```
+$$
 Contains(x) -> Boolean | Nothing
-```
+$$
