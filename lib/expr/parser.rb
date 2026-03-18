@@ -8,6 +8,7 @@ module Expr
   class Parser < Pestle::PrattParser
     PREFIX_OPS = {
       not: 6,
+      arg_not: 6,
       neg: 10,
       pos: 10
     }.freeze
@@ -15,8 +16,11 @@ module Expr
     INFIX_OPS = {
       pipe: [2, LEFT_ASSOC],
       coalesce: [3, LEFT_ASSOC],
+      arg_coalesce: [3, LEFT_ASSOC],
       or: [4, LEFT_ASSOC],
+      arg_or: [4, LEFT_ASSOC],
       and: [5, LEFT_ASSOC],
+      arg_and: [5, LEFT_ASSOC],
       eq: [7, LEFT_ASSOC],
       ne: [7, LEFT_ASSOC],
       lt: [7, LEFT_ASSOC],

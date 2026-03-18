@@ -30,13 +30,13 @@ A null literal always evaluates to a value of type `Null`. In a boolean context,
 
 #### Examples
 
-| Expression            | Evaluation  | Notes                                                                  |
-| --------------------- | ----------- | ---------------------------------------------------------------------- |
-| `null`                | `null`      | Evaluates to the Null type.                                            |
-| `nil`                 | `null`      | Identical to `null`.                                                   |
-| `user.id == null`     | `true`      | Returns true if `id` is explicitly null.                               |
-| `(null ?? "default")` | `null`      | The coalescing operator tests for `Nothing`. `null` is a data value.   |
-| `(null or "default")` | `"default"` | The logical `or` operator treats `Null` as a trigger for the fallback. |
+| Expression                | Evaluation  | Notes                                                                  |
+| ------------------------- | ----------- | ---------------------------------------------------------------------- |
+| `null`                    | `null`      | Evaluates to the Null type.                                            |
+| `nil`                     | `null`      | Identical to `null`.                                                   |
+| `user.id == null`         | `true`      | Returns true if `id` is explicitly null.                               |
+| `(null orElse "default")` | `null`      | The coalescing operator tests for `Nothing`. `null` is a data value.   |
+| `(null or "default")`     | `"default"` | The logical `or` operator treats `Null` as a trigger for the fallback. |
 
 ### Boolean Literals
 
@@ -58,12 +58,12 @@ The literal `true` is always "truthy," and the literal `false` is always "falsy"
 
 #### Examples
 
-| Expression        | Evaluation | Notes                                                                      |
-| ----------------- | ---------- | -------------------------------------------------------------------------- |
-| `true`            | `true`     | Evaluates to the Boolean `true` value.                                     |
-| `false`           | `false`    | Evaluates to the Boolean `false` value.                                    |
-| `not true`        | `false`    | The logical `not` operator inverts the boolean value.                      |
-| `(true ?? false)` | `true`     | The null coalescing operator returns the first non-null/non-nothing value. |
+| Expression            | Evaluation | Notes                                                                      |
+| --------------------- | ---------- | -------------------------------------------------------------------------- |
+| `true`                | `true`     | Evaluates to the Boolean `true` value.                                     |
+| `false`               | `false`    | Evaluates to the Boolean `false` value.                                    |
+| `not true`            | `false`    | The logical `not` operator inverts the boolean value.                      |
+| `(true orElse false)` | `true`     | The null coalescing operator returns the first non-null/non-nothing value. |
 
 ### Numeric Literals
 

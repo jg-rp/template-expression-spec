@@ -9,35 +9,22 @@ C = _{ name_char }
 expression = { ternary_expr }
 
 ternary_expr = { consequence ~ (S ~ "if" ~ !C ~ S ~ condition ~ S ~ "else" ~ !C ~ S ~ alternative)? }
-condition    = { pipe_expr }
-consequence  = { pipe_expr }
-alternative  = { pipe_expr }
-
-pipe_expr         = _{ coalesce_expr ~ (S ~ pipe ~ S ~ filter_invocation)* }
-filter_invocation =  { name ~ (S ~ ":" ~ S ~ argument_list)? }
-argument_list     = _{ argument ~ (S ~ "," ~ S ~ argument)* }
-argument          =  { lambda_expr | keyword_argument | arg_expr }
-keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
-lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
-lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
-arg_expr          =  { arg_ternary_expr }
-arg_ternary_expr  =  { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
-arg_condition     =  { coalesce_expr }
-arg_consequence   =  { coalesce_expr }
-arg_alternative   =  { coalesce_expr }
+condition    = { coalesce_expr }
+consequence  = { coalesce_expr }
+alternative  = { coalesce_expr }
 
 coalesce_expr = _{ or_expr ~ (S ~ coalesce ~ S ~ or_expr)* }
 or_expr       = _{ and_expr ~ (S ~ or ~ S ~ and_expr)* }
 and_expr      = _{ prefix_expr ~ (S ~ and ~ S ~ prefix_expr)* }
 prefix_expr   = _{ not_expr | test_expr }
 not_expr      = _{ not ~ S ~ prefix_expr }
-coalesce      =  { "??" }
+coalesce      =  { "orElse" ~ !C }
 or            =  { "or" ~ !C }
 and           =  { "and" ~ !C }
 not           =  { "not" ~ !C }
 pipe          =  { "|" }
 
-test_expr = _{ arithmetic_expression ~ (S ~ test_op ~ S ~ arithmetic_expression)? }
+test_expr = _{ pipe_expr ~ (S ~ test_op ~ S ~ pipe_expr)? }
 test_op   = _{ eq | ne | le | ge | lt | gt | contains | in }
 eq        =  { "==" }
 ne        =  { "!=" }
@@ -47,6 +34,27 @@ gt        =  { ">" }
 ge        =  { ">=" }
 contains  =  { "contains" ~ !C }
 in        =  { "in" ~ !C }
+
+pipe_expr         = _{ arithmetic_expression ~ (S ~ pipe ~ S ~ filter_invocation)* }
+filter_invocation =  { name ~ (S ~ ":" ~ S ~ argument_list)? }
+argument_list     = _{ argument ~ (S ~ "," ~ S ~ argument)* }
+argument          =  { lambda_expr | keyword_argument | arg_expr }
+keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
+lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
+lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
+
+// Same as `expression` but without `pipe_expr`.
+arg_expr          =  { arg_ternary_expr }
+arg_ternary_expr  =  { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
+arg_condition     =  { arg_coalesce_expr }
+arg_consequence   =  { arg_coalesce_expr }
+arg_alternative   =  { arg_coalesce_expr }
+arg_coalesce_expr = _{ arg_or_expr ~ (S ~ coalesce ~ S ~ arg_or_expr)* }
+arg_or_expr       = _{ arg_and_expr ~ (S ~ or ~ S ~ arg_and_expr)* }
+arg_and_expr      = _{ arg_prefix_expr ~ (S ~ and ~ S ~ arg_prefix_expr)* }
+arg_prefix_expr   = _{ arg_not_expr | arg_test_expr }
+arg_not_expr      = _{ not ~ S ~ arg_not_expr }
+arg_test_expr     = _{ arithmetic_expression ~ (S ~ test_op ~ S ~ arithmetic_expression)? }
 
 arithmetic_expression = _{ add_expr }
 add_expr              = _{ mul_expr ~ (S ~ add_op ~ S ~ mul_expr)* }

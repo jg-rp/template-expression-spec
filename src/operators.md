@@ -2,19 +2,19 @@
 
 The following table lists operators from highest to lowest precedence. Operators within the same group are evaluated left-to-right (left-associative).
 
-| Precedence   | Operator Type             | Syntax                                             |
-| ------------ | ------------------------- | -------------------------------------------------- |
-| 11 (Highest) | **Primary**               | Literals, Variables, `( expr )`                    |
-| 10           | **Unary**                 | `+`, `-` (Positive/Negative)                       |
-| 9            | **Multiplicative**        | `*`, `/`, `%`                                      |
-| 8            | **Additive**              | `+`, `-`                                           |
-| 7            | **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
-| 6            | **Logical NOT**           | `not`                                              |
-| 5            | **Logical AND**           | `and`                                              |
-| 4            | **Logical OR**            | `or`                                               |
-| 3            | **Nothing Coalesce**      | `??`                                               |
-| 2            | **Pipe (Filter)**         | `expr \| filter`                                   |
-| 1 (Lowest)   | **Ternary**               | `consequence if condition else alternative`        |
+| Operator Type             | Syntax                                             |
+| ------------------------- | -------------------------------------------------- |
+| **Primary**               | Literals, Variables, `( expr )`                    |
+| **Unary**                 | `+`, `-` (Positive/Negative)                       |
+| **Multiplicative**        | `*`, `/`, `%`                                      |
+| **Additive**              | `+`, `-`                                           |
+| **Pipe (Filter)**         | `expr \| filter`                                   |
+| **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
+| **Logical NOT**           | `not`                                              |
+| **Logical AND**           | `and`                                              |
+| **Logical OR**            | `or`                                               |
+| **Nothing Coalesce**      | `orElse`                                           |
+| **Ternary**               | `consequence if condition else alternative`        |
 
 ### Ternary Expressions
 
@@ -77,33 +77,33 @@ TODO: better examples
 
 #### Syntax
 
-The Nothing coalescing operator (`??`) is a binary operator used to provide a fallback for unresolved paths or missing data.
+The Nothing coalescing operator (`orElse`) is a binary operator used to provide a fallback for unresolved paths or missing data.
 
 ```peg
-CoalesceExpression ← OrExpression ( S "??" S OrExpression )*
+CoalesceExpression ← OrExpression ( S "orElse" !C S OrExpression )*
 ```
 
 #### Semantics
 
-The `??` operator evaluates its operands from left to right and returns the first value that is not `Nothing`.
+The `orElse` operator evaluates its operands from left to right and returns the first value that is not `Nothing`.
 
 The operator triggers a fallback **only** if the left-hand side evaluates to `Nothing` (the signal for a failed resolution or non-existent variable). If the left-hand side is any value other than `Nothing` (including `false`, `0`, or `""`), the right-hand side is not evaluated.
 
-`??` binds more loosely than logical `or`, meaning `a or b ?? c` is evaluated as `(a or b) ?? c`.
+`orElse` binds more loosely than logical `or`, meaning `a or b orElse c` is evaluated as `(a or b) orElse c`.
 
-And `??` operator binds more tightly than the pipe operator (`|`), so `a ?? b | f` is evaluated as `(a ?? b) | f`.
+And `orElse` operator binds more tightly than the pipe operator (`|`), so `a orElse b | f` is evaluated as `(a orElse b) | f`.
 
 #### Examples
 
 Given a context: `{"id": 0, "status": null}`
 
-| Expression                  | Evaluation   | Notes                                        |
-| --------------------------- | ------------ | -------------------------------------------- |
-| `id ?? 1`                   | `0`          | `0` is not `Nothing`.                        |
-| `status ?? "active"`        | `null`       | `null` is valid data; no fallback.           |
-| `missing_var ?? "fallback"` | `"fallback"` | `Nothing` triggers the fallback.             |
-| `user.profile.id ?? 1`      | `1`          | Failed path resolution results in `Nothing`. |
-| `null ?? "fallback"`        | `null`       | Consistent with the "Null is Data" rule.     |
+| Expression                      | Evaluation   | Notes                                        |
+| ------------------------------- | ------------ | -------------------------------------------- |
+| `id orElse 1`                   | `0`          | `0` is not `Nothing`.                        |
+| `status orElse "active"`        | `null`       | `null` is valid data; no fallback.           |
+| `missing_var orElse "fallback"` | `"fallback"` | `Nothing` triggers the fallback.             |
+| `user.profile.id orElse 1`      | `1`          | Failed path resolution results in `Nothing`. |
+| `null orElse "fallback"`        | `null`       | Consistent with the "Null is Data" rule.     |
 
 ### Logical Operators
 

@@ -75,7 +75,7 @@ module Expr
       end
 
       def children = [left, right]
-      def to_s = "#{left} ?? #{filter}"
+      def to_s = "#{left} orElse #{filter}"
     end
 
     Or = Data.define(:token, :left, :right) do
