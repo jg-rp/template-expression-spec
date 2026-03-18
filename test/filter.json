@@ -76,12 +76,12 @@
     {
       "name": "Logical AND vs Pipe: Pipe creates value for logical check",
       "expression": "true and \"a\" | upcase",
-      "result": "\"A\""
+      "result": "A"
     },
     {
       "name": "Logical OR vs Pipe: Logical operator selects result of pipe",
       "expression": "false or \"b\" | upcase",
-      "result": "\"B\""
+      "result": "B"
     },
     {
       "name": "Coalesce vs Pipe: orElse catches Nothing from failed filter",
@@ -91,7 +91,7 @@
     {
       "name": "Ternary vs Pipe: Ternary evaluates whole pipeline",
       "expression": "\"Success\" | upcase if true else \"fail\"",
-      "result": "\"SUCCESS\""
+      "result": "SUCCESS"
     },
     {
       "name": "Arithmetic vs Comparison: Sum compared to literal",
@@ -106,12 +106,12 @@
     {
       "name": "Grouping overrides Pipe precedence",
       "expression": "(10 > 5) | upcase",
-      "result": "\"TRUE\""
+      "result": "TRUE"
     },
     {
       "name": "Nothing propagation: unknown filter results in Nothing, caught by orElse",
       "expression": "42 | non_existent_filter orElse \"safe\"",
-      "result": "\"safe\""
+      "result": "safe"
     }
   ]
 }

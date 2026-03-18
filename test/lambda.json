@@ -23,7 +23,7 @@
     },
     {
       "name": "find, array of objects",
-      "expression": "a | find: i => i.title == 'bar'",
+      "expression": "a | find: i => (i.title == 'bar')",
       "data": {
         "a": [
           {
@@ -41,7 +41,7 @@
     },
     {
       "name": "find, array of objects, not found",
-      "expression": "a | find: i => i.title == '422'",
+      "expression": "a | find: i => (i.title == '42')",
       "data": {
         "a": [
           {

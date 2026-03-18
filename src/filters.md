@@ -1,4 +1,4 @@
-## Filters
+### Pipe Operator (Filters)
 
 A filter is a **named total function** registered in the environment. Formally:
 
@@ -9,26 +9,20 @@ FilterArgument \;&: RuntimeValue | Lambda
 \end{aligned}
 $$
 
-### Syntax
+#### Syntax
 
 ```peg
-PipeExpression    ← CoalesceExpression ( S "|" S FilterInvocation )*
-FilterInvocation  ← Identifier ( S ":" S ArgumentList )?
-ArgumentList      ← Argument ( S "," S Argument )*
-Argument          ← LambdaExpression / KeywordArgument / ArgumentExpression
-KeywordArgument   ← Identifier S ( "=" / ":" ) S ( LambdaExpression / ArgumentExpression )
-LambdaExpression  ← LambdaArguments S "=>" S ArgumentExpression
-LambdaArguments   ← Identifier / ( "(" S ( Identifier ( S "," S Identifier )* )? S ")" )
+PipeExpression     ← ArithmeticExpression ( S "|" S FilterInvocation )*
+FilterInvocation   ← Identifier ( S ":" S ArgumentList )?
+ArgumentList       ← Argument ( S "," S Argument )*
+Argument           ← LambdaExpression / KeywordArgument / ArgumentExpression
+KeywordArgument    ← Identifier S ( "=" / ":" ) S ( LambdaExpression / ArgumentExpression )
+LambdaExpression   ← LambdaArguments S "=>" S ArgumentExpression
+LambdaArguments    ← Identifier / ( "(" S ( Identifier ( S "," S Identifier )* )? S ")" )
+ArgumentExpression ← ArithmeticExpression
 ```
 
-`ArgumentExpression` is `Expression` without `PipeExpression`. This prevents syntactic ambiguity with the pipe operator. If a filter argument requires a piped value as an input, the piped expression must be enclosed in parentheses.
-
-```peg
-ArgumentExpression        ← ArgumentTernaryExpression
-ArgumentTernaryExpression ← CoalesceExpression ( "if" !C CoalesceExpression "else" !C CoalesceExpression )?
-```
-
-### Semantics
+#### Semantics
 
 Every filter application has at least one argument: the **input**. This is the value resulting from the expression immediately to the left of the pipe. In the conceptual mapping to a standard function, the input always occupies the first positional slot (index 0).
 
@@ -36,13 +30,13 @@ Conceptually, a filter application such as `input | filter: arg1, key=arg2` is e
 
 The evaluation of a `PipeExpression` follows a linear, left-to-right transformation of data. Each filter in the chain acts as a function that accepts the current result of the pipeline as its first implicit argument.
 
-#### Arguments
+##### Arguments
 
 Positional arguments are additional values passed to a filter, identified by their sequence following the filter name. The first explicit argument provided in the template is treated as the second argument to the underlying function (index 1), the next as the third (index 2), and so on.
 
 Keyword arguments allow values to be passed to specific named parameters of a filter. Keyword arguments may appear in any order relative to each other, provided they follow all positional arguments. The assignment operators `=` and `:` are treated as semantically identical. They serve only to bind the expression value to the named parameter.
 
-##### Lambda Expressions
+###### Lambda Expressions
 
 Lambda expressions provide a way to define anonymous, inline functions that are passed directly to filters. They allow filters to execute custom logic over collections, such as mapping values, filtering arrays, or applying custom sorting rules.
 
@@ -65,13 +59,13 @@ Lambdas are non-first-class.
 - They cannot be returned from filters.
 - They can only appear syntactically as filter arguments.
 
-#### Well-Typed Filters
+##### Well-Typed Filters
 
 Filter implementations may be accompanied by a **Signature**. This signature is a piece of metadata intended for tooling, static analysis, and ahead-of-time (AOT) validation.
 
 Signatures allow compilers or IDEs to provide autocomplete, verify argument counts, and check for the presence of required keyword arguments before the template is executed. The execution engine MUST NOT depend on this metadata to perform a filter invocation. The engine's role is strictly to evaluate arguments and dispatch the resulting values to the filter implementation.
 
-#### Totality Requirement
+##### Totality Requirement
 
 All filters MUST be **total functions**. A filter is considered total if it returns a valid value for every possible combination of input and arguments.
 
@@ -88,7 +82,7 @@ Filters MUST NOT raise errors due to incorrect arity:
 
 Filters that are unknown to the environment evaluate to `Nothing`. Implementations MAY throw an error or warning at parse time in the event of an unknown filter.
 
-### Examples
+#### Examples
 
 | Expression                               | Structure           | Notes                                                |
 | ---------------------------------------- | ------------------- | ---------------------------------------------------- |

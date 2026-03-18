@@ -85,7 +85,7 @@
     },
     {
       "name": "chained, true, filter argument",
-      "expression": "a | plus: 23 if b else c | append: 'x'",
+      "expression": "a | plus: (23 if b else c) | append: 'x'",
       "data": {
         "a": 1,
         "b": true,
@@ -95,7 +95,7 @@
     },
     {
       "name": "chained, false, filter argument",
-      "expression": "a | plus: 23 if b else c | append: 'x'",
+      "expression": "a | plus: (23 if b else c) | append: 'x'",
       "data": {
         "a": 1,
         "b": false,

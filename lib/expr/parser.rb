@@ -7,28 +7,24 @@ require_relative "unescape"
 module Expr
   class Parser < Pestle::PrattParser
     PREFIX_OPS = {
-      not: 6,
-      arg_not: 6,
+      not: 5,
       neg: 10,
       pos: 10
     }.freeze
 
     INFIX_OPS = {
-      pipe: [2, LEFT_ASSOC],
-      coalesce: [3, LEFT_ASSOC],
-      arg_coalesce: [3, LEFT_ASSOC],
-      or: [4, LEFT_ASSOC],
-      arg_or: [4, LEFT_ASSOC],
-      and: [5, LEFT_ASSOC],
-      arg_and: [5, LEFT_ASSOC],
-      eq: [7, LEFT_ASSOC],
-      ne: [7, LEFT_ASSOC],
-      lt: [7, LEFT_ASSOC],
-      le: [7, LEFT_ASSOC],
-      gt: [7, LEFT_ASSOC],
-      ge: [7, LEFT_ASSOC],
-      contains: [7, LEFT_ASSOC],
-      in: [7, LEFT_ASSOC],
+      coalesce: [2, LEFT_ASSOC],
+      or: [3, LEFT_ASSOC],
+      and: [4, LEFT_ASSOC],
+      eq: [6, LEFT_ASSOC],
+      ne: [6, LEFT_ASSOC],
+      lt: [6, LEFT_ASSOC],
+      le: [6, LEFT_ASSOC],
+      gt: [6, LEFT_ASSOC],
+      ge: [6, LEFT_ASSOC],
+      contains: [6, LEFT_ASSOC],
+      in: [6, LEFT_ASSOC],
+      pipe: [7, LEFT_ASSOC],
       add: [8, LEFT_ASSOC],
       sub: [8, LEFT_ASSOC],
       mul: [9, LEFT_ASSOC],

@@ -42,19 +42,7 @@ argument          =  { lambda_expr | keyword_argument | arg_expr }
 keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
 lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
 lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
-
-// Same as `expression` but without `pipe_expr`.
-arg_expr          =  { arg_ternary_expr }
-arg_ternary_expr  =  { arg_consequence ~ (S ~ "if" ~ !C ~ S ~ arg_condition ~ S ~ "else" ~ !C ~ S ~ arg_alternative)? }
-arg_condition     =  { arg_coalesce_expr }
-arg_consequence   =  { arg_coalesce_expr }
-arg_alternative   =  { arg_coalesce_expr }
-arg_coalesce_expr = _{ arg_or_expr ~ (S ~ coalesce ~ S ~ arg_or_expr)* }
-arg_or_expr       = _{ arg_and_expr ~ (S ~ or ~ S ~ arg_and_expr)* }
-arg_and_expr      = _{ arg_prefix_expr ~ (S ~ and ~ S ~ arg_prefix_expr)* }
-arg_prefix_expr   = _{ arg_not_expr | arg_test_expr }
-arg_not_expr      = _{ not ~ S ~ arg_not_expr }
-arg_test_expr     = _{ arithmetic_expression ~ (S ~ test_op ~ S ~ arithmetic_expression)? }
+arg_expr          =  { arithmetic_expression }
 
 arithmetic_expression = _{ add_expr }
 add_expr              = _{ mul_expr ~ (S ~ add_op ~ S ~ mul_expr)* }
@@ -77,7 +65,7 @@ primary = _{
   | string_literal
   | true_literal
   | false_literal
-  | null
+  | null_literal
   | variable
   | array_literal
   | object_literal
@@ -139,7 +127,7 @@ exp    = { ^"e" ~ ("-" | "+")? ~ ASCII_DIGIT+ }
 
 true_literal  = { "true" ~ !C }
 false_literal = { "false" ~ !C }
-null          = { ("null" | "nil") ~ !C }
+null_literal  = { ("null" | "nil") ~ !C }
 
 array_literal  =  { "[" ~ S ~ (item ~ (S ~ "," ~ S ~ item)*)? ~ S ~ ","? ~ S ~ "]" }
 object_literal =  { "{" ~ S ~ (object_item ~ (S ~ "," ~ S ~ object_item)*)? ~ S ~ ","? ~ S ~ "}" }

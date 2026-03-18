@@ -14,8 +14,9 @@ SPEC = \
 	src/identifiers.md \
 	src/variables_and_paths.md \
 	src/operators.md \
-	src/primary.md \
 	src/filters.md \
+	src/arithmetic.md \
+	src/primary.md \
 	src/appendix.md
 
 CSS = style.css

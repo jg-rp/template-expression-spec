@@ -27,27 +27,27 @@
     },
     {
       "name": "coalesce, last value, nothing left",
-      "expression": "nosuchthing ?? 42",
+      "expression": "nosuchthing orElse 42",
       "result": "42"
     },
     {
       "name": "coalesce, last value, nothing right",
-      "expression": "99 ?? nosuchthing",
+      "expression": "99 orElse nosuchthing",
       "result": "99"
     },
     {
       "name": "coalesce, last value, nothing left and right",
-      "expression": "nosuchthing ?? nosuchthing",
+      "expression": "nosuchthing orElse nosuchthing",
       "result": ""
     },
     {
       "name": "coalesce, last value, false left",
-      "expression": "false ?? 42",
+      "expression": "false orElse 42",
       "result": "false"
     },
     {
       "name": "coalesce, last value, true left",
-      "expression": "true ?? nosuchthing",
+      "expression": "true orElse nosuchthing",
       "result": "true"
     },
     {
@@ -86,14 +86,14 @@
       "result": "true"
     },
     {
-      "name": "coalesce binds more tightly than pipe",
-      "expression": "a ?? b | upcase",
+      "name": "coalesce binds less tightly than pipe",
+      "expression": "a orElse b | upcase",
       "data": { "a": "a", "b": "b" },
-      "result": "A"
+      "result": "a"
     },
     {
       "name": "filter arguments",
-      "expression": "a | split: b or ',' | join: c or '#'",
+      "expression": "a | split: (b or ',') | join: (c or '#')",
       "data": {
         "a": "1,2,3,4",
         "b": null,

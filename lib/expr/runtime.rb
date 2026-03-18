@@ -147,7 +147,11 @@ module Expr
       true
     in [:nothing, _] | [_, :nothing]
       false
-    in [Numeric, Numeric] | [Array, Array] | [Hash, Hash] | [String, String] | [Boolean, Boolean]
+    in [Numeric, Numeric] |
+       [::Array, ::Array] |
+       [::Hash, ::Hash] |
+       [::String, ::String] |
+       [true | false, true | false]
       left == right
     else
       if left.respond_to?(:equals)

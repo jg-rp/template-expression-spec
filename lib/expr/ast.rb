@@ -75,7 +75,7 @@ module Expr
       end
 
       def children = [left, right]
-      def to_s = "#{left} orElse #{filter}"
+      def to_s = "#{left} orElse #{right}"
     end
 
     Or = Data.define(:token, :left, :right) do
@@ -270,9 +270,9 @@ module Expr
     end
 
     Null = Data.define(:token) do
-      def evaluate(context) = value # rubocop: disable Lint/UnusedMethodArgument
+      def evaluate(context) = nil # rubocop: disable Lint/UnusedMethodArgument
       def children = []
-      def to_s = value.to_s
+      def to_s = "null"
     end
 
     Array = Data.define(:token, :items) do

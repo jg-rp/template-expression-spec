@@ -20,45 +20,22 @@ The following table lists operators from highest to lowest precedence. Operators
 
 #### Syntax
 
-The ternary expression follows a "Python-style" postfix conditional syntax. It is the top-level expression in the grammar.
+The ternary expression follows a "Python-style" postfix conditional syntax.
 
 ```peg
-TernaryExpression ← PipeExpression ( "if" !C PipeExpression "else" !C PipeExpression )?
-PipeExpression    ← CoalesceExpression ( S "|" S FilterInvocation )*
+TernaryExpression ← CoalesceExpression ( "if" !C CoalesceExpression "else" !C CoalesceExpression )?
 ```
 
 The keywords `if` and `else` are followed by a negative lookahead `!C` to ensure they are not parsed as prefixes of identifiers.
-
-By requiring all three components—the consequence, the condition, and the alternative—to be `PipeExpression` types, the grammar strictly forbids nested ternary expressions without explicit grouping via parentheses.
 
 #### Semantics
 
 Ternary expressions allow for branching logic within a single line. They prioritize the "happy path" by placing the consequence first.
 
-1. The **Condition** (`PipeExpression`) is evaluated first.
+1. The **Condition** (`CoalesceExpression`) is evaluated first.
 2. The result is coerced to a Boolean via **ToBoolean(x)**.
 3. If `true`, the **Consequence** is evaluated and returned; the alternative is short-circuited.
 4. If `false`, the **Alternative** is evaluated and returned; the consequence is short-circuited.
-
-Because each part is a `PipeExpression`, you can apply filters directly within the branches without extra grouping (e.g., `user.name | upcase if user.name.defined? else "ANONYMOUS"`).
-
-Note: The ternary operator binds to the nearest expression. Inside filter arguments, it applies to the argument, not the filter chain.
-
-```
-a | plus: 42 if b else c | append: 'x'
-```
-
-is parsed as:
-
-```
-a | plus: (42 if b else c) | append: 'x'
-```
-
-**NOT**
-
-```
-(a | plus: 42) if b else c | append: 'x'
-```
 
 #### Examples
 
@@ -147,7 +124,7 @@ Logical operators rely on the $IsTruthy(x)$ abstract function to evaluate operan
 Comparison operators `==`, `!=`, `<=`, `>=`, `<`, `>` test for equality and ordering.
 
 ```peg
-TestExpression ← ArithmeticExpression ( S TestOperator S ArithmeticExpression )?
+TestExpression ← PipeExpression ( S TestOperator S PipeExpression )?
 TestOperator   ← "==" / "!=" / "<=" / ">=" / "<" / ">" / ("in" !C) / ("contains" !C)
 ```
 
@@ -206,7 +183,7 @@ $$
 #### Syntax
 
 ```peg
-TestExpression ← ArithmeticExpression ( S TestOperator S ArithmeticExpression )?
+TestExpression ← PipeExpression ( S TestOperator S PipeExpression )?
 TestOperator   ← "==" / "!=" / "<=" / ">=" / "<" / ">" / ("in" !C) / ("contains" !C)
 ```
 
@@ -240,65 +217,3 @@ Evaluation proceeds as follows.
 | `5 in 5`             | `true`     | `5` is coerced to `[5]` by $ToIterable$. |
 | `"a" in "cat"`       | `true`     | Substring membership.                    |
 | `"name" in {name:1}` | `true`     | Object property membership.              |
-
-### Arithmetic Operators {#sec:arithmetic}
-
-#### Syntax
-
-```peg
-ArithmeticExpression ← AddExpression
-AddExpression        ← MulExpression ( S ( "+" / "-" ) S MulExpression )*
-MulExpression        ← UnaryExpression ( S ( "*" / "/" / "%" ) S UnaryExpression )*
-UnaryExpression      ← NegExpression / PosExpression / PrimaryExpression
-NegExpression        ← "-" UnaryExpression
-PosExpression        ← "+" UnaryExpression
-```
-
-#### Semantics
-
-Arithmetic is performed using the **Decimal Arithmetic Model** to ensure exact precision for base-10 decimals, avoiding the rounding errors typical of binary floating-point systems.
-
-All arithmetic operators are total. Operands are coerced to numbers via $ToNumber$. If an operand resolves to `Nothing`, the entire arithmetic operation resolves to `Nothing`.
-
-```
-+, -, *, /, % : RuntimeValue × RuntimeValue → Number | Nothing
-+ , - (unary) : RuntimeValue → Number | Nothing
-```
-
-Arithmetic operators MUST share semantics with their filter equivalents - `plus`, `minus`, `times`, etc.
-
-##### Division operator
-
-Division uses **true arithmetic division**. Evaluation proceeds as follows:
-
-1. Convert operands using `ToNumber`.
-2. If either conversion yields `Nothing`, the result is `Nothing`.
-3. If the right hand side is equal to `0`, the result is `Nothing`.
-4. Otherwise compute the decimal quotient using the decimal arithmetic model defined in @sec:numeric_types.
-5. Normalize; if the result is mathematically an integer (i.e. it has no fractional component), the result MUST be represented as an integer value.
-
-##### Modulo Operator
-
-The modulo operator computes the remainder of division. Evaluation proceeds as follows:
-
-1. Convert operands using $ToNumber$.
-2. If either conversion yields `Nothing`, the result is `Nothing`.
-3. If the right hand side is equal to `0`, the result is `Nothing`.
-4. Otherwise compute the remainder using $r = x' - y' * floor(x' / y')$. The result has the **same sign as the divisor**.
-5. If the result has no fractional component, it MUST be represented as an integer.
-
-#### Examples
-
-| Expression   | Evaluation | Notes                                                                   |
-| ------------ | ---------- | ----------------------------------------------------------------------- |
-| `4 / 2`      | `2`        | Integer representation.                                                 |
-| `0.1 + 0.2`  | `0.3`      | Exact decimal arithmetic.                                               |
-| `10 / 4`     | `2.5`      | True division (no integer truncation).                                  |
-| `"Item" + 1` | `Nothing`  | `"Item"` coerces to `Nothing`. `+` is not overloaded for concatenation. |
-| `10 / 0`     | `Nothing`  | Division by zero is handled safely.                                     |
-| `5 * "abc"`  | `Nothing`  | Incompatible types resolve to `Nothing`.                                |
-| `5 % 2`      | `1`        |                                                                         |
-| `4 % 2`      | `0`        |                                                                         |
-| `-5 % 2`     | `1`        |                                                                         |
-| `5 % -2`     | `-1`       |                                                                         |
-| `5.5 % 2`    | `1.5`      |                                                                         |
