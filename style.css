@@ -10,16 +10,15 @@ body {
 
 .page {
   display: grid;
-  /* TOC is 260px, Content is 1fr */
-  grid-template-columns: 260px 1fr;
+  /* 320px TOC, and 'minmax(0, 1fr)' prevents content from forcing width */
+  grid-template-columns: 320px minmax(0, 1fr);
   grid-template-rows: auto 1fr;
-  /* The TOC now spans both rows on the left */
   grid-template-areas:
     "toc header"
     "toc main";
-  gap: 0 40px; /* 0 vertical gap, 40px horizontal gap */
-  max-width: 1200px;
-  margin: 0 auto; /* Removed top margin to let TOC hit the top */
+  gap: 0 60px; /* Increased horizontal gap for breathing room */
+  max-width: 1240px; /* Widened to accommodate larger TOC */
+  margin: 0 auto;
 }
 
 main {
@@ -167,27 +166,83 @@ h4:hover .header-link {
   visibility: visible;
 }
 
-/* Responsive: small screens */
-@media (max-width: 900px) {
+/* Responsive Breakpoint: Tablet & Mobile (< 1000px) */
+@media (max-width: 1000px) {
   .page {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr;
-    grid-template-areas:
-      "header"
-      "toc"
-      "main";
+    display: block; /* Stack everything vertically */
+    padding: 0 20px;
   }
 
+  .title-block,
   main {
-    padding: 0 10px 0 10px;
+    max-width: 100%; /* Allow content to fill the screen */
   }
 
   #TOC {
     position: relative;
-    top: auto;
     height: auto;
+    width: 100%;
     border-right: none;
-    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 2em;
+    padding: 10px 0;
+    background: #fdfdfd;
+  }
+
+  /* Close the TOC by default on mobile */
+  #TOC details:not([open]) {
+    margin-bottom: 0;
+  }
+
+  #TOC details summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: 10px;
+    background: #eee;
+    list-style: none; /* Hides default arrow */
+  }
+
+  #TOC details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  #TOC details summary::before {
+    content: "☰ "; /* Mobile menu icon */
+  }
+}
+
+@media (min-width: 1001px) {
+  #TOC {
+    grid-area: toc;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 40px 25px;
+    border-right: 1px solid #ddd;
+    box-sizing: border-box;
+    background-color: #fafafa;
+  }
+
+  /* 1. Force the TOC list to show even if <details> is closed */
+  #TOC details > ul,
+  #TOC details > div {
+    display: block !important;
+  }
+
+  /* 2. Style the summary to look like a static header, not a button */
+  #TOC summary {
+    display: block; /* Removes the 'list-item' arrow behavior */
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-bottom: 1em;
+    cursor: default;
+    pointer-events: none; /* Prevents accidental closing on desktop */
+  }
+
+  /* 3. Hide the arrow icon specifically for Chrome/Safari */
+  #TOC summary::-webkit-details-marker {
+    display: none;
   }
 }
 
