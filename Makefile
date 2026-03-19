@@ -4,7 +4,8 @@ CROSSREF = pandoc-crossref
 META = src/metadata.yaml
 
 PREAMBLE = src/preamble.md
-SPEC = \
+
+SPEC_SRC = \
 	src/introduction.md \
 	src/data_model.md \
 	src/drops.md \
@@ -18,6 +19,9 @@ SPEC = \
 	src/arithmetic.md \
 	src/primary.md \
 	src/appendix.md
+
+PEG_OUT = src/collected_peg_grammar.md
+SPEC = $(SPEC_SRC) $(PEG_OUT)
 
 CSS = style.css
 TEMPLATE = template.html
@@ -50,7 +54,7 @@ PANDOC_FLAGS = \
 	--mathjax \
 	--filter $(CROSSREF)
 
-all: build extras
+all: $(PEG_OUT) build extras
 
 $(OUT): $(SPEC) $(PREAMBLE) $(TEMPLATE) $(CSS)
 	mkdir -p $(BUILD_DIR)
@@ -64,6 +68,10 @@ $(OUT): $(SPEC) $(PREAMBLE) $(TEMPLATE) $(CSS)
 	$(SPEC) \
 	$(PANDOC_FLAGS) \
 	-o $(OUT)
+
+$(PEG_OUT): $(SPEC_SRC)
+	# Generate collected PEG grammar
+	bundle exec ruby collect_peg.rb $(SPEC_SRC) > $@
 
 $(NOT_FOUND_OUT): $(NOT_FOUND_SRC) $(CSS)
 	# Copy and rewrite CSS reference to hashed version
