@@ -2,50 +2,24 @@
 
 SPEC_FILES = ARGV
 
-blocks = SPEC_FILES.map { |file| File.read(file).scan(/^```\s*peg([^`]+)```/).first }
+blocks = SPEC_FILES.flat_map { |file| File.read(file).scan(/^```\s*peg([^`]+)```/) }.flatten
 
-# TODO: for each block
-#  - split into lines
-#  - split at <-
-#  - remember the furthest column index of ->
+max_arrow_column = blocks.flatten.flat_map(&:lines).filter_map { |line| line.index("←") }.max
 
-pp(blocks.flatten.first.lines)
+normalized_blocks = blocks.map do |block|
+  lines = block.lstrip.lines
+  local_col = lines.first.index("←")
+  raise "expected the first line to contain a rule" unless local_col
 
-arrow_column = blocks.map(&:lines).flat_map { |line| line.index("←") }.compact.max
+  pad = " " * (max_arrow_column - local_col)
+  lines.map { |line| line.insert(line.include?("←") ? local_col : 0, pad) }.join
+end
 
-puts arrow_column
+out = []
+out << "# A. Collected PEG Grammar {.unnumbered}"
+out << ""
+out << "```peg"
+out << normalized_blocks.join("\n")
+out << "```"
 
-# TODO: for each block
-#  - for each line
-#   - join rule name and rule back together with new -> alignment
-#  - join lines back together
-
-# TODO: join blocks
-
-# # Split rules at first ←
-# parsed = rules.map do |r|
-#   if r.include?("←")
-#     left, right = r.split("←", 2)
-#     [left.strip, right.strip]
-#   else
-#     [r.strip, ""]
-#   end
-# end
-
-# # Compute alignment width
-# max_left = parsed.map { |l, _| l.length }.max || 0
-
-# out = []
-# out << "# A. Collected PEG Grammar {.unnumbered}"
-# out << ""
-# out << "```peg"
-
-# parsed.each do |left, right|
-#   padding = " " * (max_left - left.length)
-#   out << "#{left}#{padding} ← #{right}".rstrip
-#   out << "" # blank line between rules
-# end
-
-# out << "```"
-
-# puts out.join("\n")
+puts out.join("\n")

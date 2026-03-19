@@ -44,7 +44,7 @@ A null literal always evaluates to a value of type `Null`. In a boolean context,
 
 The language recognizes the lowercase keywords `true` and `false`.
 
-```{.peg}
+```peg
 BooleanLiteral ← ("true" / "false") !C
 ```
 
