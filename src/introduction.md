@@ -1,8 +1,8 @@
 # Introduction
 
-This specification defines the behavior of a standalone expression evaluator. In practice, this evaluator is intended to function as a component within a larger **Template Engine**.
+This specification defines the behavior of a standalone expression evaluator. In practice, this evaluator is intended to function as a component within a larger template engine.
 
-While the **Template Engine** manages higher-level concerns - such as file I/O, tag orchestration (`{% ... %}`), and the provision of a global execution context - this document governs the internal logic of **Expressions**. By decoupling the expression grammar from the engine's tag architecture, we ensure that data resolution, mathematical operations, and filter pipelines remain consistent regardless of the tag or context in which they appear.
+While the template engine manages higher-level concerns - such as file I/O, tag orchestration (`{% ... %}`), and the provision of a global execution context - this document governs the internal logic of **Expressions**. By decoupling the expression grammar from the engine's tag architecture, we ensure that data resolution, mathematical operations, and filter pipelines remain consistent regardless of the tag or context in which they appear.
 
 ## Terminology
 
@@ -24,9 +24,13 @@ While the **Template Engine** manages higher-level concerns - such as file I/O, 
 
 - _Tag_: A structural command used to govern control flow, iteration, or state management (e.g., `if`, `for`, `assign`). While this specification defines the grammar of expressions _within_ tags, the implementation of the tags themselves is considered part of the surrounding architecture.:
 
-- _Filter_: A named, **total function** registered in the environment that transforms a value. Filters are invoked within a pipeline using the pipe (`|`) syntax, where they accept the result of the preceding expression as their primary input.
+- _Filter_: A named, total function registered in the environment that transforms a value. Filters are invoked within a pipeline using the pipe (`|`) syntax, where they accept the result of the preceding expression as their primary input.
 
 - _Lambda_: An anonymous function defined inline as a filter argument. Lambdas capture their lexical environment and allow filters to apply custom logic such as mapping or sorting to data structures.
+
+- _Total Evaluation_: An expression language has total evaluation if every syntactically valid expression evaluates to a value and does not raise a runtime error. Every operator, filter, and conversion must produce a value for every possible input.
+
+- _Total Function_: A function is total if it is defined for every possible input in its domain - the set of inputs the function accepts.
 
 ## History
 
@@ -40,7 +44,7 @@ Compatibility with existing Liquid implementations is explicitly not a goal.
 
 ## Overview of Liquid Expressions
 
-An expression is a composable sequence of components that, when evaluated against a context, produces a single **RuntimeValue**. This language is **total** and **immutable**: every syntactically valid expression resolves to a value, and no expression can modify the state of the execution context.
+An expression is a composable sequence of components that, when evaluated against a context, produces a single $RuntimeValue$. This language is total and immutable: every syntactically valid expression resolves to a value, and no expression can modify the state of the execution context.
 
 Formally, for every expression $e$ and environment $\rho$:
 
@@ -50,36 +54,36 @@ Expressions are composed of the following six building blocks:
 
 ### Literals
 
-Literals represent fixed values encoded directly in the template source.
+Literals are textual representations of fixed values encoded directly in the template source, including:
 
-- **Primitives**: Support for `Strings` (UTF-8), `Numbers` (High-precision decimals), `Booleans` (`true`/`false`), and `Null`.
-- **Collections**: `Array` literals (`[1, 2, 3]`) and `Object` literals (`{ key: value }`).
-- **Ranges**: `Range` literals (`1..5`) which evaluate to an inclusive sequence of integers.
+- Primitives: `Strings` (UTF-8), `Numbers` (High-precision decimals), `Booleans` (`true`/`false`), and `Null`.
+- Collections: `Array` literals (`[1, 2, 3]`) and `Object` literals (`{ key: value }`).
+- Ranges: `Range` literals (`1..5`) which evaluate to an inclusive sequence of integers.
 
 ### Variables and Paths
 
 Variables are identifiers used to retrieve data from the execution context. They support deep resolution via segmented path syntax:
 
-- **Dot Notation**: `user.profile.name`
-- **Bracket Notation**: `user["profile"]["name"]` or `items[index]`.
+- Dot Notation: `user.profile.name`
+- Bracket Notation: `user["profile"]["name"]` or `items[index]`.
   If a variable or any segment of a path does not exist, the expression resolves to $Nothing$.
 
 ### Operators
 
 Operators perform functional computations or logical comparisons.
 
-- **Arithmetic**: Standard mathematical operations (`+`, `-`, `*`, `/`, `%`) and unary negation (`-`).
-- **Comparison**: Equality (`==`, `!=`) and relational (`<`, `<=`, `>`, `>=`) checks.
-- **Logical**: Boolean logic (`and`, `or`, `not`) used for truthiness branching.
-- **Coalescence**: The `orElse` operator provides a fallback specifically for $Nothing$ values.
-- **Membership**: The `in` and `contains` operators for checking if a value exists within a collection or a substring exists within a string.
+- Arithmetic: Standard mathematical operations (`+`, `-`, `*`, `/`, `%`) and unary negation (`-`).
+- Comparison: Equality (`==`, `!=`) and relational (`<`, `<=`, `>`, `>=`) checks.
+- Logical: Boolean logic (`and`, `or`, `not`) used for truthiness branching.
+- Coalescence: The `orElse` operator provides a fallback specifically for $Nothing$ values.
+- Membership: The `in` and `contains` operators for checking if a value exists within a collection or a substring exists within a string.
 
 ### Filters and Pipelines
 
 Filters are named transformations applied to a value via the pipe (`|`) syntax. They are designed to be chained into pipelines, where the output of one filter serves as the primary input for the next (e.g., `product.price | times: 1.1 | round: 2`). Filters may accept:
 
-- **Positional Arguments**: `filter: arg1, arg2`
-- **Keyword Arguments**: `filter: key="value"`
+- Positional Arguments: `filter: arg1, arg2`
+- Keyword Arguments: `filter: key="value"`
 
 ### Lambdas
 
@@ -87,5 +91,5 @@ Lambdas are anonymous, inline functions (e.g., `item => item.price > 10`) passed
 
 ### Control Expressions
 
-- **Conditional (Ternary)**: The `... if ... else ...` construct allows for inline branching based on the truthiness of a condition (e.g., `score if score > 50 else "Fail"`).
-- **Grouping**: Parentheses `( ... )` are used to override default operator precedence or to clarify the evaluation order of complex nested expressions.
+- Conditional (Ternary): The `... if ... else ...` construct allows for inline branching based on the truthiness of a condition (e.g., `score if score > 50 else "Fail"`).
+- Grouping: Parentheses `( ... )` are used to override default operator precedence or to clarify the evaluation order of complex nested expressions.

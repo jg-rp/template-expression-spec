@@ -1,191 +1,60 @@
-# A Unified Expression Grammar for Liquid Templates
+# A Unified Expression Grammar for Template Languages
 
-This project defines a unified, composable expression language for Liquid-style templates. Historically, Liquid expressions have varied subtly depending on context - certain tags treated operators or filters differently, and precedence rules were not globally consistent.
+This project defines a unified, implementation‑independent expression language for Liquid-style templates.
 
-This implementation replaces that ad hoc behavior with a single, context-independent grammar (`grammar.pest`) and a clear evaluation model. All expressions follow the same rules everywhere they appear.
-
-Importantly, evaluation never fails. Every syntactically valid expression evaluates to a value and does not raise an error at render time.
-
----
-
-A unified, fully composable expression grammar with consistent operator precedence, available in all expression positions.
-
-All operators, filters, and grouping constructs are valid in any expression context, with a single, well-defined precedence hierarchy.
-
-All expressions follow the same rules everywhere. Logical operators, filters, arithmetic, grouping, and coalescing work uniformly in every tag.
-
-Expressions are no longer tag-defined fragments; they are parsed by a single, context-independent grammar.
-
----
-
-## The Myth: "Non-developers need simpler semantics"
-
-In practice, non-dev template authors don't struggle with:
-
-- Consistent operator precedence
-- Clear evaluation rules
-- Expressions behaving predictably
-
-They struggle with:
-
-- Surprising edge cases
-- Silent coercions
-- Inconsistent parsing rules
-- "Why did that bind like that?" moments
-
-Correctness actually _reduces_ cognitive load - **if** it is consistent.
-
----
-
-## Your Grammar Philosophy Is Internally Coherent
-
-From everything you've shown, your design principles are:
-
-1. Precedence is strict and layered.
-2. Operators bind locally and predictably.
-3. Filters are postfix transformations.
-4. Function arguments bind tighter than outer control flow.
-5. Parentheses are required when intent is ambiguous.
-
-That's not "developer bias."
-That's **language integrity**.
-
----
-
-Value-returning operations such as “size” and element selection are expressed via filters and indexing. Boolean tests are expressed via predicate suffixes (?). There are no special-case properties like .size, .first, or .last.
-
----
-
-## Notable Additions to Traditional Liquid Expressions
-
-### Arithmetic Operators
-
-Arithmetic operators (`+`, `-`, `*`, `/`, `%`) are supported directly in expressions.
-
-Their semantics are consistent with their corresponding filter equivalents. This ensures that:
-
-```
-a + b
-```
-
-and:
-
-```
-a | plus: b
-```
-
-behave equivalently.
-
-We also define addition and multiplication operations on arrays and strings.
-
-### Logical Operators and Grouping
-
-Logical operators are supported in standard form:
-
-- `and`
-- `or`
-- `not`
-
-Parentheses may be used for grouping:
-
-```
-not (a and b)
-```
-
-Operator precedence is explicit and consistent across all contexts, with short-circuit, last-value semantics.
-
-### A Distinct `Nothing` Value
-
-The language introduces a special `Nothing` value.
-
-`Nothing` represents the absence of a value during evaluation and is distinct from:
-
-- `false`
-- `null`
-- `nil`
-
-`false`, `null` and implementation-specific `nil` / `undefined` are valid user-data values. `Nothing` is an internal evaluation artifact.
-
-### Coalesce Operator (`??`)
-
-The coalesce operator returns the first operand that is not `Nothing`:
-
-```
-a ?? b
-```
-
-Unlike `or`, it does not treat `false`, `0`, empty strings, or empty collections as missing values.
-
-### First-Class Filters
-
-Filters are no longer restricted by contextual parsing rules. They participate in the unified expression grammar and can appear anywhere expressions are allowed.
-
-Filters:
-
-- Compose with arithmetic and logical operators
-- Respect a single, well-defined precedence hierarchy
-
-The pipe operator (`|`) is treated as a standard expression operator with deterministic behavior.
-
-### First-Class Ternary Expressions
-
-Python-style conditional expressions are supported:
-
-```
-value if condition else alternative
-```
-
-Ternary expressions are fully composable and follow defined precedence rules. They may be nested and combined with filters, arithmetic, and logical operators.
-
-### Structured Literals and Spread
-
-Array and object literals are supported:
-
-```
-[1, 2, 3]
-{ "name": user.name }
-```
-
-A spread operator (`...`) allows composition of structures:
-
-```
-[...items, 4]
-{ ...defaults, "enabled": true }
-```
-
-This enables template authors to construct collections immutably, without manipulating render context data.
-
-### Lambdas (for Filter Arguments)
-
-JavaScript-style arrow functions may be passed as filter arguments:
-
-```
-items | map: x => x * 2
-```
-
-Lambdas:
-
-- Accept one or more parameters
-- Capture lexical scope
-- Evaluate a full expression body
-
-Lambdas are higher-order values used exclusively as filter arguments. They are not part of the data model and cannot be returned from filters.
-
-This enables functional-style operations such as mapping, filtering, and aggregation without turning the language into a fully higher-order system.
+The specification focuses strictly on the internal mechanics of expressions. Notably, this document does not define the surrounding tag architecture (such as the specific implementation of `{% if %}` or `{% for %}`) nor does it provide a "standard library" of filters.
 
 ## Notable Differences to Shopify/Liquid
 
-- Arithmetic operators DO NOT default to zero when numeric coercion fails. Instead they evaluate to `Nothing`, and arithmetic expressions (along with their matching filters) evaluate to `Nothing` if either operand is `Nothing`, or when an operation is undefined (such as division or modulo by zero).
+- Arithmetic operators (`+`, `-`, `*`, `/`, `%`) are supported directly in expressions. Arithmetic operators DO NOT default to zero when numeric coercion fails. Instead they evaluate to `Nothing`, and arithmetic expressions (along with their matching filters) evaluate to `Nothing` if either operand is `Nothing`, or when an operation is undefined (such as division or modulo by zero).
+
+- Logical operator precedence (`and` and `or`) has changed. The spec requires `and` to bind tighter than `or` and evaluation to happen from left to right. Parentheses may be used for grouping: `not (a and b)`
+
+- Filters are no longer restricted by contextual parsing rules. They participate in the unified expression grammar and can appear anywhere expressions are allowed. The pipe operator (`|`) is treated as a standard expression operator with deterministic behavior.
+
+- Python-style conditional expressions are supported:
+
+  ```
+  value if condition else alternative
+  ```
+
+  Ternary expressions are fully composable and follow defined precedence rules. They may be nested and combined with filters, arithmetic, and logical operators.
+
+- Array and object literals are supported:
+
+  ```
+  [1, 2, 3]
+  { "name": user.name }
+  ```
+
+  A spread operator (`...`) allows composition of structures:
+
+  ```
+  [...items, 4]
+  { ...defaults, "enabled": true }
+  ```
+
+  This enables template authors to construct collections immutably, without manipulating render context data.
+
+- Filters can accept anonymous expressions as arguments. Anonymous expressions capture their lexical environment and allow filters to apply custom logic such as mapping or sorting to data structures.
+
+- The special `x == empty` and `x == blank` constructs have been replaced with `x.empty?` and `x.blank?` predicates. Other predicates defined in the spec include `defined?` and `array?`.
+
+- Value-returning operations such as `x.size`, `x.first` and `x.last` are expressed via filters and indexing.
+
+- Both `:` and `=` are allowed in filter keyword argument syntax when separating a key from a value.
 
 ## Notable Differences to Liquid2
 
 - All array literals must be surrounded by square brackets. Square brackets where optional in some cases in Liquid2.
 
+- The tail filter operator `||` has been removed. Now parentheses should be used to apply the filter operator `|` to the desired sub expression.
+
 ## Deliberations
 
 ### Array and Variable Disambiguation
 
-We use a trailing comma to differentiate array literals with a single string literal and a variable using bracketed syntax. `["some thing"]` is a variable where the variable name contains whitespace (or other reserved characters). `["some thing",]` is an array.
+We use a trailing comma to syntactically differentiate array literals with a single string literal from a variable using bracketed syntax. `["some thing"]` is a variable where the variable name contains whitespace (or other reserved characters). `["some thing",]` is an array.
 
 An alternative would be to use a JSONPath-style root selector, `$`. `$` would be implicit for unambiguous expressions, but required to disambiguate single element array literals and variables. `title == $.title == $["title"]`. `["title"]` is an array.
 
@@ -193,10 +62,14 @@ The former/current solution was chosen to avoid introducing a new symbol (`$`) a
 
 ### Overloaded Arithmetic Operators
 
-An early draft of this spec included array and string repetition and concatenation using `*` and `+`. This was rejected to mitigate excessively large strings and arrays being generated programmatically by malicious template authors using `*`.
+An early draft of this spec included support for array and string repetition and concatenation using `*` and `+`. This was rejected to mitigate excessively large strings and arrays being generated programmatically by malicious template authors using `*`.
 
 ### `liquid` Tags
 
-This specification does not play well with `{% liquid %}` tags, which are traditionally newline terminated.
+This specification does not play well with `{% liquid %}` tags, which are traditionally newline terminated. We would need to duplicate the grammar with a different definition of `S`.
 
-With the introduction of ternary and universal logical expressions, one might decide that `{% liquid %}` is less useful than before.
+### The Coalesce Operator
+
+The ability for template authors to differentiate between missing data and `false`, `0`, `""` and `null` (or `nil`, `None`, `undefined`, etc.) is considered essential. The longhand solution is `x if x.defined? else y`. The equivalent coalesce expression is `x orElse y`.
+
+We've considered using `??` or `otherwise` instead of `orElse` for the coalesce operator, and considered removing the operator altogether.
