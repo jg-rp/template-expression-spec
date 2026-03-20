@@ -1,0 +1,3573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>A Unified Expression Language for Template Engines</title>
+
+        <meta name="author" content="Draft Specification" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <link rel="stylesheet" href="style.f7bddedb.css" />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="page">
+      <header class="title-block">
+        <h1>A Unified Expression Language for Template Engines</h1>
+                <p>Draft
+Specification (<a href="https://github.com/jg-rp/template-expression-spec">source</a>)</p>
+                 <p>2026-03-09</p>
+              </header>
+
+      <nav id="TOC">
+        <details open>
+          <summary>Table of Contents</summary>
+          <ul>
+          <li><a href="#introduction" id="toc-introduction"><span
+          class="toc-section-number">1</span> Introduction</a>
+          <ul>
+          <li><a href="#terminology" id="toc-terminology"><span
+          class="toc-section-number">1.1</span> Terminology</a></li>
+          <li><a href="#history" id="toc-history"><span
+          class="toc-section-number">1.2</span> History</a></li>
+          <li><a href="#overview-of-liquid-expressions"
+          id="toc-overview-of-liquid-expressions"><span
+          class="toc-section-number">1.3</span> Overview of Liquid
+          Expressions</a>
+          <ul>
+          <li><a href="#literals" id="toc-literals"><span
+          class="toc-section-number">1.3.1</span> Literals</a></li>
+          <li><a href="#variables-and-paths"
+          id="toc-variables-and-paths"><span
+          class="toc-section-number">1.3.2</span> Variables and
+          Paths</a></li>
+          <li><a href="#operators" id="toc-operators"><span
+          class="toc-section-number">1.3.3</span> Operators</a></li>
+          <li><a href="#filters-and-pipelines"
+          id="toc-filters-and-pipelines"><span
+          class="toc-section-number">1.3.4</span> Filters and
+          Pipelines</a></li>
+          <li><a href="#lambdas" id="toc-lambdas"><span
+          class="toc-section-number">1.3.5</span> Lambdas</a></li>
+          <li><a href="#control-expressions"
+          id="toc-control-expressions"><span
+          class="toc-section-number">1.3.6</span> Control
+          Expressions</a></li>
+          </ul></li>
+          </ul></li>
+          <li><a href="#type-system-for-template-expressions"
+          id="toc-type-system-for-template-expressions"><span
+          class="toc-section-number">2</span> Type System for Template
+          Expressions</a>
+          <ul>
+          <li><a href="#values" id="toc-values"><span
+          class="toc-section-number">2.1</span> Values</a></li>
+          <li><a href="#sec:numeric_types"
+          id="toc-sec:numeric_types"><span
+          class="toc-section-number">2.2</span> Numeric Types</a>
+          <ul>
+          <li><a href="#decimal-arithmetic-model"
+          id="toc-decimal-arithmetic-model"><span
+          class="toc-section-number">2.2.1</span> Decimal Arithmetic
+          Model</a></li>
+          <li><a href="#division-semantics"
+          id="toc-division-semantics"><span
+          class="toc-section-number">2.2.2</span> Division
+          Semantics</a></li>
+          <li><a href="#numeric-equality"
+          id="toc-numeric-equality"><span
+          class="toc-section-number">2.2.3</span> Numeric
+          Equality</a></li>
+          <li><a href="#string-conversion"
+          id="toc-string-conversion"><span
+          class="toc-section-number">2.2.4</span> String
+          Conversion</a></li>
+          </ul></li>
+          <li><a href="#iterables" id="toc-iterables"><span
+          class="toc-section-number">2.3</span> Iterables</a></li>
+          <li><a href="#data-type-summary"
+          id="toc-data-type-summary"><span
+          class="toc-section-number">2.4</span> Data Type
+          Summary</a></li>
+          <li><a href="#extension-types-drops"
+          id="toc-extension-types-drops"><span
+          class="toc-section-number">2.5</span> Extension Types
+          (Drops)</a>
+          <ul>
+          <li><a href="#sequence-protocol"
+          id="toc-sequence-protocol"><span
+          class="toc-section-number">2.5.1</span> Sequence
+          Protocol</a></li>
+          <li><a href="#equality-protocol"
+          id="toc-equality-protocol"><span
+          class="toc-section-number">2.5.2</span> Equality
+          Protocol</a></li>
+          <li><a href="#ordering-protocol"
+          id="toc-ordering-protocol"><span
+          class="toc-section-number">2.5.3</span> Ordering
+          Protocol</a></li>
+          <li><a href="#membership-protocol"
+          id="toc-membership-protocol"><span
+          class="toc-section-number">2.5.4</span> Membership
+          Protocol</a></li>
+          </ul></li>
+          <li><a href="#type-conversion" id="toc-type-conversion"><span
+          class="toc-section-number">2.6</span> Type Conversion</a>
+          <ul>
+          <li><a href="#sec:truthy" id="toc-sec:truthy"><span
+          class="toc-section-number">2.6.1</span> Truthiness and
+          ToBoolean(x)</a></li>
+          <li><a href="#sec:to_number" id="toc-sec:to_number"><span
+          class="toc-section-number">2.6.2</span> ToNumber(x)</a></li>
+          <li><a href="#sec:to_string" id="toc-sec:to_string"><span
+          class="toc-section-number">2.6.3</span> ToString(x)</a></li>
+          <li><a href="#toarrayx" id="toc-toarrayx"><span
+          class="toc-section-number">2.6.4</span> ToArray(x)</a>
+          <ul>
+          <li><a href="#string-semantics"
+          id="toc-string-semantics"><span
+          class="toc-section-number">2.6.4.1</span> String
+          Semantics</a></li>
+          </ul></li>
+          <li><a href="#sec:to_object" id="toc-sec:to_object"><span
+          class="toc-section-number">2.6.5</span> ToObject(x)</a></li>
+          <li><a href="#sec:to_iterable" id="toc-sec:to_iterable"><span
+          class="toc-section-number">2.6.6</span> ToIterable(x)</a></li>
+          </ul></li>
+          </ul></li>
+          <li><a href="#syntax-and-semantics"
+          id="toc-syntax-and-semantics"><span
+          class="toc-section-number">3</span> Syntax and Semantics</a>
+          <ul>
+          <li><a href="#sec:literals" id="toc-sec:literals"><span
+          class="toc-section-number">3.1</span> Literals</a>
+          <ul>
+          <li><a href="#null-literal" id="toc-null-literal"><span
+          class="toc-section-number">3.1.1</span> Null Literal</a>
+          <ul>
+          <li><a href="#syntax" id="toc-syntax"><span
+          class="toc-section-number">3.1.1.1</span> Syntax</a></li>
+          <li><a href="#semantics" id="toc-semantics"><span
+          class="toc-section-number">3.1.1.2</span> Semantics</a></li>
+          <li><a href="#examples" id="toc-examples"><span
+          class="toc-section-number">3.1.1.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#boolean-literals"
+          id="toc-boolean-literals"><span
+          class="toc-section-number">3.1.2</span> Boolean Literals</a>
+          <ul>
+          <li><a href="#syntax-1" id="toc-syntax-1"><span
+          class="toc-section-number">3.1.2.1</span> Syntax</a></li>
+          <li><a href="#semantics-1" id="toc-semantics-1"><span
+          class="toc-section-number">3.1.2.2</span> Semantics</a></li>
+          <li><a href="#examples-1" id="toc-examples-1"><span
+          class="toc-section-number">3.1.2.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#numeric-literals"
+          id="toc-numeric-literals"><span
+          class="toc-section-number">3.1.3</span> Numeric Literals</a>
+          <ul>
+          <li><a href="#syntax-2" id="toc-syntax-2"><span
+          class="toc-section-number">3.1.3.1</span> Syntax</a></li>
+          <li><a href="#semantics-2" id="toc-semantics-2"><span
+          class="toc-section-number">3.1.3.2</span> Semantics</a></li>
+          <li><a href="#examples-2" id="toc-examples-2"><span
+          class="toc-section-number">3.1.3.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#string-literals" id="toc-string-literals"><span
+          class="toc-section-number">3.1.4</span> String Literals</a>
+          <ul>
+          <li><a href="#syntax-3" id="toc-syntax-3"><span
+          class="toc-section-number">3.1.4.1</span> Syntax</a></li>
+          <li><a href="#semantics-3" id="toc-semantics-3"><span
+          class="toc-section-number">3.1.4.2</span> Semantics</a></li>
+          <li><a href="#examples-3" id="toc-examples-3"><span
+          class="toc-section-number">3.1.4.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#array-literals" id="toc-array-literals"><span
+          class="toc-section-number">3.1.5</span> Array Literals</a>
+          <ul>
+          <li><a href="#syntax-4" id="toc-syntax-4"><span
+          class="toc-section-number">3.1.5.1</span> Syntax</a></li>
+          <li><a href="#semantics-4" id="toc-semantics-4"><span
+          class="toc-section-number">3.1.5.2</span> Semantics</a></li>
+          <li><a href="#examples-4" id="toc-examples-4"><span
+          class="toc-section-number">3.1.5.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#object-literals" id="toc-object-literals"><span
+          class="toc-section-number">3.1.6</span> Object Literals</a>
+          <ul>
+          <li><a href="#syntax-5" id="toc-syntax-5"><span
+          class="toc-section-number">3.1.6.1</span> Syntax</a></li>
+          <li><a href="#semantics-5" id="toc-semantics-5"><span
+          class="toc-section-number">3.1.6.2</span> Semantics</a></li>
+          <li><a href="#examples-5" id="toc-examples-5"><span
+          class="toc-section-number">3.1.6.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#range-literals" id="toc-range-literals"><span
+          class="toc-section-number">3.1.7</span> Range Literals</a>
+          <ul>
+          <li><a href="#syntax-6" id="toc-syntax-6"><span
+          class="toc-section-number">3.1.7.1</span> Syntax</a></li>
+          <li><a href="#semantics-6" id="toc-semantics-6"><span
+          class="toc-section-number">3.1.7.2</span> Semantics</a></li>
+          <li><a href="#examples-6" id="toc-examples-6"><span
+          class="toc-section-number">3.1.7.3</span> Examples</a></li>
+          </ul></li>
+          </ul></li>
+          <li><a href="#identifiers" id="toc-identifiers"><span
+          class="toc-section-number">3.2</span> Identifiers</a>
+          <ul>
+          <li><a href="#syntax-7" id="toc-syntax-7"><span
+          class="toc-section-number">3.2.1</span> Syntax</a></li>
+          <li><a href="#semantics-7" id="toc-semantics-7"><span
+          class="toc-section-number">3.2.2</span> Semantics</a></li>
+          <li><a href="#examples-7" id="toc-examples-7"><span
+          class="toc-section-number">3.2.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#sec:variables" id="toc-sec:variables"><span
+          class="toc-section-number">3.3</span> Variables and Paths</a>
+          <ul>
+          <li><a href="#syntax-8" id="toc-syntax-8"><span
+          class="toc-section-number">3.3.1</span> Syntax</a></li>
+          <li><a href="#semantics-8" id="toc-semantics-8"><span
+          class="toc-section-number">3.3.2</span> Semantics</a>
+          <ul>
+          <li><a href="#sec:variable_resolution"
+          id="toc-sec:variable_resolution"><span
+          class="toc-section-number">3.3.2.1</span> The Resolution
+          Chain</a></li>
+          <li><a href="#sec:predicates" id="toc-sec:predicates"><span
+          class="toc-section-number">3.3.2.2</span> Predicates</a></li>
+          </ul></li>
+          <li><a href="#predicate-definitions"
+          id="toc-predicate-definitions"><span
+          class="toc-section-number">3.3.3</span> Predicate
+          Definitions</a>
+          <ul>
+          <li><a href="#blank" id="toc-blank"><span
+          class="toc-section-number">3.3.3.1</span> blank?</a></li>
+          <li><a href="#empty" id="toc-empty"><span
+          class="toc-section-number">3.3.3.2</span> empty?</a></li>
+          <li><a href="#defined" id="toc-defined"><span
+          class="toc-section-number">3.3.3.3</span> defined?</a></li>
+          <li><a href="#string" id="toc-string"><span
+          class="toc-section-number">3.3.3.4</span> string?</a></li>
+          <li><a href="#null" id="toc-null"><span
+          class="toc-section-number">3.3.3.5</span> null?</a></li>
+          <li><a href="#number" id="toc-number"><span
+          class="toc-section-number">3.3.3.6</span> number?</a></li>
+          <li><a href="#boolean" id="toc-boolean"><span
+          class="toc-section-number">3.3.3.7</span> boolean?</a></li>
+          <li><a href="#array" id="toc-array"><span
+          class="toc-section-number">3.3.3.8</span> array?</a></li>
+          <li><a href="#object" id="toc-object"><span
+          class="toc-section-number">3.3.3.9</span> object?</a></li>
+          </ul></li>
+          <li><a href="#examples-8" id="toc-examples-8"><span
+          class="toc-section-number">3.3.4</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#operators-1" id="toc-operators-1"><span
+          class="toc-section-number">3.4</span> Operators</a>
+          <ul>
+          <li><a href="#ternary-expressions"
+          id="toc-ternary-expressions"><span
+          class="toc-section-number">3.4.1</span> Ternary
+          Expressions</a>
+          <ul>
+          <li><a href="#syntax-9" id="toc-syntax-9"><span
+          class="toc-section-number">3.4.1.1</span> Syntax</a></li>
+          <li><a href="#semantics-9" id="toc-semantics-9"><span
+          class="toc-section-number">3.4.1.2</span> Semantics</a></li>
+          <li><a href="#examples-9" id="toc-examples-9"><span
+          class="toc-section-number">3.4.1.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#nothing-coalescing-operator"
+          id="toc-nothing-coalescing-operator"><span
+          class="toc-section-number">3.4.2</span> Nothing Coalescing
+          Operator</a>
+          <ul>
+          <li><a href="#syntax-10" id="toc-syntax-10"><span
+          class="toc-section-number">3.4.2.1</span> Syntax</a></li>
+          <li><a href="#semantics-10" id="toc-semantics-10"><span
+          class="toc-section-number">3.4.2.2</span> Semantics</a></li>
+          <li><a href="#examples-10" id="toc-examples-10"><span
+          class="toc-section-number">3.4.2.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#logical-operators"
+          id="toc-logical-operators"><span
+          class="toc-section-number">3.4.3</span> Logical Operators</a>
+          <ul>
+          <li><a href="#syntax-11" id="toc-syntax-11"><span
+          class="toc-section-number">3.4.3.1</span> Syntax</a></li>
+          <li><a href="#semantics-11" id="toc-semantics-11"><span
+          class="toc-section-number">3.4.3.2</span> Semantics</a></li>
+          <li><a href="#examples-11" id="toc-examples-11"><span
+          class="toc-section-number">3.4.3.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#comparison-operators"
+          id="toc-comparison-operators"><span
+          class="toc-section-number">3.4.4</span> Comparison
+          Operators</a>
+          <ul>
+          <li><a href="#syntax-12" id="toc-syntax-12"><span
+          class="toc-section-number">3.4.4.1</span> Syntax</a></li>
+          <li><a href="#semantics-12" id="toc-semantics-12"><span
+          class="toc-section-number">3.4.4.2</span> Semantics</a></li>
+          <li><a href="#examples-12" id="toc-examples-12"><span
+          class="toc-section-number">3.4.4.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#membership-operators"
+          id="toc-membership-operators"><span
+          class="toc-section-number">3.4.5</span> Membership
+          Operators</a>
+          <ul>
+          <li><a href="#syntax-13" id="toc-syntax-13"><span
+          class="toc-section-number">3.4.5.1</span> Syntax</a></li>
+          <li><a href="#semantics-13" id="toc-semantics-13"><span
+          class="toc-section-number">3.4.5.2</span> Semantics</a></li>
+          <li><a href="#examples-13" id="toc-examples-13"><span
+          class="toc-section-number">3.4.5.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#pipe-operator-filters"
+          id="toc-pipe-operator-filters"><span
+          class="toc-section-number">3.4.6</span> Pipe Operator
+          (Filters)</a>
+          <ul>
+          <li><a href="#syntax-14" id="toc-syntax-14"><span
+          class="toc-section-number">3.4.6.1</span> Syntax</a></li>
+          <li><a href="#semantics-14" id="toc-semantics-14"><span
+          class="toc-section-number">3.4.6.2</span> Semantics</a></li>
+          <li><a href="#examples-14" id="toc-examples-14"><span
+          class="toc-section-number">3.4.6.3</span> Examples</a></li>
+          </ul></li>
+          <li><a href="#sec:arithmetic" id="toc-sec:arithmetic"><span
+          class="toc-section-number">3.4.7</span> Arithmetic
+          Operators</a>
+          <ul>
+          <li><a href="#syntax-15" id="toc-syntax-15"><span
+          class="toc-section-number">3.4.7.1</span> Syntax</a></li>
+          <li><a href="#semantics-15" id="toc-semantics-15"><span
+          class="toc-section-number">3.4.7.2</span> Semantics</a></li>
+          <li><a href="#examples-15" id="toc-examples-15"><span
+          class="toc-section-number">3.4.7.3</span> Examples</a></li>
+          </ul></li>
+          </ul></li>
+          <li><a href="#primary-and-parenthesized-expressions"
+          id="toc-primary-and-parenthesized-expressions"><span
+          class="toc-section-number">3.5</span> Primary and
+          Parenthesized Expressions</a>
+          <ul>
+          <li><a href="#syntax-16" id="toc-syntax-16"><span
+          class="toc-section-number">3.5.1</span> Syntax</a></li>
+          <li><a href="#semantics-16" id="toc-semantics-16"><span
+          class="toc-section-number">3.5.2</span> Semantics</a></li>
+          <li><a href="#examples-16" id="toc-examples-16"><span
+          class="toc-section-number">3.5.3</span> Examples</a></li>
+          </ul></li>
+          </ul></li>
+          <li><a href="#appendix-a.-notable-differences"
+          id="toc-appendix-a.-notable-differences">Appendix A. Notable
+          Differences</a></li>
+          <li><a href="#appendix-b.-collected-peg-grammar"
+          id="toc-appendix-b.-collected-peg-grammar">Appendix B.
+          Collected PEG Grammar</a></li>
+          </ul>
+        </details>
+      </nav>
+
+      <main><section id="abstract" class="level1 unnumbered unlisted">
+<h1 class="unnumbered unlisted">Abstract</h1>
+<p>This document defines a unified, implementation‑independent
+expression language for Liquid-style templates.</p>
+<p>This specification focuses strictly on the internal mechanics of
+expressions. Notably, this document does not define the surrounding tag
+architecture (such as the specific implementation of
+<code>{% if %}</code> or <code>{% for %}</code>) nor does it provide a
+“standard library” of filters.</p>
+</section>
+<section id="status" class="level1 unnumbered unlisted">
+<h1 class="unnumbered unlisted">Status</h1>
+<p>Draft - specification in progress. Feedback and test cases are
+welcome.</p>
+</section>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span>
+Introduction</h1>
+<p>This specification defines the behavior of a standalone expression
+evaluator. In practice, this evaluator is intended to function as a
+component within a larger template engine.</p>
+<p>While the template engine manages higher-level concerns - such as
+file I/O, tag orchestration (<code>{% ... %}</code>), and the provision
+of a global execution context - this document governs the internal logic
+of <strong>Expressions</strong>. By decoupling the expression grammar
+from the engine’s tag architecture, we ensure that data resolution,
+mathematical operations, and filter pipelines remain consistent
+regardless of the tag or context in which they appear.</p>
+<section id="terminology" class="level2" data-number="1.1">
+<h2 data-number="1.1"><span class="header-section-number">1.1</span>
+Terminology</h2>
+<ul>
+<li><p><em>Template</em>: The source document or string containing a mix
+of static text (to be rendered literally) and dynamic
+<strong>Markup</strong>. It serves as the primary unit of execution for
+the engine.</p></li>
+<li><p><em>Template Engine</em>: The software system that orchestrates
+the transformation of a <strong>Template</strong> into a rendered
+output. It is responsible for parsing the surrounding
+<strong>Markup</strong>, managing the execution context (environment),
+and invoking the expression evaluator to resolve
+<strong>Expressions</strong>, <strong>Filters</strong>, and
+<strong>Lambdas</strong> as defined in this specification. While the
+engine handles high-level concerns like file loading and
+<strong>Tag</strong> execution, it relies on the Unified Expression
+Grammar for all data resolution and computation.</p></li>
+<li><p><em>Expression</em>: An expression is the fundamental unit of
+computation within a template, representing a sequence of identifiers,
+literals, and operators that resolves to a value. They appear within
+output delimiters to render data directly to the page (e.g.,
+<code>{{ user.name | upcase }}</code>), inside conditional tags to
+govern template logic (e.g., <code>{% if item.price &gt; 100 %}</code>),
+and as the data sources for iterations (e.g.,
+<code>{% for product in collections.frontpage %}</code>)</p>
+<p>For each of the preceding examples, this tables isolates the
+expression part of the markup to illustrate some of the places an
+expression can appear.</p>
+<table>
+<colgroup>
+<col style="width: 65%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>Markup</th>
+<th>Expression</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{{ user.name \| upcase }}</code></td>
+<td><code>user.name \| upcase</code></td>
+</tr>
+<tr>
+<td><code>{% if item.price &gt; 100 %}</code></td>
+<td><code>item.price &gt; 100</code></td>
+</tr>
+<tr>
+<td><code>{% for product in collections.frontpage %}</code></td>
+<td><code>collections.frontpage</code></td>
+</tr>
+</tbody>
+</table></li>
+<li><p><em>Markup</em>: The collective term for the specialized syntax
+(delimited by <code>{{</code> and <code>{%</code>) embedded within a
+template. Markup distinguishes dynamic instructions - such as output
+statements and tags - from static content.</p></li>
+<li><p><em>Tag</em>: A structural command used to govern control flow,
+iteration, or state management (e.g., <code>if</code>, <code>for</code>,
+<code>assign</code>). While this specification defines the grammar of
+expressions <em>within</em> tags, the implementation of the tags
+themselves is considered part of the surrounding architecture.:</p></li>
+<li><p><em>Filter</em>: A named, total function registered in the
+environment that transforms a value. Filters are invoked within a
+pipeline using the pipe (<code>|</code>) syntax, where they accept the
+result of the preceding expression as their primary input.</p></li>
+<li><p><em>Lambda</em>: An anonymous function defined inline as a filter
+argument. Lambdas capture their lexical environment and allow filters to
+apply custom logic such as mapping or sorting to data
+structures.</p></li>
+<li><p><em>Total Evaluation</em>: An expression language has total
+evaluation if every syntactically valid expression evaluates to a value
+and does not raise a runtime error. Every operator, filter, and
+conversion must produce a value for every possible input.</p></li>
+<li><p><em>Total Function</em>: A function is total if it is defined for
+every possible input in its domain - the set of inputs the function
+accepts.</p></li>
+</ul>
+</section>
+<section id="history" class="level2" data-number="1.2">
+<h2 data-number="1.2"><span class="header-section-number">1.2</span>
+History</h2>
+<p>This specification is based on <a
+href="https://github.com/Shopify/liquid">Shopify’s Liquid project</a>
+and other implementations derived from Shopify’s reference
+implementation.</p>
+<p>Historically, Liquid expressions have varied subtly depending on
+context - certain tags treated operators or filters differently, and
+precedence rules were not globally consistent.</p>
+<p>This document aims to replace ad hoc behavior with a single,
+composable, context-independent grammar and a clear evaluation model.
+All operators, filters, and grouping constructs are valid in any
+expression context, with a single, well-defined precedence
+hierarchy.</p>
+<p>Compatibility with existing Liquid implementations is explicitly not
+a goal.</p>
+</section>
+<section id="overview-of-liquid-expressions" class="level2"
+data-number="1.3">
+<h2 data-number="1.3"><span class="header-section-number">1.3</span>
+Overview of Liquid Expressions</h2>
+<p>An expression is a composable sequence of components that, when
+evaluated against a context, produces a single <span
+class="math inline">\(RuntimeValue\)</span>. This language is total and
+immutable: every syntactically valid expression resolves to a value, and
+no expression can modify the state of the execution context.</p>
+<p>Formally, for every expression <span class="math inline">\(e\)</span>
+and environment <span class="math inline">\(\rho\)</span>:</p>
+<p><span class="math display">\[⟦ e ⟧(\rho) \in
+RuntimeValue\]</span></p>
+<p>Expressions are composed of the following six building blocks:</p>
+<section id="literals" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1"><span class="header-section-number">1.3.1</span>
+Literals</h3>
+<p>Literals are textual representations of fixed values encoded directly
+in the template source, including:</p>
+<ul>
+<li>Primitives: <code>Strings</code> (UTF-8), <code>Numbers</code>
+(High-precision decimals), <code>Booleans</code>
+(<code>true</code>/<code>false</code>), and <code>Null</code>.</li>
+<li>Collections: <code>Array</code> literals (<code>[1, 2, 3]</code>)
+and <code>Object</code> literals (<code>{ key: value }</code>).</li>
+<li>Ranges: <code>Range</code> literals (<code>1..5</code>) which
+evaluate to an inclusive sequence of integers.</li>
+</ul>
+</section>
+<section id="variables-and-paths" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2"><span class="header-section-number">1.3.2</span>
+Variables and Paths</h3>
+<p>Variables are identifiers used to retrieve data from the execution
+context. They support deep resolution via segmented path syntax:</p>
+<ul>
+<li>Dot Notation: <code>user.profile.name</code></li>
+<li>Bracket Notation: <code>user["profile"]["name"]</code> or
+<code>items[index]</code>. If a variable or any segment of a path does
+not exist, the expression resolves to <span
+class="math inline">\(Nothing\)</span>.</li>
+</ul>
+</section>
+<section id="operators" class="level3" data-number="1.3.3">
+<h3 data-number="1.3.3"><span class="header-section-number">1.3.3</span>
+Operators</h3>
+<p>Operators perform functional computations or logical comparisons.</p>
+<ul>
+<li>Arithmetic: Standard mathematical operations (<code>+</code>,
+<code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>) and
+unary negation (<code>-</code>).</li>
+<li>Comparison: Equality (<code>==</code>, <code>!=</code>) and
+relational (<code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>,
+<code>&gt;=</code>) checks.</li>
+<li>Logical: Boolean logic (<code>and</code>, <code>or</code>,
+<code>not</code>) used for truthiness branching.</li>
+<li>Coalescence: The <code>orElse</code> operator provides a fallback
+specifically for <span class="math inline">\(Nothing\)</span>
+values.</li>
+<li>Membership: The <code>in</code> and <code>contains</code> operators
+for checking if a value exists within a collection or a substring exists
+within a string.</li>
+</ul>
+</section>
+<section id="filters-and-pipelines" class="level3" data-number="1.3.4">
+<h3 data-number="1.3.4"><span class="header-section-number">1.3.4</span>
+Filters and Pipelines</h3>
+<p>Filters are named transformations applied to a value via the pipe
+(<code>|</code>) syntax. They are designed to be chained into pipelines,
+where the output of one filter serves as the primary input for the next
+(e.g., <code>product.price | times: 1.1 | round: 2</code>). Filters may
+accept:</p>
+<ul>
+<li>Positional Arguments: <code>filter: arg1, arg2</code></li>
+<li>Keyword Arguments: <code>filter: key="value"</code></li>
+</ul>
+</section>
+<section id="lambdas" class="level3" data-number="1.3.5">
+<h3 data-number="1.3.5"><span class="header-section-number">1.3.5</span>
+Lambdas</h3>
+<p>Lambdas are anonymous, inline functions (e.g.,
+<code>item =&gt; item.price &gt; 10</code>) passed as arguments to
+filters. They allow filters to delegate logic back to the expression
+engine, enabling powerful operations like custom sorting, mapping, and
+searching within collections while maintaining lexical scope.</p>
+</section>
+<section id="control-expressions" class="level3" data-number="1.3.6">
+<h3 data-number="1.3.6"><span class="header-section-number">1.3.6</span>
+Control Expressions</h3>
+<ul>
+<li>Conditional (Ternary): The <code>... if ... else ...</code>
+construct allows for inline branching based on the truthiness of a
+condition (e.g., <code>score if score &gt; 50 else "Fail"</code>).</li>
+<li>Grouping: Parentheses <code>( ... )</code> are used to override
+default operator precedence or to clarify the evaluation order of
+complex nested expressions.</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="type-system-for-template-expressions" class="level1"
+data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Type
+System for Template Expressions</h1>
+<p>The expression language operates on a data model that is conceptually
+“JSON-like”. Every expression, when evaluated, resolves to a value
+belonging to one of the fundamental types defined in this section.</p>
+<p>The core types - <code>Null</code>, <code>Boolean</code>,
+<code>Number</code>, <code>String</code>, <code>Array</code>, and
+<code>Object</code> - map directly to JSON types. Any valid JSON
+document can be represented naturally within this expression
+language.</p>
+<p>All values in the data model are immutable. Operations that appear to
+“modify” a value (such as filter applications) always return a new
+value.</p>
+<p>To allow templates to interact with complex application logic, the
+language supports “Drops”. These are opaque extension types provided by
+the host environment that can implement specific protocols for
+iteration, property access, or equality.</p>
+<section id="values" class="level2" data-number="2.1">
+<h2 data-number="2.1"><span class="header-section-number">2.1</span>
+Values</h2>
+<p><span class="math inline">\(DataValue\)</span> defines all possible
+kinds of value that can exist inside the template data model.</p>
+<p><span class="math display">\[
+\begin{aligned}
+DataValue = \;&amp; Null \\
+  | \;&amp; Boolean \\
+  | \;&amp; Number \\
+  | \;&amp; String \\
+  | \;&amp; Array\langle DataValue \rangle \\
+  | \;&amp; Object\langle String \to DataValue \rangle \\
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(RuntimeValue\)</span> describes the
+result of evaluating an expression. Note that <span
+class="math inline">\(DataValue\)</span> is the subset of <span
+class="math inline">\(RuntimeValue\)</span> that does not contain <span
+class="math inline">\(Drop\)</span> or <span
+class="math inline">\(Nothing\)</span>.</p>
+<p><span class="math display">\[
+\begin{aligned}
+RuntimeValue = \;&amp; DataValue \\
+  | \;&amp; Array\langle RuntimeValue \rangle \\
+  | \;&amp; Object\langle String \to RuntimeValue \rangle \\
+  | \;&amp; Drop \\
+  | \;&amp; Nothing
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(Nothing\)</span> represents the absence
+of a value produced during evaluation and is distinct from <span
+class="math inline">\(Null\)</span> (or implementation-specific
+<code>nil</code>, <code>None</code>, <code>undefined</code> etc.).</p>
+</section>
+<section id="sec:numeric_types" class="level2" data-number="2.2">
+<h2 data-number="2.2"><span class="header-section-number">2.2</span>
+Numeric Types</h2>
+<p><span class="math inline">\(Number\)</span> represents a decimal
+numeric value with arbitrary precision and exact decimal semantics.</p>
+<p>Implementations MUST perform numeric operations using a decimal
+arithmetic model. Binary floating-point (e.g., IEEE-754 double) MUST NOT
+be used as the semantic numeric model.</p>
+<p>An implementation MAY use binary floating-point internally, but
+observable behavior MUST match exact decimal arithmetic.</p>
+<p>Integer values are a subset of <code>Number</code>. A number is
+considered an integer when its decimal representation has no fractional
+component.</p>
+<section id="decimal-arithmetic-model" class="level3"
+data-number="2.2.1">
+<h3 data-number="2.2.1"><span class="header-section-number">2.2.1</span>
+Decimal Arithmetic Model</h3>
+<p>The language defines numbers using base-10 decimal semantics:</p>
+<ul>
+<li>Exact representation of finite decimal literals.</li>
+<li>Exact addition, subtraction, and multiplication.</li>
+<li>Exact division when representable as a finite decimal.</li>
+<li>Deterministic rounding when required.</li>
+</ul>
+<p>This ensures:</p>
+<pre><code>0.1 + 0.2 == 0.3   → true</code></pre>
+<p>in all conforming implementations.</p>
+<p>Implementations MUST NOT introduce binary floating-point rounding
+artifacts.</p>
+<p>Example (required behavior):</p>
+<pre><code>0.1 + 0.2</code></pre>
+<p>MUST evaluate to a number equal to decimal <code>0.3</code>.</p>
+<p>It MUST NOT produce:</p>
+<pre><code>0.30000000000000004</code></pre>
+</section>
+<section id="division-semantics" class="level3" data-number="2.2.2">
+<h3 data-number="2.2.2"><span class="header-section-number">2.2.2</span>
+Division Semantics</h3>
+<p>Division may produce a non-terminating decimal expansion.</p>
+<p>Example:</p>
+<pre><code>1 / 3</code></pre>
+<p>TODO: Loosen precision requirements</p>
+<p>Implementations MUST use decimal division with a minimum precision of
+28 decimal digits and MUST round using round-half-even (banker’s
+rounding), unless a higher precision is supported.</p>
+<p>The precision used MUST be consistent within an evaluation.</p>
+</section>
+<section id="numeric-equality" class="level3" data-number="2.2.3">
+<h3 data-number="2.2.3"><span class="header-section-number">2.2.3</span>
+Numeric Equality</h3>
+<p>Numeric equality is mathematical equality after decimal
+normalization.</p>
+<p>Examples:</p>
+<pre><code>1 == 1.0        → true
+0.30 == 0.3     → true</code></pre>
+</section>
+<section id="string-conversion" class="level3" data-number="2.2.4">
+<h3 data-number="2.2.4"><span class="header-section-number">2.2.4</span>
+String Conversion</h3>
+<p><span class="math inline">\(ToString(Number)\)</span> MUST produce a
+canonical decimal representation:</p>
+<ul>
+<li>No scientific notation.</li>
+<li>No unnecessary trailing zeros.</li>
+<li>No trailing decimal point.</li>
+</ul>
+<p>TODO: true division<br />
+TODO: no decimal point when operands are integers and result is
+whole</p>
+<p>Examples:</p>
+<pre><code>1       → &quot;1&quot;
+1.0     → &quot;1&quot;
+0.300   → &quot;0.3&quot;
+1000    → &quot;1000&quot;</code></pre>
+</section>
+</section>
+<section id="iterables" class="level2" data-number="2.3">
+<h2 data-number="2.3"><span class="header-section-number">2.3</span>
+Iterables</h2>
+<p>Some evaluation algorithms operate on <em>iterable</em> values. An
+<span class="math inline">\(Iterable\)</span> is either an <span
+class="math inline">\(Array\)</span> or <span
+class="math inline">\(Sequence\)</span>:</p>
+<p><span class="math display">\[
+Iterable = Array\langle RuntimeValue \rangle | Sequence
+\]</span></p>
+<p>Where <span class="math inline">\(Sequence\)</span> is a <span
+class="math inline">\(Drop\)</span> implementing the Sequence
+protocol.</p>
+<p>Array and sequence drops MUST behave identically with respect to
+iteration semantics.</p>
+</section>
+<section id="data-type-summary" class="level2" data-number="2.4">
+<h2 data-number="2.4"><span class="header-section-number">2.4</span>
+Data Type Summary</h2>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 67%" />
+<col style="width: 17%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>JSON Equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nothing</strong></td>
+<td>Represents the absence of a data value.</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>Null</strong></td>
+<td>Represents a deliberate “empty” data value.</td>
+<td><code>null</code></td>
+</tr>
+<tr>
+<td><strong>Boolean</strong></td>
+<td>Logical <code>true</code> or <code>false</code>.</td>
+<td><code>true</code>, <code>false</code></td>
+</tr>
+<tr>
+<td><strong>Number</strong></td>
+<td>An exact decimal representation (see <a
+href="#sec:numeric_types">Section 2.2</a>).</td>
+<td><code>number</code></td>
+</tr>
+<tr>
+<td><strong>String</strong></td>
+<td>A sequence of Unicode characters.</td>
+<td><code>string</code></td>
+</tr>
+<tr>
+<td><strong>Array</strong></td>
+<td>An ordered list of values.</td>
+<td><code>array</code></td>
+</tr>
+<tr>
+<td><strong>Object</strong></td>
+<td>A collection of key-value pairs (where keys are Strings).</td>
+<td><code>object</code></td>
+</tr>
+<tr>
+<td><strong>Drop</strong></td>
+<td>A host-provided extension type.</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>Iterable</strong></td>
+<td>An array, or drop implementing the sequence protocol</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="extension-types-drops" class="level2" data-number="2.5">
+<h2 data-number="2.5"><span class="header-section-number">2.5</span>
+Extension Types (Drops)</h2>
+<p>Implementations may expose developer-defined objects known as Drops.
+A Drop is an object that can be coerced into a data value when required,
+with the help of a context hint.</p>
+<p><span class="math inline">\(Drop\)</span> is defined as an object
+implementing <span class="math inline">\(ToLiquid\)</span>.</p>
+<p><span class="math display">\[
+ToLiquid : Drop × ContextHint → RuntimeValue
+\]</span></p>
+<p>Where:</p>
+<p><span class="math display">\[
+ContextHint ∈ { data, numeric, string, boolean, array, object }
+\]</span></p>
+<p>With the following constraints:</p>
+<p><span class="math display">\[
+\begin{aligned}
+ToLiquid(drop, data)    \;&amp; → DataValue \\
+ToLiquid(drop, boolean) \;&amp; → Boolean | Nothing \\
+ToLiquid(drop, numeric) \;&amp; → Number | Nothing \\
+ToLiquid(drop, string)  \;&amp; → String | Nothing \\
+ToLiquid(drop, array)   \;&amp; → Array\langle RuntimeValue \rangle |
+Nothing \\
+ToLiquid(drop, object)  \;&amp; → Object\langle String \to RuntimeValue
+\rangle | Nothing \\
+\end{aligned}
+\]</span></p>
+<p>The result of <span class="math inline">\(ToLiquid(drop,
+data)\)</span> MUST be a valid <span
+class="math inline">\(DataValue\)</span> as defined above, meaning it
+MUST NOT contain <span class="math inline">\(Drop\)</span> at any
+depth.</p>
+<p>The following table shows when each hint applies.</p>
+<table>
+<thead>
+<tr>
+<th>Context</th>
+<th>Hint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arithmetic</td>
+<td>numeric</td>
+</tr>
+<tr>
+<td>String concatenation</td>
+<td>string</td>
+</tr>
+<tr>
+<td>Boolean test (<code>if</code>, <code>and</code>,
+<code>or</code>)</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>Comparison</td>
+<td>data</td>
+</tr>
+<tr>
+<td>Filter arguments (general)</td>
+<td>data</td>
+</tr>
+<tr>
+<td>Array literal spread, eager filter arguments</td>
+<td>array</td>
+</tr>
+<tr>
+<td>Object literal spread</td>
+<td>object</td>
+</tr>
+</tbody>
+</table>
+<section id="sequence-protocol" class="level3" data-number="2.5.1">
+<h3 data-number="2.5.1"><span class="header-section-number">2.5.1</span>
+Sequence Protocol</h3>
+<p>A Drop MAY implement the Sequence protocol to facilitate lazy
+iteration with the <code>for</code> tag or sequence aware filters.</p>
+<p><span class="math inline">\(Sequence\)</span> is defined as a <span
+class="math inline">\(Drop\)</span> that supports the following abstract
+behavior.</p>
+<p><span class="math display">\[
+\begin{aligned}
+length() \;&amp; \to Number \\
+slice(offset, limit, reversed) \;&amp; \to Drop \\
+iterate() \;&amp; \to Iterator\langle RuntimeValue \rangle \\
+\end{aligned}
+\]</span></p>
+<p>Constraints:</p>
+<ul>
+<li><span class="math inline">\(length()\)</span> MUST reflect the
+current logical sequence.</li>
+<li><span class="math inline">\(slice()\)</span> MUST return a Drop
+implementing the Sequence protocol.</li>
+<li><span class="math inline">\(iterate()\)</span> MUST yield exactly
+<code>length()</code> elements.</li>
+</ul>
+</section>
+<section id="equality-protocol" class="level3" data-number="2.5.2">
+<h3 data-number="2.5.2"><span class="header-section-number">2.5.2</span>
+Equality Protocol</h3>
+<p>A Drop MAY implement the Equality protocol for interaction with
+<code>==</code> and <code>!=</code> operators, without first coercing to
+a data value.</p>
+<p><span class="math inline">\(Equals\)</span> MUST NOT throw an
+error.</p>
+<p><span class="math display">\[
+Equals : Drop × RuntimeValue → Boolean | Nothing
+\]</span></p>
+<p>A Drop implements the Equality protocol if it supports:</p>
+<p><span class="math display">\[
+Equals(x) -&gt; Boolean | Nothing
+\]</span></p>
+</section>
+<section id="ordering-protocol" class="level3" data-number="2.5.3">
+<h3 data-number="2.5.3"><span class="header-section-number">2.5.3</span>
+Ordering Protocol</h3>
+<p>A Drop MAY implement the Ordering protocol for interaction with
+<code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, and
+<code>&gt;=</code> operators, without first coercing to a data
+value.</p>
+<p><span class="math inline">\(LessThan\)</span> MUST NOT throw and
+error.</p>
+<p><span class="math display">\[
+LessThan : Drop × RuntimeValue → Boolean | Nothing
+\]</span></p>
+<p>A Drop implements the Ordering protocol if it supports:</p>
+<p><span class="math display">\[
+LessThan(x) -&gt; Boolean | Nothing
+\]</span></p>
+</section>
+<section id="membership-protocol" class="level3" data-number="2.5.4">
+<h3 data-number="2.5.4"><span class="header-section-number">2.5.4</span>
+Membership Protocol</h3>
+<p>A Drop MAY implement the Membership protocol for interaction with
+<code>in</code> and <code>contains</code> operators, without first
+coercing to a data value.</p>
+<p><span class="math inline">\(Contains\)</span> MUST NOT throw an
+error.</p>
+<p><span class="math display">\[
+Contains : Drop × RuntimeValue → Boolean | Nothing
+\]</span></p>
+<p>A Drop implements the Membership protocol if it supports:</p>
+<p><span class="math display">\[
+Contains(x) -&gt; Boolean | Nothing
+\]</span></p>
+</section>
+</section>
+<section id="type-conversion" class="level2" data-number="2.6">
+<h2 data-number="2.6"><span class="header-section-number">2.6</span>
+Type Conversion</h2>
+<p>Automatic type conversion is performed in some contexts. Here we
+define abstract conversion functions for runtime values, each of which
+is deterministic and never throws an error.</p>
+<p><span class="math display">\[
+\begin{aligned}
+ToBoolean  \;&amp;: RuntimeValue \to Boolean \\
+ToNumber   \;&amp;: RuntimeValue \to Number | Nothing \\
+ToString   \;&amp;: RuntimeValue \to String \\
+ToArray    \;&amp;: RuntimeValue \to Array\langle RuntimeValue \rangle
+\\
+ToObject   \;&amp;: RuntimeValue \to Object\langle String \to
+RuntimeValue \rangle \\
+ToIterable \;&amp;: RuntimeValue \to Sequence | Array\langle
+RuntimeValue \rangle \\
+\end{aligned}
+\]</span></p>
+<p>Implicit conversions occur in the following contexts (each uses the
+corresponding abstract conversion function):</p>
+<p>TODO: turn this into a table</p>
+<ul>
+<li>Arithmetic and numeric operators: <code>ToNumber</code></li>
+<li>Unary <code>+</code>/<code>-</code>: <code>ToNumber</code></li>
+<li>String concatenation (filters): <code>ToString</code></li>
+<li>Boolean conditions used by <code>if</code>, ternary <code>if</code>
+expressions, <code>and</code>, <code>or</code>, and <code>not</code>:
+<code>ToBoolean</code></li>
+<li>Comparisons that require primitive values:
+<code>ToLiquid(…, data)</code> then structural comparison; numeric
+comparisons use <code>ToNumber</code> when both sides are numeric or
+coercible to numeric.</li>
+<li><code>for</code> iterable expressions: <code>ToArray</code> /
+<code>ToLiquid(…, iterable)</code></li>
+<li>Filter arguments (general): <code>ToLiquid(…, data)</code> unless a
+filter documents a different required hint</li>
+<li><code>ToArray</code> helper and sequence normalization:
+<code>ToArray</code></li>
+</ul>
+<section id="sec:truthy" class="level3" data-number="2.6.1">
+<h3 data-number="2.6.1"><span class="header-section-number">2.6.1</span>
+Truthiness and ToBoolean(x)</h3>
+<p>The language adopts structural truthiness. Empty strings, empty
+arrays, empty objects, zero numbers, null, and absence
+(<code>Nothing</code>) are falsy. All other values are truthy. This rule
+is uniform across value types and does not depend on host-language
+semantics.</p>
+<p>Conditions are evaluated by first evaluating the condition expression
+and then applying <code>ToBoolean</code> to the result.</p>
+<p>The abstract operation <code>ToBoolean</code> is defined to be
+identical to <code>IsTruthy</code>.</p>
+<p><span class="math display">\[
+ToBoolean, IsTruthy : RuntimeValue → Boolean
+\]</span></p>
+<p>An evaluation result is truthy if it represents a non-empty,
+non-zero, non-null value.</p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nothing</td>
+<td>false</td>
+</tr>
+<tr>
+<td>Null</td>
+<td>false</td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Integer</td>
+<td>x ≠ 0</td>
+</tr>
+<tr>
+<td>Float</td>
+<td>x ≠ 0.0</td>
+</tr>
+<tr>
+<td>String</td>
+<td>length(x) &gt; 0</td>
+</tr>
+<tr>
+<td>Array</td>
+<td>length(x) &gt; 0</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>size(o) &gt; 0</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>ToLiquid(x, boolean); false if Nothing</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="sec:to_number" class="level3" data-number="2.6.2">
+<h3 data-number="2.6.2"><span class="header-section-number">2.6.2</span>
+ToNumber(x)</h3>
+<p>Returns either Integer or Decimal.</p>
+<p><span class="math display">\[
+ToNumber  : RuntimeValue → Number | Nothing
+\]</span></p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Integer</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Float</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td>true → 1, false → 0</td>
+</tr>
+<tr>
+<td>Nothing</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Null</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>String</td>
+<td>parse numeric literal; if invalid → Nothing</td>
+</tr>
+<tr>
+<td>Array</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>ToLiquid(x, numeric)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="sec:to_string" class="level3" data-number="2.6.3">
+<h3 data-number="2.6.3"><span class="header-section-number">2.6.3</span>
+ToString(x)</h3>
+<p><span class="math display">\[
+ToString : RuntimeValue → String
+\]</span></p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>String</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Integer</td>
+<td>decimal representation</td>
+</tr>
+<tr>
+<td>Float</td>
+<td>canonical decimal</td>
+</tr>
+<tr>
+<td>Boolean</td>
+<td><code>"true"</code> or <code>"false"</code></td>
+</tr>
+<tr>
+<td>Null</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td>Nothing</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td>Array</td>
+<td>JSON-formatted array</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>JSON-formatted object</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>ToLiquid(x, string); <code>""</code> if Nothing</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="toarrayx" class="level3" data-number="2.6.4">
+<h3 data-number="2.6.4"><span class="header-section-number">2.6.4</span>
+ToArray(x)</h3>
+<p><span class="math display">\[
+ToArray : RuntimeValue → Array&lt;RuntimeValue&gt;
+\]</span></p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Array</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Object</td>
+<td>array of [key, value] pairs</td>
+</tr>
+<tr>
+<td>String</td>
+<td>Array<String></td>
+</tr>
+<tr>
+<td>Null</td>
+<td>[]</td>
+</tr>
+<tr>
+<td>Nothing</td>
+<td>[]</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>ToLiquid(x, array) or [] if Nothing</td>
+</tr>
+<tr>
+<td>Any other value</td>
+<td>[x]</td>
+</tr>
+</tbody>
+</table>
+<section id="string-semantics" class="level4" data-number="2.6.4.1">
+<h4 data-number="2.6.4.1"><span
+class="header-section-number">2.6.4.1</span> String Semantics</h4>
+<p>If <code>x</code> is a <code>String</code>, <code>ToArray(x)</code>
+produces an array containing the string’s Unicode scalar values in
+order.</p>
+<p><span class="math display">\[
+ToArray(String) → Array&lt;String&gt;
+\]</span></p>
+<p>Where each element is a <strong>single Unicode scalar value encoded
+as a string of length 1</strong> (not grapheme clusters).</p>
+<p>Example:</p>
+<p><span class="math display">\[
+ToArray(&quot;cat&quot;)
+→ [&quot;c&quot;, &quot;a&quot;, &quot;t&quot;]
+\]</span></p>
+<p>Unicode example:</p>
+<p><span class="math display">\[
+ToArray(&quot;😀a&quot;)
+→ [&quot;😀&quot;, &quot;a&quot;]
+\]</span></p>
+</section>
+</section>
+<section id="sec:to_object" class="level3" data-number="2.6.5">
+<h3 data-number="2.6.5"><span class="header-section-number">2.6.5</span>
+ToObject(x)</h3>
+<p><span class="math display">\[
+ToObject : RuntimeValue → Object&lt;String → RuntimeValue&gt;
+\]</span></p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Object</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Drop</td>
+<td>ToLiquid(x, object) or {} if Nothing</td>
+</tr>
+<tr>
+<td>Any other</td>
+<td>{}</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="sec:to_iterable" class="level3" data-number="2.6.6">
+<h3 data-number="2.6.6"><span class="header-section-number">2.6.6</span>
+ToIterable(x)</h3>
+<p><span class="math display">\[
+ToIterable : RuntimeValue → Iterable
+\]</span></p>
+<table>
+<thead>
+<tr>
+<th>Input Type</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sequence (Drop)</td>
+<td>identity</td>
+</tr>
+<tr>
+<td>Any other</td>
+<td>ToArray(x)</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="syntax-and-semantics" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Syntax
+and Semantics</h1>
+<p>TODO: overview</p>
+<p>The grammar is written using <strong>Parsing Expression Grammar
+(PEG)</strong> semantics following the notation introduced by Bryan
+Ford. Rule definitions and operators follow Ford-style PEG notation
+(<code>&lt;-</code>, <code>/</code>, <code>*</code>, <code>+</code>,
+<code>?</code>, <code>!</code>, <code>&amp;</code>). Literal syntax,
+escape sequences, and bounded repetition follow the conventions of Pest
+(parser generator).</p>
+<p>TODO: intro sentence</p>
+<pre class="peg"><code>Expression ← TernaryExpr
+
+B          ← &quot; &quot; / &quot;\t&quot; / &quot;\r&quot; / &quot;\n&quot;    // Whitespace
+S          ← B*                          // Optional whitespace
+C          ← IdentifierChar              // Alias for any name character</code></pre>
+<p>TODO: Elaborate on Nothing.</p>
+<p>Implementations MAY surface evaluation of Nothing as errors,
+warnings, or diagnostics, but MUST preserve the observable semantics
+defined by this specification when execution continues.</p>
+<section id="sec:literals" class="level2" data-number="3.1">
+<h2 data-number="3.1"><span class="header-section-number">3.1</span>
+Literals</h2>
+<pre class="peg"><code>Literal ← NumberLiteral /
+          StringLiteral /
+          BooleanLiteral /
+          NullLiteral /
+          ArrayLiteral /
+          ObjectLiteral /
+          RangeLiteral</code></pre>
+<section id="null-literal" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1"><span class="header-section-number">3.1.1</span>
+Null Literal</h3>
+<section id="syntax" class="level4" data-number="3.1.1.1">
+<h4 data-number="3.1.1.1"><span
+class="header-section-number">3.1.1.1</span> Syntax</h4>
+<p>The language provides two semantically indistinguishable keywords,
+<code>null</code> and <code>nil</code>, to support different developer
+preferences.</p>
+<pre class="peg"><code>NullLiteral ← (&quot;null&quot; / &quot;nil&quot;) !C</code></pre>
+<p>Note: The negative lookahead <code>!C</code> ensures that identifiers
+beginning with a Null keyword (e.g., <code>nullify</code>) are not
+incorrectly parsed as literals.</p>
+</section>
+<section id="semantics" class="level4" data-number="3.1.1.2">
+<h4 data-number="3.1.1.2"><span
+class="header-section-number">3.1.1.2</span> Semantics</h4>
+<p>The null literal represents a deliberate “empty” value within the
+data model. It is a concrete data value. It is distinct from
+<code>Nothing</code>, which is the internal signal used to represent
+evaluation failures, missing variables, or out-of-bounds access.</p>
+<p>A null literal always evaluates to a value of type <code>Null</code>.
+In a boolean context, <code>Null</code> is always “falsy” (see <a
+href="#sec:truthy">Section 2.6.1</a>).</p>
+</section>
+<section id="examples" class="level4" data-number="3.1.1.3">
+<h4 data-number="3.1.1.3"><span
+class="header-section-number">3.1.1.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 10%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>null</code></td>
+<td><code>null</code></td>
+<td>Evaluates to the Null type.</td>
+</tr>
+<tr>
+<td><code>nil</code></td>
+<td><code>null</code></td>
+<td>Identical to <code>null</code>.</td>
+</tr>
+<tr>
+<td><code>user.id == null</code></td>
+<td><code>true</code></td>
+<td>Returns true if <code>id</code> is explicitly null.</td>
+</tr>
+<tr>
+<td><code>(null orElse "default")</code></td>
+<td><code>null</code></td>
+<td>The coalescing operator tests for <code>Nothing</code>.
+<code>null</code> is a data value.</td>
+</tr>
+<tr>
+<td><code>(null or "default")</code></td>
+<td><code>"default"</code></td>
+<td>The logical <code>or</code> operator treats <code>Null</code> as a
+trigger for the fallback.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="boolean-literals" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2"><span class="header-section-number">3.1.2</span>
+Boolean Literals</h3>
+<section id="syntax-1" class="level4" data-number="3.1.2.1">
+<h4 data-number="3.1.2.1"><span
+class="header-section-number">3.1.2.1</span> Syntax</h4>
+<p>The language recognizes the lowercase keywords <code>true</code> and
+<code>false</code>.</p>
+<pre class="peg"><code>BooleanLiteral ← (&quot;true&quot; / &quot;false&quot;) !C</code></pre>
+<p>Note: The negative lookahead <code>!C</code> ensures that identifiers
+beginning with a boolean keyword (e.g., <code>true_value</code>) are not
+incorrectly parsed as literals.</p>
+</section>
+<section id="semantics-1" class="level4" data-number="3.1.2.2">
+<h4 data-number="3.1.2.2"><span
+class="header-section-number">3.1.2.2</span> Semantics</h4>
+<p>Boolean literals represent the two logical truth values. They
+evaluate to a value of type <code>Boolean</code>. Boolean keywords are
+case-sensitive. <code>True</code> or <code>TRUE</code> are not
+recognized as boolean literals and will be interpreted as identifiers
+(variable names).</p>
+<p>The literal <code>true</code> is always “truthy,” and the literal
+<code>false</code> is always “falsy” (see <a
+href="#sec:truthy">Section 2.6.1</a>).</p>
+</section>
+<section id="examples-1" class="level4" data-number="3.1.2.3">
+<h4 data-number="3.1.2.3"><span
+class="header-section-number">3.1.2.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 9%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>true</code></td>
+<td><code>true</code></td>
+<td>Evaluates to the Boolean <code>true</code> value.</td>
+</tr>
+<tr>
+<td><code>false</code></td>
+<td><code>false</code></td>
+<td>Evaluates to the Boolean <code>false</code> value.</td>
+</tr>
+<tr>
+<td><code>not true</code></td>
+<td><code>false</code></td>
+<td>The logical <code>not</code> operator inverts the boolean
+value.</td>
+</tr>
+<tr>
+<td><code>(true orElse false)</code></td>
+<td><code>true</code></td>
+<td>The null coalescing operator returns the first non-null/non-nothing
+value.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="numeric-literals" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3"><span class="header-section-number">3.1.3</span>
+Numeric Literals</h3>
+<section id="syntax-2" class="level4" data-number="3.1.3.1">
+<h4 data-number="3.1.3.1"><span
+class="header-section-number">3.1.3.1</span> Syntax</h4>
+<p>Numeric literals take the form of:</p>
+<ul>
+<li>An integer part - must be either a single <code>0</code> or a
+non-zero digit followed by any number of digits. Leading zeros are not
+permitted (e.g., <code>05</code> is invalid).</li>
+<li>An optional fractional part - a decimal point followed by one or
+more digits.</li>
+<li>An optional exponent part using either <code>e</code> or
+<code>E</code>.</li>
+</ul>
+<pre class="peg"><code>NumberLiteral ← Integer Fraction? Exponent? !C
+Integer       ← &quot;0&quot; / [1-9] [0-9]*
+Fraction      ← &quot;.&quot; [0-9]+
+Exponent      ← [eE] [+-]? [0-9]+</code></pre>
+<p>Syntactically, the <code>NumberLiteral</code> itself is unsigned.
+Negative numbers are represented by applying the unary negation operator
+(<code>-</code>) to a literal. See <a
+href="#sec:arithmetic">Section 3.4.7</a>.</p>
+</section>
+<section id="semantics-2" class="level4" data-number="3.1.3.2">
+<h4 data-number="3.1.3.2"><span
+class="header-section-number">3.1.3.2</span> Semantics</h4>
+<p>Regardless of the notation used (standard or scientific), all numeric
+literals resolve to the <code>Number</code> type and are stored using
+exact decimal semantics. An exponent does not “coerce” the number into a
+floating-point type; <code>1e2</code> and <code>100</code> are
+semantically and type-identical.</p>
+</section>
+<section id="examples-2" class="level4" data-number="3.1.3.3">
+<h4 data-number="3.1.3.3"><span
+class="header-section-number">3.1.3.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 13%" />
+<col style="width: 73%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td><code>0</code></td>
+<td>Single zero integer.</td>
+</tr>
+<tr>
+<td><code>42</code></td>
+<td><code>42</code></td>
+<td>Positive integer without leading zeros.</td>
+</tr>
+<tr>
+<td><code>0.001</code></td>
+<td><code>0.001</code></td>
+<td>Decimal fraction.</td>
+</tr>
+<tr>
+<td><code>1.23e4</code></td>
+<td><code>12300</code></td>
+<td>Scientific notation (positive exponent).</td>
+</tr>
+<tr>
+<td><code>5E-3</code></td>
+<td><code>0.005</code></td>
+<td>Scientific notation (negative exponent, case-insensitive).</td>
+</tr>
+<tr>
+<td><code>-10.5</code></td>
+<td><code>-10.5</code></td>
+<td>Unary negation applied to a literal.</td>
+</tr>
+<tr>
+<td><code>05</code></td>
+<td><strong>Invalid</strong></td>
+<td>Leading zeros are not allowed in the integer part.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="string-literals" class="level3" data-number="3.1.4">
+<h3 data-number="3.1.4"><span class="header-section-number">3.1.4</span>
+String Literals</h3>
+<section id="syntax-3" class="level4" data-number="3.1.4.1">
+<h4 data-number="3.1.4.1"><span
+class="header-section-number">3.1.4.1</span> Syntax</h4>
+<p>Both single and double quoted strings are supported. Both forms allow
+interpolation.</p>
+<p>Escape sequences follow JSON syntax, with the addition of an escaped
+single quote for single quoted strings, and <code>\${</code> to escape
+string interpolation.</p>
+<pre class="peg"><code>StringLiteral  ← DoubleQuoted / SingleQuoted
+
+DoubleQuoted   ← &quot;\&quot;&quot; (Interpolation / DoubleEscaped / Unescaped / &quot;&#39;&quot;)* &quot;\&quot;&quot;
+SingleQuoted   ← &quot;&#39;&quot;  (Interpolation / SingleEscaped / Unescaped / &quot;\&quot;&quot;)* &quot;&#39;&quot;
+
+Interpolation  ← &quot;${&quot; Expression &quot;}&quot;
+
+DoubleEscaped  ← &quot;\\&quot; ( &quot;\&quot;&quot; / Escapable )
+SingleEscaped  ← &quot;\\&quot; ( &quot;&#39;&quot; / Escapable )
+
+Unescaped      ← LiteralDollar / SourceChar
+LiteralDollar  ← &quot;$&quot; ! &quot;{&quot;
+
+Escapable      ← &quot;b&quot; / &quot;f&quot; / &quot;n&quot; / &quot;r&quot; / &quot;t&quot; / &quot;/&quot; / &quot;\\&quot; / (&quot;u&quot; ~ HexChar) / &quot;${&quot;
+HexChar        ← NonSurrogate / HighSurrogate &quot;\\u&quot; LowSurrogate
+HighSurrogate  ← [Dd] [AaBb89] [0-9A-Fa-f]{2}
+LowSurrogate   ← [Dd] [CcDdEeFf] [0-9A-Fa-f]{2}
+NonSurrogate   ← [AaBbCcEeFf0-9] [0-9A-Fa-f]{3} /
+                 [Dd] [0-7] [0-9A-Fa-f]{2}
+
+SourceChar     ← &quot; &quot; /
+                 &quot;!&quot; /
+                 &quot;#&quot; /
+                 &quot;%&quot; /
+                 &quot;&amp;&quot; /
+                 [\u0028-\u0058] /
+                 [\u005D-\uD7FF] /
+                 [\uE000-\u0010FFFF]</code></pre>
+</section>
+<section id="semantics-3" class="level4" data-number="3.1.4.2">
+<h4 data-number="3.1.4.2"><span
+class="header-section-number">3.1.4.2</span> Semantics</h4>
+<p>String literals represent sequences of Unicode scalar values (not
+grapheme clusters). They support both simple static text and dynamic
+content via interpolation.</p>
+<p>When a string is evaluated, from left to right:</p>
+<ul>
+<li>If the segment is unescaped text, append it to the result.</li>
+<li>If the segment is one or more escape sequences, append decoded
+escape sequences to the result.</li>
+<li>If the segment is an expression, resolve the expression and convert
+it to a string using <span class="math inline">\(ToString\)</span> (<a
+href="#sec:to_string">Section 2.6.3</a>), and append the string to the
+result.</li>
+</ul>
+<p>There is no semantic difference between single- and double-quoted
+strings beyond delimiter rules.</p>
+<p>Invalid Unicode escape sequences make the string literal invalid at
+parse time.</p>
+</section>
+<section id="examples-3" class="level4" data-number="3.1.4.3">
+<h4 data-number="3.1.4.3"><span
+class="header-section-number">3.1.4.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 24%" />
+<col style="width: 55%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"Hello"</code></td>
+<td><code>"Hello"</code></td>
+<td>Simple double-quoted string.</td>
+</tr>
+<tr>
+<td><code>'Alice\'s House'</code></td>
+<td><code>"Alice's House"</code></td>
+<td>Escaped single quote in a single-quoted string.</td>
+</tr>
+<tr>
+<td><code>"Cost: $100"</code></td>
+<td><code>"Cost: $100"</code></td>
+<td>Raw <code>$</code> is literal because it isn’t followed by
+<code>{</code>.</td>
+</tr>
+<tr>
+<td><code>"Hi ${user.name}"</code></td>
+<td><code>"Hi Alice"</code></td>
+<td>Interpolates the value of <code>user.name</code>.</td>
+</tr>
+<tr>
+<td><code>"Value: \${1}"</code></td>
+<td><code>"Value: ${1}"</code></td>
+<td>Escaped <code>${</code> prevents interpolation.</td>
+</tr>
+<tr>
+<td><code>"\u00A9"</code></td>
+<td><code>"©"</code></td>
+<td>Unicode escape for the Copyright symbol.</td>
+</tr>
+<tr>
+<td><code>"Line\nBreak"</code></td>
+<td>A string with a newline</td>
+<td>Standard escape sequence.</td>
+</tr>
+<tr>
+<td><code>"\uD83D\uDE00"</code></td>
+<td><code>"😀"</code></td>
+<td>Decoded surrogate pair.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="array-literals" class="level3" data-number="3.1.5">
+<h3 data-number="3.1.5"><span class="header-section-number">3.1.5</span>
+Array Literals</h3>
+<section id="syntax-4" class="level4" data-number="3.1.5.1">
+<h4 data-number="3.1.5.1"><span
+class="header-section-number">3.1.5.1</span> Syntax</h4>
+<p>Array literals consist of a comma separated sequence of expressions,
+surrounded by square brackets.</p>
+<pre class="peg"><code>ArrayLiteral ← &quot;[&quot; S (ArrayItem (S &quot;,&quot; S ArrayItem)*)? S &quot;,&quot;? S &quot;]&quot;
+ArrayItem    ← SpreadExpr / Expression
+SpreadExpr   ← &quot;...&quot; Expression</code></pre>
+<p>Trailing commas are permitted. If an array literal contains a single
+<code>StringLiteral</code> item, it must be followed by a comma to
+syntactically differentiate it from a root variable using bracket
+notation.</p>
+</section>
+<section id="semantics-4" class="level4" data-number="3.1.5.2">
+<h4 data-number="3.1.5.2"><span
+class="header-section-number">3.1.5.2</span> Semantics</h4>
+<p>An array literal constructs an immutable ordered collections of
+values. They are evaluated eagerly from left to right. Each
+<code>Expression</code> is resolved to a value and inserted into a new
+Array instance, <span class="math inline">\(Array\langle RuntimeValue
+\rangle\)</span>.</p>
+<p>Arrays are heterogenous; they may contain values of any type,
+including other arrays and objects.</p>
+<section id="the-spread-operator" class="level5"
+data-number="3.1.5.2.1">
+<h5 data-number="3.1.5.2.1"><span
+class="header-section-number">3.1.5.2.1</span> The Spread Operator</h5>
+<p>The spread operator <code>...</code> allows for the expansion of an
+iterable into the array literal.</p>
+<ol type="1">
+<li>The expression following <code>...</code> is evaluated and coerced
+via <strong>ToIterable(x)</strong> (see <a
+href="#sec:to_iterable">Section 2.6.6</a>).</li>
+<li>Each of the elements in the resulting iterable is inserted into the
+new array at the current position.</li>
+</ol>
+<p>Note that <span class="math inline">\(ToIterable\)</span> is total;
+the spread operator can not fail.</p>
+</section>
+</section>
+<section id="examples-4" class="level4" data-number="3.1.5.3">
+<h4 data-number="3.1.5.3"><span
+class="header-section-number">3.1.5.3</span> Examples</h4>
+<p>Given a context: <code>{"low": [1, 2], "high": [4, 5]}</code></p>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 19%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[1, 2, 3]</code></td>
+<td><code>[1, 2, 3]</code></td>
+<td>A simple array of numbers.</td>
+</tr>
+<tr>
+<td><code>[1, "two", true]</code></td>
+<td><code>[1, "two", true]</code></td>
+<td>A heterogeneous array.</td>
+</tr>
+<tr>
+<td><code>[...low, 3, ...high]</code></td>
+<td><code>[1, 2, 3, 4, 5]</code></td>
+<td>Spread operators merging two arrays with a literal.</td>
+</tr>
+<tr>
+<td><code>[1, , 2]</code></td>
+<td><strong>Invalid</strong></td>
+<td>Empty items between commas are not permitted.</td>
+</tr>
+<tr>
+<td><code>[1, 2,]</code></td>
+<td><code>[1, 2]</code></td>
+<td>Trailing comma is ignored.</td>
+</tr>
+<tr>
+<td><code>[...null]</code></td>
+<td><code>[]</code></td>
+<td><code>Null</code> is coerced to an empty array by <span
+class="math inline">\(ToIterable\)</span>.</td>
+</tr>
+<tr>
+<td><code>[1, missing_var, 3]</code></td>
+<td><code>[1, Nothing, 3]</code></td>
+<td>Arrays can contain <code>Nothing</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="object-literals" class="level3" data-number="3.1.6">
+<h3 data-number="3.1.6"><span class="header-section-number">3.1.6</span>
+Object Literals</h3>
+<section id="syntax-5" class="level4" data-number="3.1.6.1">
+<h4 data-number="3.1.6.1"><span
+class="header-section-number">3.1.6.1</span> Syntax</h4>
+<p>Object literals consist of a comma-separated sequence of key-value
+pairs or spread expressions, surrounded by curly braces.</p>
+<pre class="peg"><code>ObjectLiteral ← &quot;{&quot; S (ObjectItem (S &quot;,&quot; S ObjectItem)*)? S &quot;,&quot;? S &quot;}&quot;
+ObjectItem    ← SpreadExpr / KeyValuePair
+KeyValuePair  ← ObjectKey S &quot;:&quot; S Expression
+ObjectKey     ← Identifier / QuotedName
+QuotedName    ← ( &quot;\&quot;&quot; DoubleQuotedName &quot;\&quot;&quot; ) / ( &quot;&#39;&quot; SingleQuotedName &quot;&#39;&quot; )</code></pre>
+<p><code>QuotedName</code> follows the same escaping rules as
+<code>StringLiteral</code> but <strong>does not support
+interpolation</strong>. This ensures that object keys are statically
+determinable at parse-time.</p>
+<pre class="peg"><code>QuotedName         ← DoubleQuotedName / SingleQuotedName
+
+DoubleQuotedName   ← &quot;\&quot;&quot; ( DoubleEscapedName / NameSourceChar / &quot;&#39;&quot;)* &quot;\&quot;&quot;
+SingleQuotedName   ← &quot;&#39;&quot;  ( SingleEscapedName / NameSourceChar / &quot;\&quot;&quot;)* &quot;&#39;&quot;
+
+DoubleEscapedName  ← &quot;\\&quot; ( &quot;\&quot;&quot; / EscapableNameChar )
+SingleEscapedName  ← &quot;\\&quot; ( &quot;&#39;&quot; / EscapableNameChar )
+
+EscapableNameChar  ← &quot;b&quot; / &quot;f&quot; / &quot;n&quot; / &quot;r&quot; / &quot;t&quot; / &quot;/&quot; / &quot;\\&quot; / (&quot;u&quot; ~ HexChar)
+
+NameSourceChar     ← &quot; &quot; /
+                     &quot;!&quot; /
+                     &quot;#&quot; /
+                     &quot;$&quot; /
+                     &quot;%&quot; /
+                     &quot;&amp;&quot; /
+                     [\u0028-\u0058] /
+                     [\u005D-\uD7FF] /
+                     [\uE000-\u0010FFFF]</code></pre>
+</section>
+<section id="semantics-5" class="level4" data-number="3.1.6.2">
+<h4 data-number="3.1.6.2"><span
+class="header-section-number">3.1.6.2</span> Semantics</h4>
+<p>An object literal constructs an immutable collection of key-value
+pairs, <span class="math inline">\(Object\langle String, RuntimeValue
+\rangle\)</span>.</p>
+<p>The literal is evaluated eagerly from left to right. If the same key
+is defined multiple times (either via direct assignment or via the
+spread operator), the <strong>last</strong> value evaluated takes
+precedence.</p>
+<p>Once constructed, the object and its key-set cannot be modified.</p>
+<section id="key-resolution" class="level5" data-number="3.1.6.2.1">
+<h5 data-number="3.1.6.2.1"><span
+class="header-section-number">3.1.6.2.1</span> Key Resolution</h5>
+<ul>
+<li>If a key is an <code>Identifier</code>, it is treated as a literal
+string (e.g., <code>{ name: "Alice" }</code> uses the string
+<code>"name"</code> as the key).</li>
+<li>If a key is a <code>QuotedName</code>, the quotes are stripped and
+the interior is processed for escapes to produce the string key.</li>
+</ul>
+</section>
+<section id="the-spread-operator-1" class="level5"
+data-number="3.1.6.2.2">
+<h5 data-number="3.1.6.2.2"><span
+class="header-section-number">3.1.6.2.2</span> The Spread Operator</h5>
+<p>The spread operator <code>...</code> allows for the merging of
+another object into the one being constructed.</p>
+<ol type="1">
+<li>The expression following <code>...</code> is evaluated and coerced
+via <strong>ToObject(x)</strong> (see <a
+href="#sec:to_object">Section 2.6.5</a>).</li>
+<li>Each key-value pair in the resulting object is inserted into the new
+object.</li>
+<li>If the value cannot be coerced into an object, the spread is ignored
+(as <span class="math inline">\(ToObject\)</span> is total).</li>
+</ol>
+</section>
+</section>
+<section id="examples-5" class="level4" data-number="3.1.6.3">
+<h4 data-number="3.1.6.3"><span
+class="header-section-number">3.1.6.3</span> Examples</h4>
+<p>Given a context:
+<code>{"base": {"id": 1, "role": "guest"}}</code></p>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 24%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{ name: "Bob", age: 30 }</code></td>
+<td><code>{"name": "Bob", "age": 30}</code></td>
+<td>Standard object with identifier keys.</td>
+</tr>
+<tr>
+<td><code>{ "First Name": "Bob" }</code></td>
+<td><code>{"First Name": "Bob"}</code></td>
+<td>Quoted keys allow for whitespace and reserved characters.</td>
+</tr>
+<tr>
+<td><code>{ ...base, role: "admin" }</code></td>
+<td><code>{"id": 1, "role": "admin"}</code></td>
+<td>The <code>role</code> key from <code>base</code> is overwritten by
+the literal.</td>
+</tr>
+<tr>
+<td><code>{ a: 1, a: 2 }</code></td>
+<td><code>{"a": 2}</code></td>
+<td>Last key wins rule applies.</td>
+</tr>
+<tr>
+<td><code>{ ...null, count: 0 }</code></td>
+<td><code>{"count": 0}</code></td>
+<td>Spreading a non-object value results in an empty merge.</td>
+</tr>
+<tr>
+<td><code>{ "${name}": 1 }</code></td>
+<td><strong>Invalid</strong></td>
+<td>Object keys do not support interpolation.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="range-literals" class="level3" data-number="3.1.7">
+<h3 data-number="3.1.7"><span class="header-section-number">3.1.7</span>
+Range Literals</h3>
+<section id="syntax-6" class="level4" data-number="3.1.7.1">
+<h4 data-number="3.1.7.1"><span
+class="header-section-number">3.1.7.1</span> Syntax</h4>
+<p>Range literals consist of two expressions separated by a double-dot
+(<code>..</code>), enclosed in parentheses.</p>
+<pre class="peg"><code>RangeLiteral ← &quot;(&quot; S Expression S &quot;..&quot; S Expression S &quot;)&quot;</code></pre>
+</section>
+<section id="semantics-6" class="level4" data-number="3.1.7.2">
+<h4 data-number="3.1.7.2"><span
+class="header-section-number">3.1.7.2</span> Semantics</h4>
+<p>A range literal constructs an immutable, inclusive sequence of
+integers.</p>
+<ol type="1">
+<li>The <code>start</code> (left) and <code>end</code> (right)
+expressions are evaluated eagerly before coercing both values to numbers
+using <span class="math inline">\(ToNumber\)</span> (see <a
+href="#sec:to_number">Section 2.6.2</a>).</li>
+<li>If a value is a decimal, truncate toward zero.</li>
+<li>If either expression evaluates to <code>Nothing</code>, the range
+literal evaluates to an empty sequence.</li>
+<li>The range is inclusive of both the start and end values.</li>
+<li>If <code>start &gt; end</code>, the range results in an
+<strong>empty sequence</strong>. It does not count backward.</li>
+</ol>
+<p>Implementations MAY represent this value as:</p>
+<ol type="1">
+<li>An eager <span class="math inline">\(Array\langle RuntimeValue
+\rangle\)</span>, or</li>
+<li>A <span class="math inline">\(Drop\)</span> implementing the <span
+class="math inline">\(Sequence\)</span> protocol.</li>
+</ol>
+<p>The observable behavior MUST be indistinguishable.</p>
+<p>Implementations MAY define an upper limit to the number of items in a
+range to guard against excessively large array materialization.</p>
+</section>
+<section id="examples-6" class="level4" data-number="3.1.7.3">
+<h4 data-number="3.1.7.3"><span
+class="header-section-number">3.1.7.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(1..5)</code></td>
+<td><code>[1, 2, 3, 4, 5]</code></td>
+<td>Standard ascending inclusive range.</td>
+</tr>
+<tr>
+<td><code>(5..1)</code></td>
+<td><code>[]</code></td>
+<td>Start is greater than end; results in empty sequence.</td>
+</tr>
+<tr>
+<td><code>(1.2..3.8)</code></td>
+<td><code>[1, 2, 3]</code></td>
+<td>Values are coerced to integers before generation.</td>
+</tr>
+<tr>
+<td><code>(1..1)</code></td>
+<td><code>[1]</code></td>
+<td>Single-item sequence.</td>
+</tr>
+<tr>
+<td><code>(0..user.count)</code></td>
+<td><code>[0, 1, 2]</code></td>
+<td>Dynamic range (assuming <code>user.count</code> is 2).</td>
+</tr>
+<tr>
+<td><code>(1..null)</code></td>
+<td><code>[]</code></td>
+<td><code>null</code> coerces to <code>Nothing</code>, resulting in an
+empty range.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="identifiers" class="level2" data-number="3.2">
+<h2 data-number="3.2"><span class="header-section-number">3.2</span>
+Identifiers</h2>
+<p>Identifiers are the names used to reference variables, properties,
+filters, and keyword arguments.</p>
+<section id="syntax-7" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1"><span class="header-section-number">3.2.1</span>
+Syntax</h3>
+<p>An identifier MUST start with an alphabetic character (a-z, A-Z), an
+underscore (<code>_</code>), or a supported non-ASCII Unicode character.
+It cannot start with a digit.</p>
+<p>After the first character, identifiers may contain any combination of
+alphanumeric characters, underscores, and supported Unicode ranges.</p>
+<pre class="peg"><code>Identifier      ← IdentifierFirst IdentifierChar* !&quot;?&quot;
+IdentifierFirst ← [a-zA-Z_] / [\u{80}-\u{D7FF}] / [\u{E000}-\u{10FFFF}]
+IdentifierChar  ← IdentifierFirst / [0-9]</code></pre>
+<p>Note: The negative lookahead <code>!"?"</code> ensures that an
+identifier is not immediately followed by a question mark. This reserves
+that specific syntactic pattern for <strong>Predicates</strong> (see <a
+href="#sec:predicates">Section 3.3.2.2</a>).</p>
+</section>
+<section id="semantics-7" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2"><span class="header-section-number">3.2.2</span>
+Semantics</h3>
+<p>Identifiers are strictly case-sensitive. <code>myVariable</code> and
+<code>myvariable</code> are treated as two distinct identifiers.</p>
+<p>A sequence of characters that would otherwise be a valid identifier
+is NOT considered an <code>Identifier</code> if it is followed by a
+<code>?</code>. Such sequences are instead parsed as part of a
+<code>Predicate</code>. Note that <code>?</code> is not a valid
+identifier character.</p>
+</section>
+<section id="examples-7" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3"><span class="header-section-number">3.2.3</span>
+Examples</h3>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 13%" />
+<col style="width: 72%" />
+</colgroup>
+<thead>
+<tr>
+<th>Identifier</th>
+<th>Validity</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_name</code></td>
+<td>Valid</td>
+<td>Standard snake_case identifier.</td>
+</tr>
+<tr>
+<td><code>_secret</code></td>
+<td>Valid</td>
+<td>Starts with an underscore.</td>
+</tr>
+<tr>
+<td><code>item2</code></td>
+<td>Valid</td>
+<td>Contains a digit (but not at the start).</td>
+</tr>
+<tr>
+<td><code>dâtâ</code></td>
+<td>Valid</td>
+<td>Contains non-ASCII Unicode characters.</td>
+</tr>
+<tr>
+<td><code>2fast</code></td>
+<td><strong>Invalid</strong></td>
+<td>Cannot start with a digit.</td>
+</tr>
+<tr>
+<td><code>is_valid?</code></td>
+<td><strong>Invalid</strong></td>
+<td>Matches the syntax for a <strong>Predicate</strong>, not an
+Identifier.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="sec:variables" class="level2" data-number="3.3">
+<h2 data-number="3.3"><span class="header-section-number">3.3</span>
+Variables and Paths</h2>
+<section id="syntax-8" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1"><span class="header-section-number">3.3.1</span>
+Syntax</h3>
+<p>A variable consists of a “root segment” followed by zero or more
+segments that make up a “path” to a value.</p>
+<p>Segments can be in bracket notation, <code>[&lt;selector&gt;]</code>,
+or shorthand notation, <code>.some_name</code>. Shorthand notation is
+only available for names that are valid identifiers.</p>
+<p>Both single and double quoted names are allowed in bracket
+notation.</p>
+<p>The last segment of a path may be a predicate (<a
+href="#sec:predicates">Section 3.3.2.2</a>) - an identifier followed by
+a question mark <code>?</code>.</p>
+<pre class="peg"><code>Variable     ← VariableRoot Path?
+VariableRoot ← Identifier /
+               &quot;[&quot; S StringLiteral S &quot;]&quot;
+
+Path         ← (S Segment)+ Predicate?
+Segment      ← &quot;.&quot; Identifier /
+               &quot;[&quot; S Expression S &quot;]&quot;
+Predicate    ← &quot;.&quot; IdentifierFirst IdentifierChar &quot;?&quot;</code></pre>
+<p><em>Note: An <code>Identifier</code> cannot include a <code>?</code>.
+A <code>Predicate</code> is syntactically distinguished by its trailing
+question mark and its position as the terminal segment of a variable
+path.</em></p>
+</section>
+<section id="semantics-8" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2"><span class="header-section-number">3.3.2</span>
+Semantics</h3>
+<p>Variable resolution is a sequential process where each part of the
+path (the <strong>Selector</strong>) is resolved against the value
+produced by the preceding part.</p>
+<p>To determine if a selector can be applied, the language distinguishes
+between two categories of values:</p>
+<ul>
+<li><p><strong>Structural Values:</strong> Values that can contain other
+values. This includes <span class="math inline">\(Array\)</span>, <span
+class="math inline">\(Object\)</span>, and <span
+class="math inline">\(Drop\)</span> that implements a lookup
+protocol.</p></li>
+<li><p><strong>Non-Structural Values:</strong> Scalar or terminal values
+that do not support internal navigation. This includes <span
+class="math inline">\(Strings\)</span>, <span
+class="math inline">\(Number\)</span>, <span
+class="math inline">\(Boolean\)</span>, <span
+class="math inline">\(Null\)</span>, and <span
+class="math inline">\(Nothing\)</span>.</p></li>
+</ul>
+<section id="sec:variable_resolution" class="level4"
+data-number="3.3.2.1">
+<h4 data-number="3.3.2.1"><span
+class="header-section-number">3.3.2.1</span> The Resolution Chain</h4>
+<ol type="1">
+<li>Resolution starts by looking up the <code>VariableRoot</code> in the
+current execution context.</li>
+<li>For each subsequent <code>Segment</code> (Dot or Bracket):
+<ul>
+<li>If the current value is <strong>Structural</strong>, the engine
+attempts to resolve the selector against it (e.g., looking up a key in
+an Object or an index in an Array). If selector lookup fails (key not
+found, index out of bounds or non string/integer selector), the segment
+resolves to <code>Nothing</code>.</li>
+<li>If the current value is <strong>Non-Structural</strong>, the segment
+resolves to <code>Nothing</code>.</li>
+</ul></li>
+<li>Path Termination:
+<ul>
+<li>Standard Path: If the variable does not end in a predicate, the
+final value of the last segment is the result of the expression. If any
+segment in the chain resolved to <code>Nothing</code>, the entire
+variable expression resolves to <code>Nothing</code>.</li>
+<li>Predicate Path: If the variable ends in a <code>Predicate</code>,
+the predicate is invoked using the result of the preceding segment as
+its input.</li>
+</ul></li>
+</ol>
+</section>
+<section id="sec:predicates" class="level4" data-number="3.3.2.2">
+<h4 data-number="3.3.2.2"><span
+class="header-section-number">3.3.2.2</span> Predicates</h4>
+<p>A predicate is a named function registered with the environment. All
+predicates are total over <span
+class="math inline">\(RuntimeValue\)</span> and MUST return <span
+class="math inline">\(Boolean\)</span>.</p>
+<p><span class="math display">\[
+Predicate : RuntimeValue → Boolean
+\]</span></p>
+<p>For any predicate <span class="math inline">\(.p?\)</span> and
+accompanying abstract function <span class="math inline">\(IsP\)</span>,
+<code>x.p?</code> is semantically equivalent to <span
+class="math inline">\(IsP(x)\)</span>.</p>
+<p>Unlike standard segments, <strong>Predicates</strong> are
+specifically designed to handle the absence of a value.</p>
+<ul>
+<li>The predicate is evaluated against the result of the path preceding
+it. If the path resolution fails at any point, the predicate receives
+<code>Nothing</code> as its input.</li>
+<li>A predicate is <em>always</em> invoked, even if the preceding path
+resolution resulted in <code>Nothing</code>.</li>
+<li>This allows a path like <code>user.profile.defined?</code> to return
+<code>false</code> rather than <code>Nothing</code> if
+<code>user.profile</code> does not exist.</li>
+<li>If a predicate does not exist in the environment, the result is
+<code>false</code>. Implementations MAY issue a warning or error at
+parse time in the event of an unknown predicate.</li>
+</ul>
+</section>
+</section>
+<section id="predicate-definitions" class="level3" data-number="3.3.3">
+<h3 data-number="3.3.3"><span class="header-section-number">3.3.3</span>
+Predicate Definitions</h3>
+<p>Here we define abstract predicate functions that are expected to be
+implemented.</p>
+<section id="blank" class="level4" data-number="3.3.3.1">
+<h4 data-number="3.3.3.1"><span
+class="header-section-number">3.3.3.1</span> blank?</h4>
+<p>Returns <code>true</code> for empty textual or collection values.
+Note that <code>Nothing</code> is distinct from <code>Null</code> and is
+not considered blank.</p>
+<pre><code>IsBlank(x) =
+  x is Null
+ OR x is String and trim(x) = &quot;&quot;
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false</code></pre>
+<p>The absence of a value (<code>Nothing</code>) is not considered
+blank.</p>
+</section>
+<section id="empty" class="level4" data-number="3.3.3.2">
+<h4 data-number="3.3.3.2"><span
+class="header-section-number">3.3.3.2</span> empty?</h4>
+<p>Returns <code>true</code> for values that are empty collections or
+empty strings. As with <code>IsBlank</code>, <code>Nothing</code> is not
+considered empty.</p>
+<pre><code>IsEmpty(x) =
+  x is String and length(x) = 0
+ OR x is Array and length(x) = 0
+ OR x is Object and size(x) = 0
+ OTHERWISE false</code></pre>
+</section>
+<section id="defined" class="level4" data-number="3.3.3.3">
+<h4 data-number="3.3.3.3"><span
+class="header-section-number">3.3.3.3</span> defined?</h4>
+<p>Returns <code>true</code> if the input is any value other than
+<code>Nothing</code>.</p>
+<pre><code>IsDefined(Nothing) → false
+Otherwise → true</code></pre>
+</section>
+<section id="string" class="level4" data-number="3.3.3.4">
+<h4 data-number="3.3.3.4"><span
+class="header-section-number">3.3.3.4</span> string?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(String\)</span>.</p>
+<pre><code>IsString(x) =
+  x is String → true
+  otherwise   → false</code></pre>
+</section>
+<section id="null" class="level4" data-number="3.3.3.5">
+<h4 data-number="3.3.3.5"><span
+class="header-section-number">3.3.3.5</span> null?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(Null\)</span>.</p>
+<pre><code>IsNull(x) =
+  x is Null → true
+  otherwise → false</code></pre>
+</section>
+<section id="number" class="level4" data-number="3.3.3.6">
+<h4 data-number="3.3.3.6"><span
+class="header-section-number">3.3.3.6</span> number?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(Number\)</span>.</p>
+<pre><code>IsNumber(x) =
+  x is Number → true
+  otherwise   → false</code></pre>
+</section>
+<section id="boolean" class="level4" data-number="3.3.3.7">
+<h4 data-number="3.3.3.7"><span
+class="header-section-number">3.3.3.7</span> boolean?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(Boolean\)</span>.</p>
+<pre><code>IsBoolean(x) =
+  x is Boolean → true
+  otherwise    → false</code></pre>
+</section>
+<section id="array" class="level4" data-number="3.3.3.8">
+<h4 data-number="3.3.3.8"><span
+class="header-section-number">3.3.3.8</span> array?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(Array\)</span>.</p>
+<pre><code>IsArray(x) =
+  x is Array → true
+  otherwise  → false</code></pre>
+</section>
+<section id="object" class="level4" data-number="3.3.3.9">
+<h4 data-number="3.3.3.9"><span
+class="header-section-number">3.3.3.9</span> object?</h4>
+<p>Returns <code>true</code> if the input is of type <span
+class="math inline">\(Object\)</span>.</p>
+<pre><code>IsObject(x) =
+  x is Object → true
+  otherwise   → false</code></pre>
+</section>
+</section>
+<section id="examples-8" class="level3" data-number="3.3.4">
+<h3 data-number="3.3.4"><span class="header-section-number">3.3.4</span>
+Examples</h3>
+<p>Given a context: <code>{"user": {"tags": ["admin"]}}</code></p>
+<table>
+<colgroup>
+<col style="width: 19%" />
+<col style="width: 8%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user.tags[0]</code></td>
+<td><code>"admin"</code></td>
+<td>Path through structural values (Object -&gt; Array).</td>
+</tr>
+<tr>
+<td><code>user.id</code></td>
+<td><code>Nothing</code></td>
+<td><code>user</code> is structural, but <code>id</code> is
+missing.</td>
+</tr>
+<tr>
+<td><code>user.id.type</code></td>
+<td><code>Nothing</code></td>
+<td><code>user.id</code> is <code>Nothing</code> (non-structural), so
+<code>.type</code> resolves to <code>Nothing</code>.</td>
+</tr>
+<tr>
+<td><code>user.tags.array?</code></td>
+<td><code>true</code></td>
+<td>Predicate invoked on a valid Array.</td>
+</tr>
+<tr>
+<td><code>user.id.defined?</code></td>
+<td><code>false</code></td>
+<td><code>user.id</code> is <code>Nothing</code>. The predicate handles
+<code>Nothing</code> and returns <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>["missing"].defined?</code></td>
+<td><code>false</code></td>
+<td>The root is missing (<code>Nothing</code>), but the predicate still
+evaluates to a Boolean.</td>
+</tr>
+</tbody>
+</table>
+<p>Given a context: <code>{"user": {"name": " ", "tags": []}}</code></p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 12%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user.name.blank?</code></td>
+<td><code>true</code></td>
+<td>String is whitespace only.</td>
+</tr>
+<tr>
+<td><code>user.name.empty?</code></td>
+<td><code>false</code></td>
+<td>String has length &gt; 0.</td>
+</tr>
+<tr>
+<td><code>user.tags.empty?</code></td>
+<td><code>true</code></td>
+<td>Array has length 0.</td>
+</tr>
+<tr>
+<td><code>user.id.defined?</code></td>
+<td><code>false</code></td>
+<td><code>id</code> is missing (<code>Nothing</code>).</td>
+</tr>
+<tr>
+<td><code>user.id.null?</code></td>
+<td><code>false</code></td>
+<td><code>Nothing</code> is not <code>Null</code>.</td>
+</tr>
+<tr>
+<td><code>user.tags.array?</code></td>
+<td><code>true</code></td>
+<td>Correct type check.</td>
+</tr>
+<tr>
+<td><code>["missing"].defined?</code></td>
+<td><code>false</code></td>
+<td>Root lookup failed, predicate handles <code>Nothing</code>.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="operators-1" class="level2" data-number="3.4">
+<h2 data-number="3.4"><span class="header-section-number">3.4</span>
+Operators</h2>
+<p>The following table lists operators from highest to lowest
+precedence. Operators within the same group are evaluated left-to-right
+(left-associative).</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr>
+<th>Operator Type</th>
+<th>Syntax</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primary</strong></td>
+<td>Literals, Variables, <code>( expr )</code></td>
+</tr>
+<tr>
+<td><strong>Unary</strong></td>
+<td><code>+</code>, <code>-</code> (Positive/Negative)</td>
+</tr>
+<tr>
+<td><strong>Multiplicative</strong></td>
+<td><code>*</code>, <code>/</code>, <code>%</code></td>
+</tr>
+<tr>
+<td><strong>Additive</strong></td>
+<td><code>+</code>, <code>-</code></td>
+</tr>
+<tr>
+<td><strong>Pipe (Filter)</strong></td>
+<td><code>expr \| filter</code></td>
+</tr>
+<tr>
+<td><strong>Comparison/Membership</strong></td>
+<td><code>==</code>, <code>!=</code>, <code>&lt;</code>,
+<code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>,
+<code>contains</code>, <code>in</code></td>
+</tr>
+<tr>
+<td><strong>Logical NOT</strong></td>
+<td><code>not</code></td>
+</tr>
+<tr>
+<td><strong>Logical AND</strong></td>
+<td><code>and</code></td>
+</tr>
+<tr>
+<td><strong>Logical OR</strong></td>
+<td><code>or</code></td>
+</tr>
+<tr>
+<td><strong>Nothing Coalesce</strong></td>
+<td><code>orElse</code></td>
+</tr>
+<tr>
+<td><strong>Ternary</strong></td>
+<td><code>consequence if condition else alternative</code></td>
+</tr>
+</tbody>
+</table>
+<section id="ternary-expressions" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1"><span class="header-section-number">3.4.1</span>
+Ternary Expressions</h3>
+<section id="syntax-9" class="level4" data-number="3.4.1.1">
+<h4 data-number="3.4.1.1"><span
+class="header-section-number">3.4.1.1</span> Syntax</h4>
+<p>The ternary expression follows a “Python-style” postfix conditional
+syntax.</p>
+<pre class="peg"><code>TernaryExpression ← CoalesceExpression ( &quot;if&quot; !C CoalesceExpression &quot;else&quot; !C CoalesceExpression )?</code></pre>
+<p>The keywords <code>if</code> and <code>else</code> are followed by a
+negative lookahead <code>!C</code> to ensure they are not parsed as
+prefixes of identifiers.</p>
+</section>
+<section id="semantics-9" class="level4" data-number="3.4.1.2">
+<h4 data-number="3.4.1.2"><span
+class="header-section-number">3.4.1.2</span> Semantics</h4>
+<p>Ternary expressions allow for branching logic within a single line.
+They prioritize the “happy path” by placing the consequence first.</p>
+<ol type="1">
+<li>The <strong>Condition</strong> (<code>CoalesceExpression</code>) is
+evaluated first.</li>
+<li>The result is coerced to a Boolean via
+<strong>ToBoolean(x)</strong>.</li>
+<li>If <code>true</code>, the <strong>Consequence</strong> is evaluated
+and returned; the alternative is short-circuited.</li>
+<li>If <code>false</code>, the <strong>Alternative</strong> is evaluated
+and returned; the consequence is short-circuited.</li>
+</ol>
+</section>
+<section id="examples-9" class="level4" data-number="3.4.1.3">
+<h4 data-number="3.4.1.3"><span
+class="header-section-number">3.4.1.3</span> Examples</h4>
+<p>TODO: better examples</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 10%" />
+<col style="width: 55%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"Hi" if true else "Bye"</code></td>
+<td><code>"Hi"</code></td>
+<td>Basic usage.</td>
+</tr>
+<tr>
+<td><code>a if b else c if d else e</code></td>
+<td><strong>Invalid</strong></td>
+<td>Syntax error: <code>c if d else e</code> is not a
+<code>PipeExpression</code>.</td>
+</tr>
+<tr>
+<td><code>a if b else (c if d else e)</code></td>
+<td>—</td>
+<td>Valid: Parentheses restore the <code>Expression</code> context.</td>
+</tr>
+<tr>
+<td><code>'a' \| upcase if true else 'b'</code></td>
+<td><code>"A"</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>'a' if false else 'b' \| upcase</code></td>
+<td><code>"B"</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>('a' if true else 'b') \| upcase</code></td>
+<td><code>"A"</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="nothing-coalescing-operator" class="level3"
+data-number="3.4.2">
+<h3 data-number="3.4.2"><span class="header-section-number">3.4.2</span>
+Nothing Coalescing Operator</h3>
+<section id="syntax-10" class="level4" data-number="3.4.2.1">
+<h4 data-number="3.4.2.1"><span
+class="header-section-number">3.4.2.1</span> Syntax</h4>
+<p>The Nothing coalescing operator (<code>orElse</code>) is a binary
+operator used to provide a fallback for unresolved paths or missing
+data.</p>
+<pre class="peg"><code>CoalesceExpression ← OrExpression ( S &quot;orElse&quot; !C S OrExpression )*</code></pre>
+</section>
+<section id="semantics-10" class="level4" data-number="3.4.2.2">
+<h4 data-number="3.4.2.2"><span
+class="header-section-number">3.4.2.2</span> Semantics</h4>
+<p>The <code>orElse</code> operator evaluates its operands from left to
+right and returns the first value that is not <code>Nothing</code>.</p>
+<p>The operator triggers a fallback <strong>only</strong> if the
+left-hand side evaluates to <code>Nothing</code> (the signal for a
+failed resolution or non-existent variable). If the left-hand side is
+any value other than <code>Nothing</code> (including <code>false</code>,
+<code>0</code>, or <code>""</code>), the right-hand side is not
+evaluated.</p>
+<p><code>orElse</code> binds more loosely than logical <code>or</code>,
+meaning <code>a or b orElse c</code> is evaluated as
+<code>(a or b) orElse c</code>.</p>
+<p>And <code>orElse</code> operator binds more tightly than the pipe
+operator (<code>|</code>), so <code>a orElse b | f</code> is evaluated
+as <code>(a orElse b) | f</code>.</p>
+</section>
+<section id="examples-10" class="level4" data-number="3.4.2.3">
+<h4 data-number="3.4.2.3"><span
+class="header-section-number">3.4.2.3</span> Examples</h4>
+<p>Given a context: <code>{"id": 0, "status": null}</code></p>
+<table>
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 13%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id orElse 1</code></td>
+<td><code>0</code></td>
+<td><code>0</code> is not <code>Nothing</code>.</td>
+</tr>
+<tr>
+<td><code>status orElse "active"</code></td>
+<td><code>null</code></td>
+<td><code>null</code> is valid data; no fallback.</td>
+</tr>
+<tr>
+<td><code>missing_var orElse "fallback"</code></td>
+<td><code>"fallback"</code></td>
+<td><code>Nothing</code> triggers the fallback.</td>
+</tr>
+<tr>
+<td><code>user.profile.id orElse 1</code></td>
+<td><code>1</code></td>
+<td>Failed path resolution results in <code>Nothing</code>.</td>
+</tr>
+<tr>
+<td><code>null orElse "fallback"</code></td>
+<td><code>null</code></td>
+<td>Consistent with the “Null is Data” rule.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="logical-operators" class="level3" data-number="3.4.3">
+<h3 data-number="3.4.3"><span class="header-section-number">3.4.3</span>
+Logical Operators</h3>
+<section id="syntax-11" class="level4" data-number="3.4.3.1">
+<h4 data-number="3.4.3.1"><span
+class="header-section-number">3.4.3.1</span> Syntax</h4>
+<p>Logical operators perform boolean algebra and support short-circuit
+evaluation.</p>
+<pre class="peg"><code>OrExpression     ← AndExpression ( S &quot;or&quot; !C S AndExpression )*
+AndExpression    ← PrefixExpression ( S &quot;and&quot; !C S PrefixExpression )*
+PrefixExpression ← NotExpression / TestExpression
+NotExpression    ← &quot;not&quot; !C S PrefixExpression</code></pre>
+</section>
+<section id="semantics-11" class="level4" data-number="3.4.3.2">
+<h4 data-number="3.4.3.2"><span
+class="header-section-number">3.4.3.2</span> Semantics</h4>
+<p>Logical operators rely on the <span
+class="math inline">\(IsTruthy(x)\)</span> abstract function to evaluate
+operands (see <a href="#sec:truthy">Section 2.6.1</a>).</p>
+<p><code>or</code> returns the first <strong>truthy</strong> operand. If
+all operands are falsy, it returns the result of the last operand.
+Short-circuits if a truthy value is found.</p>
+<p><code>and</code> returns the first <strong>falsy</strong> operand. If
+all operands are truthy, it returns the result of the last operand.
+Short-circuits if a falsy value is found.</p>
+<p><code>not</code> is a unary operator that returns <code>true</code>
+if the operand is falsy, and <code>false</code> if the operand is
+truthy.</p>
+</section>
+<section id="examples-11" class="level4" data-number="3.4.3.3">
+<h4 data-number="3.4.3.3"><span
+class="header-section-number">3.4.3.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 12%" />
+<col style="width: 64%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>true or false</code></td>
+<td><code>true</code></td>
+<td>Standard boolean logic.</td>
+</tr>
+<tr>
+<td><code>null or "default"</code></td>
+<td><code>"default"</code></td>
+<td><code>null</code> is falsy.</td>
+</tr>
+<tr>
+<td><code>0 or "fallback"</code></td>
+<td><code>"fallback"</code></td>
+<td><code>0</code> is falsy.</td>
+</tr>
+<tr>
+<td><code>"hi" and true</code></td>
+<td><code>true</code></td>
+<td><code>"hi"</code> is truthy; <code>and</code> returns the last
+value.</td>
+</tr>
+<tr>
+<td><code>missing_var and true</code></td>
+<td><code>Nothing</code></td>
+<td><code>Nothing</code> is falsy; <code>and</code> returns the first
+falsy value found.</td>
+</tr>
+<tr>
+<td><code>not null</code></td>
+<td><code>true</code></td>
+<td><code>null</code> is falsy, so <code>not null</code> is
+<code>true</code>.</td>
+</tr>
+<tr>
+<td><code>not 0</code></td>
+<td><code>true</code></td>
+<td><code>0</code> is falsy.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="comparison-operators" class="level3" data-number="3.4.4">
+<h3 data-number="3.4.4"><span class="header-section-number">3.4.4</span>
+Comparison Operators</h3>
+<section id="syntax-12" class="level4" data-number="3.4.4.1">
+<h4 data-number="3.4.4.1"><span
+class="header-section-number">3.4.4.1</span> Syntax</h4>
+<p>Comparison operators <code>==</code>, <code>!=</code>,
+<code>&lt;=</code>, <code>&gt;=</code>, <code>&lt;</code>,
+<code>&gt;</code> test for equality and ordering.</p>
+<pre class="peg"><code>TestExpression ← PipeExpression ( S TestOperator S PipeExpression )?
+TestOperator   ← &quot;==&quot; / &quot;!=&quot; / &quot;&lt;=&quot; / &quot;&gt;=&quot; / &quot;&lt;&quot; / &quot;&gt;&quot; / (&quot;in&quot; !C) / (&quot;contains&quot; !C)</code></pre>
+</section>
+<section id="semantics-12" class="level4" data-number="3.4.4.2">
+<h4 data-number="3.4.4.2"><span
+class="header-section-number">3.4.4.2</span> Semantics</h4>
+<p>Comparison is <strong>total</strong>; if two types are fundamentally
+incomparable and no protocol is present, the result is
+<code>false</code> rather than an error.</p>
+<p><span class="math display">\[
+==, !=, &lt;, &gt;, &lt;=, &gt;= : RuntimeValue × RuntimeValue → Boolean
+\]</span></p>
+<p>We first define <code>==</code> and <code>&lt;</code>, then
+<code>!=</code>, <code>&gt;</code>, <code>&lt;=</code> and
+<code>&gt;=</code> in terms of <code>==</code> and
+<code>&lt;</code>.</p>
+<p>A comparison using the operator <code>==</code> evaluates to true if
+the comparison is between:</p>
+<ul>
+<li><code>Nothing</code> and <code>Nothing</code>.</li>
+<li>two values that represent the same data.</li>
+<li>arrays of the same length where each element of the first array is
+equal to the corresponding element in the second array.</li>
+<li>objects with the same collection of names and, for each of those
+names, the associated values are equal.</li>
+<li>drops:
+<ol type="1">
+<li>If <code>a</code> is a drop and implements <span
+class="math inline">\(Equals\)</span> and <code>a.Equals(b)</code> is
+true.</li>
+<li>If <code>b</code> is a drop and implements <span
+class="math inline">\(Equals\)</span> and <code>b.Equals(a)</code> is
+true.</li>
+<li>Otherwise coerce both via <span class="math inline">\(ToLiquid(…,
+data)\)</span> and compare the results.</li>
+</ol></li>
+</ul>
+<p>A comparison using the operator <code>&lt;</code> yields true if the
+comparison is between values that are both numbers, both strings or
+either is a <span class="math inline">\(Drop\)</span> and that satisfy
+the comparison:</p>
+<ul>
+<li>For numbers: numeric ordering is used. Integers and floating values
+are compared by their numeric value; implementations may use a single
+representation (e.g. IEEE 754 BigDecimal) but comparisons must behave as
+the mathematical numeric ordering (smaller → less-than).</li>
+<li>For strings: by default strings are ordered by Unicode scalar (code
+point) order. Implementations MAY provide an option to use the Unicode
+Collation Algorithm (UCA) for locale sensitive ordering, but the
+canonical spec semantics are Unicode code point ordering to ensure
+deterministic results.</li>
+<li>For drops:
+<ol type="1">
+<li>If <code>a</code> is <code>Drop</code> and implements
+<code>LessThan</code> and <code>a.LessThan(b)</code> is true.</li>
+<li>If <code>b</code> is <code>Drop</code> and implements
+<code>LessThan</code> and <code>b.LessThan(a)</code> is true.</li>
+<li>Otherwise coerce both via <span class="math inline">\(ToLiquid(…,
+data)\)</span> and attempt standard ordering on the results.</li>
+</ol></li>
+</ul>
+<p><code>!=</code>, <code>&gt;</code>, <code>&lt;=</code> and
+<code>&gt;=</code> are defined in terms of <code>==</code> and
+<code>&lt;</code>.</p>
+<p><span class="math display">\[
+\begin{aligned}
+x \;\texttt{!=}\; y &amp;\to \text{not}(x \;\texttt{==}\; y) \\
+x \;\texttt{&gt;}\; y  &amp;\to y \;\texttt{&lt;}\; x \\
+x \;\texttt{&lt;=}\; y &amp;\to (x \;\texttt{&lt;}\; y) \;\text{or}\; (x
+\;\texttt{==}\; y) \\
+x \;\texttt{&gt;=}\; y &amp;\to (y \;\texttt{&lt;}\; x) \;\text{or}\; (x
+\;\texttt{==}\; y)
+\end{aligned}
+\]</span></p>
+</section>
+<section id="examples-12" class="level4" data-number="3.4.4.3">
+<h4 data-number="3.4.4.3"><span
+class="header-section-number">3.4.4.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 14%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0 == 0.0</code></td>
+<td><code>true</code></td>
+<td>Numeric normalization.</td>
+</tr>
+<tr>
+<td><code>"" == null</code></td>
+<td><code>false</code></td>
+<td>Different types, both are falsy but not equal.</td>
+</tr>
+<tr>
+<td><code>5 &gt; "2"</code></td>
+<td><code>false</code></td>
+<td>Type mismatch defaults to <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>(1 + 1) == 2</code></td>
+<td><code>true</code></td>
+<td>Arithmetic is resolved before comparison.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="membership-operators" class="level3" data-number="3.4.5">
+<h3 data-number="3.4.5"><span class="header-section-number">3.4.5</span>
+Membership Operators</h3>
+<section id="syntax-13" class="level4" data-number="3.4.5.1">
+<h4 data-number="3.4.5.1"><span
+class="header-section-number">3.4.5.1</span> Syntax</h4>
+<pre class="peg"><code>TestExpression ← PipeExpression ( S TestOperator S PipeExpression )?
+TestOperator   ← &quot;==&quot; / &quot;!=&quot; / &quot;&lt;=&quot; / &quot;&gt;=&quot; / &quot;&lt;&quot; / &quot;&gt;&quot; / (&quot;in&quot; !C) / (&quot;contains&quot; !C)</code></pre>
+</section>
+<section id="semantics-13" class="level4" data-number="3.4.5.2">
+<h4 data-number="3.4.5.2"><span
+class="header-section-number">3.4.5.2</span> Semantics</h4>
+<p>Membership operators <code>in</code> and <code>contains</code>
+determine whether a value appears in a container. Both operators return
+<span class="math inline">\(Boolean\)</span>.</p>
+<ul>
+<li><code>element in container</code></li>
+<li><code>container contains element</code></li>
+</ul>
+<p>These forms are semantically equivalent with operands reversed.</p>
+<p>Evaluation proceeds as follows.</p>
+<ol type="1">
+<li>If <code>container</code> is a <code>Drop</code> that implements the
+<span class="math inline">\(Membership\)</span> protocol, call
+<code>contains(element)</code>:
+<ul>
+<li>If the result is <code>Boolean</code>, return that value.</li>
+<li>If the result is <code>Nothing</code>, continue evaluation.</li>
+</ul></li>
+<li>If <code>container</code> and element are both <span
+class="math inline">\(String\)</span>:
+<ul>
+<li>Test for substring inclusion. Return <code>true</code> if
+<code>element</code> occurs within <code>container</code>, otherwise
+<code>false</code>.</li>
+</ul></li>
+<li>If <code>container</code> is an <code>Object</code>, membership
+tests for the existence of a key.
+<ul>
+<li>Return <code>true</code> if <code>key</code> exists in the object,
+otherwise <code>false</code>.</li>
+</ul></li>
+<li>Otherwise coerce to an iterable using <span
+class="math inline">\(ToIterable\)</span> and iterate the resulting
+sequence.
+<ul>
+<li>Return <code>true</code> if <code>key</code> exists in the sequence,
+otherwise <code>false</code>.</li>
+</ul></li>
+</ol>
+</section>
+<section id="examples-13" class="level4" data-number="3.4.5.3">
+<h4 data-number="3.4.5.3"><span
+class="header-section-number">3.4.5.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 14%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>3 in [1,2,3]</code></td>
+<td><code>true</code></td>
+<td>Array is iterable.</td>
+</tr>
+<tr>
+<td><code>3 in (1..5)</code></td>
+<td><code>true</code></td>
+<td>Range literals are iterable.</td>
+</tr>
+<tr>
+<td><code>5 in 5</code></td>
+<td><code>true</code></td>
+<td><code>5</code> is coerced to <code>[5]</code> by <span
+class="math inline">\(ToIterable\)</span>.</td>
+</tr>
+<tr>
+<td><code>"a" in "cat"</code></td>
+<td><code>true</code></td>
+<td>Substring membership.</td>
+</tr>
+<tr>
+<td><code>"name" in {name:1}</code></td>
+<td><code>true</code></td>
+<td>Object property membership.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="pipe-operator-filters" class="level3" data-number="3.4.6">
+<h3 data-number="3.4.6"><span class="header-section-number">3.4.6</span>
+Pipe Operator (Filters)</h3>
+<p>A filter is a <strong>named total function</strong> registered in the
+environment. Formally:</p>
+<p><span class="math display">\[
+\begin{aligned}
+FilterFunction \;&amp;: RuntimeValue × List\langle FilterArgument
+\rangle → RuntimeValue \\
+FilterArgument \;&amp;: RuntimeValue | Lambda
+\end{aligned}
+\]</span></p>
+<section id="syntax-14" class="level4" data-number="3.4.6.1">
+<h4 data-number="3.4.6.1"><span
+class="header-section-number">3.4.6.1</span> Syntax</h4>
+<pre class="peg"><code>PipeExpression     ← ArithmeticExpression ( S &quot;|&quot; S FilterInvocation )*
+FilterInvocation   ← Identifier ( S &quot;:&quot; S ArgumentList )?
+ArgumentList       ← Argument ( S &quot;,&quot; S Argument )*
+Argument           ← LambdaExpression / KeywordArgument / ArgumentExpression
+KeywordArgument    ← Identifier S ( &quot;=&quot; / &quot;:&quot; ) S ( LambdaExpression / ArgumentExpression )
+LambdaExpression   ← LambdaArguments S &quot;=&gt;&quot; S ArgumentExpression
+LambdaArguments    ← Identifier / ( &quot;(&quot; S ( Identifier ( S &quot;,&quot; S Identifier )* )? S &quot;)&quot; )
+ArgumentExpression ← ArithmeticExpression</code></pre>
+</section>
+<section id="semantics-14" class="level4" data-number="3.4.6.2">
+<h4 data-number="3.4.6.2"><span
+class="header-section-number">3.4.6.2</span> Semantics</h4>
+<p>Every filter application has at least one argument: the
+<strong>input</strong>. This is the value resulting from the expression
+immediately to the left of the pipe. In the conceptual mapping to a
+standard function, the input always occupies the first positional slot
+(index 0).</p>
+<p>Conceptually, a filter application such as
+<code>input | filter: arg1, key=arg2</code> is evaluated as
+<code>filter(input, arg1, key: arg2)</code>.</p>
+<p>The evaluation of a <code>PipeExpression</code> follows a linear,
+left-to-right transformation of data. Each filter in the chain acts as a
+function that accepts the current result of the pipeline as its first
+implicit argument.</p>
+<section id="arguments" class="level5" data-number="3.4.6.2.1">
+<h5 data-number="3.4.6.2.1"><span
+class="header-section-number">3.4.6.2.1</span> Arguments</h5>
+<p>Positional arguments are additional values passed to a filter,
+identified by their sequence following the filter name. The first
+explicit argument provided in the template is treated as the second
+argument to the underlying function (index 1), the next as the third
+(index 2), and so on.</p>
+<p>Keyword arguments allow values to be passed to specific named
+parameters of a filter. Keyword arguments may appear in any order
+relative to each other, provided they follow all positional arguments.
+The assignment operators <code>=</code> and <code>:</code> are treated
+as semantically identical. They serve only to bind the expression value
+to the named parameter.</p>
+<section id="lambda-expressions" class="level6"
+data-number="3.4.6.2.1.1">
+<h6 data-number="3.4.6.2.1.1"><span
+class="header-section-number">3.4.6.2.1.1</span> Lambda Expressions</h6>
+<p>Lambda expressions provide a way to define anonymous, inline
+functions that are passed directly to filters. They allow filters to
+execute custom logic over collections, such as mapping values, filtering
+arrays, or applying custom sorting rules.</p>
+<p>A lambda expression consists of an argument declaration, an arrow
+operator (<code>=&gt;</code>), and a single expression body.</p>
+<p>The left side of the arrow defines the parameters. This can be a
+single variable name or a parenthesized, comma-separated list of
+variable names. Parentheses are required if there are zero parameters or
+multiple parameters.</p>
+<p>The right side of the arrow is a single expression that determines
+the return value of the lambda.</p>
+<p>Lambdas act as closures, meaning they capture the lexical environment
+in which they are defined.</p>
+<ul>
+<li>When evaluated by the filter, the body expression has access to the
+internal parameters passed into it by the filter.</li>
+<li>The body expression also retains read-access to all variables, and
+context values that were available in the surrounding template scope at
+the time the lambda was defined.</li>
+<li>If a lambda parameter shares a name with a variable in the
+surrounding scope, the lambda parameter strictly shadows the outer
+variable for the duration of the lambda’s execution.</li>
+</ul>
+<p>Lambdas are non-first-class.</p>
+<ul>
+<li>They cannot be produced by expression evaluation.</li>
+<li>They cannot be stored in <code>RuntimeValue</code>.</li>
+<li>They cannot be returned from filters.</li>
+<li>They can only appear syntactically as filter arguments.</li>
+</ul>
+</section>
+</section>
+<section id="well-typed-filters" class="level5" data-number="3.4.6.2.2">
+<h5 data-number="3.4.6.2.2"><span
+class="header-section-number">3.4.6.2.2</span> Well-Typed Filters</h5>
+<p>Filter implementations may be accompanied by a
+<strong>Signature</strong>. This signature is a piece of metadata
+intended for tooling, static analysis, and ahead-of-time (AOT)
+validation.</p>
+<p>Signatures allow compilers or IDEs to provide autocomplete, verify
+argument counts, and check for the presence of required keyword
+arguments before the template is executed. The execution engine MUST NOT
+depend on this metadata to perform a filter invocation. The engine’s
+role is strictly to evaluate arguments and dispatch the resulting values
+to the filter implementation.</p>
+</section>
+<section id="totality-requirement" class="level5"
+data-number="3.4.6.2.3">
+<h5 data-number="3.4.6.2.3"><span
+class="header-section-number">3.4.6.2.3</span> Totality Requirement</h5>
+<p>All filters MUST be <strong>total functions</strong>. A filter is
+considered total if it returns a valid value for every possible
+combination of input and arguments.</p>
+<ul>
+<li>A filter must never throw an exception or halt the execution of the
+template.</li>
+<li>If a transformation is mathematically or logically impossible (e.g.,
+division by zero, or passing a <code>String</code> to a filter that only
+handles <code>Numbers</code> and cannot coerce the value), the filter
+MUST return <code>Nothing</code>.</li>
+</ul>
+<p>Filters MUST NOT raise errors due to incorrect arity:</p>
+<ol type="1">
+<li><p><strong>Too Few Arguments</strong> If a required (non-optional,
+non-variadic) parameter has no corresponding argument, the filter
+invocation evaluates to <code>Nothing</code>.</p></li>
+<li><p><strong>Too Many Arguments</strong> If extra arguments are
+supplied and the filter does not declare a variadic parameter, the
+filter invocation evaluates to <code>Nothing</code>.</p></li>
+<li><p><strong>Variadic Parameters</strong> If a variadic parameter is
+declared, all remaining arguments are collected into a list and passed
+as separate positional arguments or as an array, according to the
+implementation’s calling convention.</p></li>
+</ol>
+<p>Filters that are unknown to the environment evaluate to
+<code>Nothing</code>. Implementations MAY throw an error or warning at
+parse time in the event of an unknown filter.</p>
+</section>
+</section>
+<section id="examples-14" class="level4" data-number="3.4.6.3">
+<h4 data-number="3.4.6.3"><span
+class="header-section-number">3.4.6.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 36%" />
+<col style="width: 17%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Structure</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>val \| upcase</code></td>
+<td>Simple invocation</td>
+<td>No arguments.</td>
+</tr>
+<tr>
+<td><code>val \| round: 2</code></td>
+<td>Positional argument</td>
+<td>A single numeric literal argument.</td>
+</tr>
+<tr>
+<td><code>val \| replace: "a", "b"</code></td>
+<td>Multiple arguments</td>
+<td>Comma-separated positionals.</td>
+</tr>
+<tr>
+<td><code>val \| date: format = "%Y"</code></td>
+<td>Keyword argument</td>
+<td>Uses <code>=</code> for key-value assignment.</td>
+</tr>
+<tr>
+<td><code>users \| map: u =&gt; u.name</code></td>
+<td>Lambda argument</td>
+<td>Single parameter lambda for transformation.</td>
+</tr>
+<tr>
+<td><code>users \| sort: (a, b) =&gt; a.age - b.age</code></td>
+<td>Multi-arg lambda</td>
+<td>Grouped parameters for comparison logic.</td>
+</tr>
+<tr>
+<td><code>val \| f: (other \| g)</code></td>
+<td>Nested Pipe</td>
+<td>Parentheses are required to pipe inside an argument.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="sec:arithmetic" class="level3" data-number="3.4.7">
+<h3 data-number="3.4.7"><span class="header-section-number">3.4.7</span>
+Arithmetic Operators</h3>
+<section id="syntax-15" class="level4" data-number="3.4.7.1">
+<h4 data-number="3.4.7.1"><span
+class="header-section-number">3.4.7.1</span> Syntax</h4>
+<pre class="peg"><code>ArithmeticExpression ← AddExpression
+AddExpression        ← MulExpression ( S ( &quot;+&quot; / &quot;-&quot; ) S MulExpression )*
+MulExpression        ← UnaryExpression ( S ( &quot;*&quot; / &quot;/&quot; / &quot;%&quot; ) S UnaryExpression )*
+UnaryExpression      ← NegExpression / PosExpression / PrimaryExpression
+NegExpression        ← &quot;-&quot; UnaryExpression
+PosExpression        ← &quot;+&quot; UnaryExpression</code></pre>
+</section>
+<section id="semantics-15" class="level4" data-number="3.4.7.2">
+<h4 data-number="3.4.7.2"><span
+class="header-section-number">3.4.7.2</span> Semantics</h4>
+<p>Arithmetic is performed using the <strong>Decimal Arithmetic
+Model</strong> to ensure exact precision for base-10 decimals, avoiding
+the rounding errors typical of binary floating-point systems.</p>
+<p>All arithmetic operators are total. Operands are coerced to numbers
+via <span class="math inline">\(ToNumber\)</span>. If an operand
+resolves to <code>Nothing</code>, the entire arithmetic operation
+resolves to <code>Nothing</code>.</p>
+<pre><code>+, -, *, /, % : RuntimeValue × RuntimeValue → Number | Nothing
++ , - (unary) : RuntimeValue → Number | Nothing</code></pre>
+<p>Arithmetic operators MUST share semantics with their filter
+equivalents - <code>plus</code>, <code>minus</code>, <code>times</code>,
+etc.</p>
+<section id="division-operator" class="level5" data-number="3.4.7.2.1">
+<h5 data-number="3.4.7.2.1"><span
+class="header-section-number">3.4.7.2.1</span> Division operator</h5>
+<p>Division uses <strong>true arithmetic division</strong>. Evaluation
+proceeds as follows:</p>
+<ol type="1">
+<li>Convert operands using <code>ToNumber</code>.</li>
+<li>If either conversion yields <code>Nothing</code>, the result is
+<code>Nothing</code>.</li>
+<li>If the right hand side is equal to <code>0</code>, the result is
+<code>Nothing</code>.</li>
+<li>Otherwise compute the decimal quotient using the decimal arithmetic
+model defined in <a href="#sec:numeric_types">Section 2.2</a>.</li>
+<li>Normalize; if the result is mathematically an integer (i.e. it has
+no fractional component), the result MUST be represented as an integer
+value.</li>
+</ol>
+</section>
+<section id="modulo-operator" class="level5" data-number="3.4.7.2.2">
+<h5 data-number="3.4.7.2.2"><span
+class="header-section-number">3.4.7.2.2</span> Modulo Operator</h5>
+<p>The modulo operator computes the remainder of division. Evaluation
+proceeds as follows:</p>
+<ol type="1">
+<li>Convert operands using <span
+class="math inline">\(ToNumber\)</span>.</li>
+<li>If either conversion yields <code>Nothing</code>, the result is
+<code>Nothing</code>.</li>
+<li>If the right hand side is equal to <code>0</code>, the result is
+<code>Nothing</code>.</li>
+<li>Otherwise compute the remainder using <span class="math inline">\(r
+= x&#39; - y&#39; * floor(x&#39; / y&#39;)\)</span>. The result has the
+<strong>same sign as the divisor</strong>.</li>
+<li>If the result has no fractional component, it MUST be represented as
+an integer.</li>
+</ol>
+</section>
+</section>
+<section id="examples-15" class="level4" data-number="3.4.7.3">
+<h4 data-number="3.4.7.3"><span
+class="header-section-number">3.4.7.3</span> Examples</h4>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 10%" />
+<col style="width: 76%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>4 / 2</code></td>
+<td><code>2</code></td>
+<td>Integer representation.</td>
+</tr>
+<tr>
+<td><code>0.1 + 0.2</code></td>
+<td><code>0.3</code></td>
+<td>Exact decimal arithmetic.</td>
+</tr>
+<tr>
+<td><code>10 / 4</code></td>
+<td><code>2.5</code></td>
+<td>True division (no integer truncation).</td>
+</tr>
+<tr>
+<td><code>"Item" + 1</code></td>
+<td><code>Nothing</code></td>
+<td><code>"Item"</code> coerces to <code>Nothing</code>. <code>+</code>
+is not overloaded for concatenation.</td>
+</tr>
+<tr>
+<td><code>10 / 0</code></td>
+<td><code>Nothing</code></td>
+<td>Division by zero is handled safely.</td>
+</tr>
+<tr>
+<td><code>5 * "abc"</code></td>
+<td><code>Nothing</code></td>
+<td>Incompatible types resolve to <code>Nothing</code>.</td>
+</tr>
+<tr>
+<td><code>5 % 2</code></td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>4 % 2</code></td>
+<td><code>0</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>-5 % 2</code></td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>5 % -2</code></td>
+<td><code>-1</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>5.5 % 2</code></td>
+<td><code>1.5</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="primary-and-parenthesized-expressions" class="level2"
+data-number="3.5">
+<h2 data-number="3.5"><span class="header-section-number">3.5</span>
+Primary and Parenthesized Expressions</h2>
+<section id="syntax-16" class="level3" data-number="3.5.1">
+<h3 data-number="3.5.1"><span class="header-section-number">3.5.1</span>
+Syntax</h3>
+<pre class="peg"><code>PrimaryExpression       ← Variable / Literal / ParenthesizedExpression
+ParenthesizedExpression ← &quot;(&quot; S Expression S &quot;)&quot; Path?</code></pre>
+</section>
+<section id="semantics-16" class="level3" data-number="3.5.2">
+<h3 data-number="3.5.2"><span class="header-section-number">3.5.2</span>
+Semantics</h3>
+<p>A <span class="math inline">\(PrimaryExpression\)</span> evaluates to
+a <span class="math inline">\(RuntimeValue\)</span> as follows:</p>
+<p><span class="math inline">\(Literal\)</span> evaluates to the
+corresponding literal value (see <a
+href="#sec:literals">Section 3.1</a>).</p>
+<p><span class="math inline">\(Variable\)</span> is evaluated via
+environment lookup and path resolution (see <a
+href="#sec:variables">Section 3.3</a>).</p>
+<p><span class="math inline">\(ParenthesizedExpression\)</span> is
+evaluated by evaluating the inner expression, then applying the optional
+path (see <a href="#sec:variable_resolution">Section 3.3.2.1</a>).</p>
+<pre><code>v      = Eval(Expression)
+result = ResolvePath(v, Path)</code></pre>
+<p>If no path is present, the result is simply <code>v</code>.</p>
+</section>
+<section id="examples-16" class="level3" data-number="3.5.3">
+<h3 data-number="3.5.3"><span class="header-section-number">3.5.3</span>
+Examples</h3>
+<p>Given a context: <code>{"a": {"c": ["42"]}}</code></p>
+<table>
+<colgroup>
+<col style="width: 18%" />
+<col style="width: 14%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Evaluation</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(2 + 3) * 4</code></td>
+<td><code>20</code></td>
+<td>Override operator precedence with parentheses.</td>
+</tr>
+<tr>
+<td><code>(a or b).c</code></td>
+<td><code>42</code></td>
+<td>Path applied on logical expression.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="appendix-a.-notable-differences" class="level1 unnumbered">
+<h1 class="unnumbered">Appendix A. Notable Differences</h1>
+<p>This appendix highlights some of the differences between this
+specification and <a
+href="https://github.com/Shopify/liquid">Shopify/liquid</a>, at the time
+of writing.</p>
+<ul>
+<li><p>This specification supports arithmetic operators (<code>+</code>,
+<code>-</code>, <code>*</code>, <code>/</code>, <code>%</code>) directly
+in expressions. Arithmetic operators DO NOT default to zero when numeric
+coercion fails. Instead they evaluate to <code>Nothing</code>, and
+arithmetic expressions (along with their matching filters) evaluate to
+<code>Nothing</code> if either operand is <code>Nothing</code>, or when
+an operation is undefined (such as division or modulo by zero).</p></li>
+<li><p>This specification changes logical operator (<code>and</code> and
+<code>or</code>) precedence and adds a <code>not</code> operator.
+<code>and</code> is required to bind tighter than <code>or</code> and
+evaluation happens from left to right. Parentheses may be used for
+grouping: <code>not (a and b)</code>.</p></li>
+<li><p>This specification introduces first-class filters. Filters are no
+longer restricted by contextual parsing rules and can appear anywhere
+expressions are allowed. The pipe operator (<code>|</code>) is treated
+as a standard expression operator with deterministic behavior.</p></li>
+<li><p>This specification add support for Python-style conditional
+expressions:</p>
+<pre><code>value if condition else alternative</code></pre>
+<p>Ternary expressions are fully composable and follow defined
+precedence rules. They may be nested and combined with filters,
+arithmetic, and logical operators.</p></li>
+<li><p>This specification adds support for array and object
+literals:</p>
+<pre><code>[1, 2, 3]
+{ &quot;name&quot;: user.name }</code></pre>
+<p>A spread operator (<code>...</code>) allows composition of
+structures:</p>
+<pre><code>[...items, 4]
+{ ...defaults, &quot;enabled&quot;: true }</code></pre>
+<p>This enables template authors to construct collections immutably,
+without manipulating render context data.</p></li>
+<li><p>This specification adds support for scoped expressions as filter
+arguments. Lambda expressions capture their lexical environment and
+allow filters to apply custom logic such as mapping or sorting to data
+structures.</p></li>
+<li><p>This specification replaces the special <code>x == empty</code>
+and <code>x == blank</code> constructs with <code>x.empty?</code> and
+<code>x.blank?</code> predicates. Other predicates defined in the spec
+include <code>defined?</code> and <code>array?</code>.</p></li>
+<li><p>This specification removes value-returning operations such as
+<code>x.size</code>, <code>x.first</code> and
+<code>x.last</code>.</p></li>
+</ul>
+</section>
+<section id="appendix-b.-collected-peg-grammar"
+class="level1 unnumbered">
+<h1 class="unnumbered">Appendix B. Collected PEG Grammar</h1>
+<p>This appendix collects grammar rules used throughout this
+document.</p>
+<pre class="peg"><code>Expression              ← TernaryExpr
+             
+B                       ← &quot; &quot; / &quot;\t&quot; / &quot;\r&quot; / &quot;\n&quot;    // Whitespace
+S                       ← B*                          // Optional whitespace
+C                       ← IdentifierChar              // Alias for any name character
+
+Literal                 ← NumberLiteral /
+                          StringLiteral /
+                          BooleanLiteral /
+                          NullLiteral /
+                          ArrayLiteral /
+                          ObjectLiteral /
+                          RangeLiteral
+
+NullLiteral             ← (&quot;null&quot; / &quot;nil&quot;) !C
+
+BooleanLiteral          ← (&quot;true&quot; / &quot;false&quot;) !C
+
+NumberLiteral           ← Integer Fraction? Exponent? !C
+Integer                 ← &quot;0&quot; / [1-9] [0-9]*
+Fraction                ← &quot;.&quot; [0-9]+
+Exponent                ← [eE] [+-]? [0-9]+
+
+StringLiteral           ← DoubleQuoted / SingleQuoted
+         
+DoubleQuoted            ← &quot;\&quot;&quot; (Interpolation / DoubleEscaped / Unescaped / &quot;&#39;&quot;)* &quot;\&quot;&quot;
+SingleQuoted            ← &quot;&#39;&quot;  (Interpolation / SingleEscaped / Unescaped / &quot;\&quot;&quot;)* &quot;&#39;&quot;
+         
+Interpolation           ← &quot;${&quot; Expression &quot;}&quot;
+         
+DoubleEscaped           ← &quot;\\&quot; ( &quot;\&quot;&quot; / Escapable )
+SingleEscaped           ← &quot;\\&quot; ( &quot;&#39;&quot; / Escapable )
+         
+Unescaped               ← LiteralDollar / SourceChar
+LiteralDollar           ← &quot;$&quot; ! &quot;{&quot;
+         
+Escapable               ← &quot;b&quot; / &quot;f&quot; / &quot;n&quot; / &quot;r&quot; / &quot;t&quot; / &quot;/&quot; / &quot;\\&quot; / (&quot;u&quot; ~ HexChar) / &quot;${&quot;
+HexChar                 ← NonSurrogate / HighSurrogate &quot;\\u&quot; LowSurrogate
+HighSurrogate           ← [Dd] [AaBb89] [0-9A-Fa-f]{2}
+LowSurrogate            ← [Dd] [CcDdEeFf] [0-9A-Fa-f]{2}
+NonSurrogate            ← [AaBbCcEeFf0-9] [0-9A-Fa-f]{3} /
+                          [Dd] [0-7] [0-9A-Fa-f]{2}
+         
+SourceChar              ← &quot; &quot; /
+                          &quot;!&quot; /
+                          &quot;#&quot; /
+                          &quot;%&quot; /
+                          &quot;&amp;&quot; /
+                          [\u0028-\u0058] /
+                          [\u005D-\uD7FF] /
+                          [\uE000-\u0010FFFF]
+
+ArrayLiteral            ← &quot;[&quot; S (ArrayItem (S &quot;,&quot; S ArrayItem)*)? S &quot;,&quot;? S &quot;]&quot;
+ArrayItem               ← SpreadExpr / Expression
+SpreadExpr              ← &quot;...&quot; Expression
+
+ObjectLiteral           ← &quot;{&quot; S (ObjectItem (S &quot;,&quot; S ObjectItem)*)? S &quot;,&quot;? S &quot;}&quot;
+ObjectItem              ← SpreadExpr / KeyValuePair
+KeyValuePair            ← ObjectKey S &quot;:&quot; S Expression
+ObjectKey               ← Identifier / QuotedName
+QuotedName              ← ( &quot;\&quot;&quot; DoubleQuotedName &quot;\&quot;&quot; ) / ( &quot;&#39;&quot; SingleQuotedName &quot;&#39;&quot; )
+
+QuotedName              ← DoubleQuotedName / SingleQuotedName
+     
+DoubleQuotedName        ← &quot;\&quot;&quot; ( DoubleEscapedName / NameSourceChar / &quot;&#39;&quot;)* &quot;\&quot;&quot;
+SingleQuotedName        ← &quot;&#39;&quot;  ( SingleEscapedName / NameSourceChar / &quot;\&quot;&quot;)* &quot;&#39;&quot;
+     
+DoubleEscapedName       ← &quot;\\&quot; ( &quot;\&quot;&quot; / EscapableNameChar )
+SingleEscapedName       ← &quot;\\&quot; ( &quot;&#39;&quot; / EscapableNameChar )
+     
+EscapableNameChar       ← &quot;b&quot; / &quot;f&quot; / &quot;n&quot; / &quot;r&quot; / &quot;t&quot; / &quot;/&quot; / &quot;\\&quot; / (&quot;u&quot; ~ HexChar)
+     
+NameSourceChar          ← &quot; &quot; /
+                          &quot;!&quot; /
+                          &quot;#&quot; /
+                          &quot;$&quot; /
+                          &quot;%&quot; /
+                          &quot;&amp;&quot; /
+                          [\u0028-\u0058] /
+                          [\u005D-\uD7FF] /
+                          [\uE000-\u0010FFFF]
+
+RangeLiteral            ← &quot;(&quot; S Expression S &quot;..&quot; S Expression S &quot;)&quot;
+
+Identifier              ← IdentifierFirst IdentifierChar* !&quot;?&quot;
+IdentifierFirst         ← [a-zA-Z_] / [\u{80}-\u{D7FF}] / [\u{E000}-\u{10FFFF}]
+IdentifierChar          ← IdentifierFirst / [0-9]
+
+Variable                ← VariableRoot Path?
+VariableRoot            ← Identifier /
+                          &quot;[&quot; S StringLiteral S &quot;]&quot;
+           
+Path                    ← (S Segment)+ Predicate?
+Segment                 ← &quot;.&quot; Identifier /
+                          &quot;[&quot; S Expression S &quot;]&quot;
+Predicate               ← &quot;.&quot; IdentifierFirst IdentifierChar &quot;?&quot;
+
+TernaryExpression       ← CoalesceExpression ( &quot;if&quot; !C CoalesceExpression &quot;else&quot; !C CoalesceExpression )?
+
+CoalesceExpression      ← OrExpression ( S &quot;orElse&quot; !C S OrExpression )*
+
+OrExpression            ← AndExpression ( S &quot;or&quot; !C S AndExpression )*
+AndExpression           ← PrefixExpression ( S &quot;and&quot; !C S PrefixExpression )*
+PrefixExpression        ← NotExpression / TestExpression
+NotExpression           ← &quot;not&quot; !C S PrefixExpression
+
+TestExpression          ← PipeExpression ( S TestOperator S PipeExpression )?
+TestOperator            ← &quot;==&quot; / &quot;!=&quot; / &quot;&lt;=&quot; / &quot;&gt;=&quot; / &quot;&lt;&quot; / &quot;&gt;&quot; / (&quot;in&quot; !C) / (&quot;contains&quot; !C)
+
+TestExpression          ← PipeExpression ( S TestOperator S PipeExpression )?
+TestOperator            ← &quot;==&quot; / &quot;!=&quot; / &quot;&lt;=&quot; / &quot;&gt;=&quot; / &quot;&lt;&quot; / &quot;&gt;&quot; / (&quot;in&quot; !C) / (&quot;contains&quot; !C)
+
+PipeExpression          ← ArithmeticExpression ( S &quot;|&quot; S FilterInvocation )*
+FilterInvocation        ← Identifier ( S &quot;:&quot; S ArgumentList )?
+ArgumentList            ← Argument ( S &quot;,&quot; S Argument )*
+Argument                ← LambdaExpression / KeywordArgument / ArgumentExpression
+KeywordArgument         ← Identifier S ( &quot;=&quot; / &quot;:&quot; ) S ( LambdaExpression / ArgumentExpression )
+LambdaExpression        ← LambdaArguments S &quot;=&gt;&quot; S ArgumentExpression
+LambdaArguments         ← Identifier / ( &quot;(&quot; S ( Identifier ( S &quot;,&quot; S Identifier )* )? S &quot;)&quot; )
+ArgumentExpression      ← ArithmeticExpression
+
+ArithmeticExpression    ← AddExpression
+AddExpression           ← MulExpression ( S ( &quot;+&quot; / &quot;-&quot; ) S MulExpression )*
+MulExpression           ← UnaryExpression ( S ( &quot;*&quot; / &quot;/&quot; / &quot;%&quot; ) S UnaryExpression )*
+UnaryExpression         ← NegExpression / PosExpression / PrimaryExpression
+NegExpression           ← &quot;-&quot; UnaryExpression
+PosExpression           ← &quot;+&quot; UnaryExpression
+
+PrimaryExpression       ← Variable / Literal / ParenthesizedExpression
+ParenthesizedExpression ← &quot;(&quot; S Expression S &quot;)&quot; Path?
+</code></pre>
+</section></main>
+    </div>
+
+    <script>
+      document.querySelectorAll("h1, h2, h3, h4, h5").forEach((h) => {
+        const section = h.closest("section[id]");
+        if (!section) return;
+
+        const id = section.id;
+
+        const a = document.createElement("a");
+        a.href = "#" + id;
+        a.className = "header-link";
+        a.textContent = "§";
+
+        h.appendChild(a);
+      });
+    </script>
+
+    <script>
+      window.MathJax = {
+        chtml: {
+          scale: 0.9,
+          // displayAlign: "left",
+          // displayIndent: "1em",
+        },
+        svg: {
+          scale: 0.9,
+          // displayAlign: "left",
+          // displayIndent: "1em",
+        },
+      };
+    </script>
+
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"
+    ></script>
+  </body>
+</html>

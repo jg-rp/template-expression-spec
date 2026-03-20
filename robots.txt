@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jg-rp.github.io/template-expression-spec/sitemap.xml
