@@ -1,0 +1,82 @@
+{
+  "tests": [
+    {
+      "name": "null",
+      "expression": "null",
+      "result": ""
+    },
+    {
+      "name": "nil",
+      "expression": "nil",
+      "result": ""
+    },
+    {
+      "name": "equals null, true",
+      "expression": "user.id == null",
+      "data": { "user": { "id": null } },
+      "result": "true"
+    },
+    {
+      "name": "equals null, false",
+      "expression": "user.id == null",
+      "data": { "user": { "id": 123 } },
+      "result": "false"
+    },
+    {
+      "name": "nothing equals null",
+      "expression": "user.id == null",
+      "data": { "user": {} },
+      "result": "false"
+    },
+    {
+      "name": "null or",
+      "expression": "null or 'default'",
+      "result": "default"
+    },
+    {
+      "name": "null or else",
+      "expression": "null orElse 'default'",
+      "result": ""
+    },
+    {
+      "name": "true",
+      "expression": "true",
+      "result": "true"
+    },
+    {
+      "name": "false",
+      "expression": "false",
+      "result": "false"
+    },
+    {
+      "name": "not true",
+      "expression": "not true",
+      "result": "false"
+    },
+    {
+      "name": "not false",
+      "expression": "not false",
+      "result": "true"
+    },
+    {
+      "name": "true or",
+      "expression": "true or 'default'",
+      "result": "true"
+    },
+    {
+      "name": "false or",
+      "expression": "false or 'default'",
+      "result": "default"
+    },
+    {
+      "name": "true or else",
+      "expression": "true orElse 'default'",
+      "result": "true"
+    },
+    {
+      "name": "false or else",
+      "expression": "false orElse 'default'",
+      "result": "false"
+    }
+  ]
+}
