@@ -16,7 +16,9 @@ normalized_blocks = blocks.map do |block|
 end
 
 out = []
-out << "# A. Collected PEG Grammar {.unnumbered}"
+out << "# Appendix B. Collected PEG Grammar {.unnumbered}"
+out << ""
+out << "This appendix collects grammar rules used throughout this document."
 out << ""
 out << "```peg"
 out << normalized_blocks.join("\n")
