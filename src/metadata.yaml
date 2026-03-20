@@ -1,7 +1,8 @@
 ---
-title: "A Unified Expression Grammar for Template Languages"
+title: "A Unified Expression Language for Template Engines"
 author: "Draft Specification"
 date: "2026-03-09"
+srcUrl: "https://github.com/jg-rp/template-expression-spec"
 secPrefix:
   - Section
   - Sections
