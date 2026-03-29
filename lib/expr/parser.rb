@@ -216,8 +216,10 @@ module Expr
         AST::Name.new(pair, pair.text)
       when :double_quoted, :single_quoted
         parse_string(pair)
-      when :expression
-        parse_expr(pair.stream)
+      when :int
+        AST::Integer.new(pair, pair.text.to_i)
+      when :query_selector
+        parse_variable(pair)
       when :predicate
         AST::Predicate.new(pair, pair.text[1..]) # remove leading dot
       else

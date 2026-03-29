@@ -11,14 +11,16 @@ Both single and double quoted names are allowed in bracket notation.
 The last segment of a path may be a predicate (@sec:predicates) - an identifier followed by a question mark `?`.
 
 ```peg
-Variable     ← VariableRoot Path?
-VariableRoot ← Identifier /
-               "[" S StringLiteral S "]"
+Variable      ← VariableRoot Path?
+VariableRoot  ← Identifier /
+                "[" S StringLiteral S "]"
 
-Path         ← (S Segment)+ Predicate?
-Segment      ← "." Identifier /
-               "[" S Expression S "]"
-Predicate    ← "." IdentifierFirst IdentifierChar "?"
+Path          ← (S Segment)+ Predicate?
+Segment       ← "." Identifier /
+                "[" S StringLiteral / Integer / QuerySelector S "]"
+
+QuerySelector ← VariableRoot (S Segment)*
+Predicate     ← "." IdentifierFirst IdentifierChar "?"
 ```
 
 _Note: An `Identifier` cannot include a `?`. A `Predicate` is syntactically distinguished by its trailing question mark and its position as the terminal segment of a variable path._

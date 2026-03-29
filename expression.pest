@@ -153,8 +153,9 @@ name_first = _{
 
 name_char = _{ name_first | ASCII_DIGIT }
 
-segment  = _{ "[" ~ S ~ selector ~ S ~ "]" | ("." ~ name) }
-selector = _{ string_literal | expression }
+segment        = _{ "[" ~ S ~ selector ~ S ~ "]" | ("." ~ name) }
+selector       = _{ string_literal | int | query_selector }
+query_selector =  { root ~ (S ~ segment)* }
 
 // A quoted name does not allow interpolation.
 quoted_name = _{
