@@ -8,7 +8,7 @@ The following table lists operators from highest to lowest precedence. Operators
 | **Unary**                 | `+`, `-` (Positive/Negative)                       |
 | **Multiplicative**        | `*`, `/`, `%`                                      |
 | **Additive**              | `+`, `-`                                           |
-| **Pipe (Filter)**         | `expr \| filter`                                   |
+| **Pipe (Filter)**         | <code>expr \| filter</code>                                   |
 | **Comparison/Membership** | `==`, `!=`, `<`, `>`, `<=`, `>=`, `contains`, `in` |
 | **Logical NOT**           | `not`                                              |
 | **Logical AND**           | `and`                                              |
@@ -46,9 +46,9 @@ TODO: better examples
 | `"Hi" if true else "Bye"`          | `"Hi"`      | Basic usage.                                             |
 | `a if b else c if d else e`        | **Invalid** | Syntax error: `c if d else e` is not a `PipeExpression`. |
 | `a if b else (c if d else e)`      | —           | Valid: Parentheses restore the `Expression` context.     |
-| `'a' \| upcase if true else 'b'`   | `"A"`       |                                                          |
-| `'a' if false else 'b' \| upcase`  | `"B"`       |                                                          |
-| `('a' if true else 'b') \| upcase` | `"A"`       |                                                          |
+| <code>'a' \| upcase if true else 'b'</code>   | `"A"`       |                                                          |
+| <code>'a' if false else 'b' \| upcase</code>  | `"B"`       |                                                          |
+| <code>('a' if true else 'b') \| upcase</code> | `"A"`       |                                                          |
 
 ### Nothing Coalescing Operator
 

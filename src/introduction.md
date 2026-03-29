@@ -16,9 +16,9 @@ While the template engine manages higher-level concerns - such as file I/O, tag 
 
   | Markup                                       | Expression              |
   | -------------------------------------------- | ----------------------- |
-  | `{{ user.name \| upcase }}`                  | `user.name \| upcase`   |
-  | `{% if item.price > 100 %}`                  | `item.price > 100`      |
-  | `{% for product in collections.frontpage %}` | `collections.frontpage` |
+  | <code>{{ user.name \| upcase }}</code>                   | <code>user.name \| upcase</code>   |
+  | <code>{% if item.price > 100 %}</code>                   | `item.price > 100`      |
+  | <code>{% for product in collections.frontpage %}</code>  | `collections.frontpage` |
 
 - _Markup_: The collective term for the specialized syntax (delimited by `{{` and `{%`) embedded within a template. Markup distinguishes dynamic instructions - such as output statements and tags - from static content.
 

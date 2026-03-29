@@ -86,10 +86,10 @@ Filters that are unknown to the environment evaluate to `Nothing`. Implementatio
 
 | Expression                               | Structure           | Notes                                                |
 | ---------------------------------------- | ------------------- | ---------------------------------------------------- |
-| `val \| upcase`                          | Simple invocation   | No arguments.                                        |
-| `val \| round: 2`                        | Positional argument | A single numeric literal argument.                   |
-| `val \| replace: "a", "b"`               | Multiple arguments  | Comma-separated positionals.                         |
-| `val \| date: format = "%Y"`             | Keyword argument    | Uses `=` for key-value assignment.                   |
-| `users \| map: u => u.name`              | Lambda argument     | Single parameter lambda for transformation.          |
-| `users \| sort: (a, b) => a.age - b.age` | Multi-arg lambda    | Grouped parameters for comparison logic.             |
-| `val \| f: (other \| g)`                 | Nested Pipe         | Parentheses are required to pipe inside an argument. |
+| <code>val \| upcase</code>                          | Simple invocation   | No arguments.                                        |
+| <code>val \| round: 2</code>                         | Positional argument | A single numeric literal argument.                   |
+| <code>val \| replace: "a", "b"</code>                | Multiple arguments  | Comma-separated positionals.                         |
+| <code>val \| date: format = "%Y"</code>              | Keyword argument    | Uses `=` for key-value assignment.                   |
+| <code>users \| map: u => u.name</code>               | Lambda argument     | Single parameter lambda for transformation.          |
+| <code>users \| sort: (a, b) => a.age - b.age</code>  | Multi-arg lambda    | Grouped parameters for comparison logic.             |
+| <code>val \| f: (other \| g)</code>                  | Nested Pipe         | Parentheses are required to pipe inside an argument. |
