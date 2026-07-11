@@ -22,9 +22,9 @@ TODO: turn this into a table
 - String concatenation (filters): `ToString`
 - Boolean conditions used by `if`, ternary `if` expressions, `and`, `or`, and
   `not`: `ToBoolean`
-- Comparisons that require primitive values: `ToLiquid(…, data)` then structural comparison; numeric comparisons use `ToNumber` when both sides are numeric or coercible to numeric.
-- `for` iterable expressions: `ToArray` / `ToLiquid(…, iterable)`
-- Filter arguments (general): `ToLiquid(…, data)` unless a filter documents a different required hint
+- Comparisons that require primitive values: `ToPrimitive(…, data)` then structural comparison; numeric comparisons use `ToNumber` when both sides are numeric or coercible to numeric.
+- `for` iterable expressions: `ToArray` / `ToPrimitive(…, iterable)`
+- Filter arguments (general): `ToPrimitive(…, data)` unless a filter documents a different required hint
 - `ToArray` helper and sequence normalization: `ToArray`
 
 ### Truthiness and ToBoolean(x) {#sec:truthy}
@@ -51,7 +51,7 @@ An evaluation result is truthy if it represents a non-empty, non-zero, non-null 
 | String     | length(x) > 0                          |
 | Array      | length(x) > 0                          |
 | Object     | size(o) > 0                            |
-| Drop       | ToLiquid(x, boolean); false if Nothing |
+| Drop       | ToPrimitive(x, boolean); false if Nothing |
 
 ### ToNumber(x) {#sec:to_number}
 
@@ -71,7 +71,7 @@ $$
 | String     | parse numeric literal; if invalid → Nothing |
 | Array      | Nothing                                     |
 | Object     | Nothing                                     |
-| Drop       | ToLiquid(x, numeric)                        |
+| Drop       | ToPrimitive(x, numeric)                        |
 
 ### ToString(x) {#sec:to_string}
 
@@ -89,7 +89,7 @@ $$
 | Nothing    | `""`                                 |
 | Array      | JSON-formatted array                 |
 | Object     | JSON-formatted object                |
-| Drop       | ToLiquid(x, string); `""` if Nothing |
+| Drop       | ToPrimitive(x, string); `""` if Nothing |
 
 ### ToArray(x)
 
@@ -104,7 +104,7 @@ $$
 | String          | Array<String>                       |
 | Null            | []                                  |
 | Nothing         | []                                  |
-| Drop            | ToLiquid(x, array) or [] if Nothing |
+| Drop            | ToPrimitive(x, array) or [] if Nothing |
 | Any other value | [x]                                 |
 
 #### String Semantics
@@ -140,7 +140,7 @@ $$
 | Input Type | Result                               |
 | ---------- | ------------------------------------ |
 | Object     | identity                             |
-| Drop       | ToLiquid(x, object) or {} if Nothing |
+| Drop       | ToPrimitive(x, object) or {} if Nothing |
 | Any other  | {}                                   |
 
 ### ToIterable(x) {#sec:to_iterable}

@@ -2,10 +2,10 @@
 
 Implementations may expose developer-defined objects known as Drops. A Drop is an object that can be coerced into a data value when required, with the help of a context hint.
 
-$Drop$ is defined as an object implementing $ToLiquid$.
+$Drop$ is defined as an object implementing $ToPrimitive$.
 
 $$
-ToLiquid : Drop × ContextHint → RuntimeValue
+ToPrimitive : Drop × ContextHint → RuntimeValue
 $$
 
 Where:
@@ -18,16 +18,16 @@ With the following constraints:
 
 $$
 \begin{aligned}
-ToLiquid(drop, data)    \;& → DataValue \\
-ToLiquid(drop, boolean) \;& → Boolean | Nothing \\
-ToLiquid(drop, numeric) \;& → Number | Nothing \\
-ToLiquid(drop, string)  \;& → String | Nothing \\
-ToLiquid(drop, array)   \;& → Array\langle RuntimeValue \rangle | Nothing \\
-ToLiquid(drop, object)  \;& → Object\langle String \to RuntimeValue \rangle | Nothing \\
+ToPrimitive(drop, data)    \;& → DataValue \\
+ToPrimitive(drop, boolean) \;& → Boolean | Nothing \\
+ToPrimitive(drop, numeric) \;& → Number | Nothing \\
+ToPrimitive(drop, string)  \;& → String | Nothing \\
+ToPrimitive(drop, array)   \;& → Array\langle RuntimeValue \rangle | Nothing \\
+ToPrimitive(drop, object)  \;& → Object\langle String \to RuntimeValue \rangle | Nothing \\
 \end{aligned}
 $$
 
-The result of $ToLiquid(drop, data)$ MUST be a valid $DataValue$ as defined above, meaning it MUST NOT contain $Drop$ at any depth.
+The result of $ToPrimitive(drop, data)$ MUST be a valid $DataValue$ as defined above, meaning it MUST NOT contain $Drop$ at any depth.
 
 The following table shows when each hint applies.
 

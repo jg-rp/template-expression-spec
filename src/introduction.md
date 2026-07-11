@@ -42,7 +42,7 @@ This document aims to replace ad hoc behavior with a single, composable, context
 
 Compatibility with existing Liquid implementations is explicitly not a goal.
 
-## Overview of Liquid Expressions
+## Overview of Unified Expressions
 
 An expression is a composable sequence of components that, when evaluated against a context, produces a single $RuntimeValue$. This language is total and immutable: every syntactically valid expression resolves to a value, and no expression can modify the state of the execution context.
 

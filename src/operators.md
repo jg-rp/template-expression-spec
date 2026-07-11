@@ -147,7 +147,7 @@ A comparison using the operator `==` evaluates to true if the comparison is betw
 - drops:
   1. If `a` is a drop and implements $Equals$ and `a.Equals(b)` is true.
   2. If `b` is a drop and implements $Equals$ and `b.Equals(a)` is true.
-  3. Otherwise coerce both via $ToLiquid(…, data)$ and compare the results.
+  3. Otherwise coerce both via $ToPrimitive(…, data)$ and compare the results.
 
 A comparison using the operator `<` yields true if the comparison is between values that are both numbers, both strings or either is a $Drop$ and that satisfy the comparison:
 
@@ -156,7 +156,7 @@ A comparison using the operator `<` yields true if the comparison is between val
 - For drops:
   1. If `a` is `Drop` and implements `LessThan` and `a.LessThan(b)` is true.
   2. If `b` is `Drop` and implements `LessThan` and `b.LessThan(a)` is true.
-  3. Otherwise coerce both via $ToLiquid(…, data)$ and attempt standard ordering on the results.
+  3. Otherwise coerce both via $ToPrimitive(…, data)$ and attempt standard ordering on the results.
 
 `!=`, `>`, `<=` and `>=` are defined in terms of `==` and `<`.
 
