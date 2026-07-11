@@ -36,12 +36,11 @@ contains  =  { "contains" ~ !C }
 in        =  { "in" ~ !C }
 
 pipe_expr         = _{ arithmetic_expression ~ (S ~ pipe ~ S ~ filter_invocation)* }
-filter_invocation =  { name ~ (S ~ ":" ~ S ~ argument_list)? }
+filter_invocation =  { variable ~ (S ~ ":" ~ S ~ argument_list)? }
 argument_list     = _{ argument ~ (S ~ "," ~ S ~ argument)* }
-argument          =  { lambda_expr | keyword_argument | arg_expr }
-keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_expr | arg_expr) }
-lambda_expr       =  { lambda_arguments ~ S ~ "=>" ~ S ~ arg_expr }
-lambda_arguments  =  { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
+argument          =  { lambda_argument | keyword_argument | arg_expr }
+keyword_argument  =  { name ~ S ~ ("=" | ":") ~ S ~ (lambda_argument | arg_expr) }
+lambda_argument   =  { lambda_parameters ~ S ~ ("=>" | "->") ~ S ~ arg_expr }
 arg_expr          =  { arithmetic_expression }
 
 arithmetic_expression = _{ add_expr }
@@ -70,6 +69,7 @@ primary = _{
   | array_literal
   | object_literal
   | range_literal
+  | lambda_expr
   | parenthesized_expr
 }
 
@@ -137,6 +137,9 @@ object_item    =  { spread_expr | (quoted_name | name) ~ S ~ ":" ~ S ~ expressio
 
 range_literal      = { "(" ~ S ~ expression ~ S ~ ".." ~ S ~ expression ~ S ~ ")" }
 parenthesized_expr = { "(" ~ S ~ expression ~ S ~ ")" ~ path? }
+
+lambda_expr        = { lambda_parameters ~ S ~ ("=>" | "->") ~ S ~ expression }
+lambda_parameters  = { name | ("(" ~ S ~ (name ~ (S ~ "," ~ S ~ name)*)? ~ S ~ ")") }
 
 variable  =  { root ~ path? }
 root      = _{ name | "[" ~ S ~ string_literal ~ S ~ "]" }

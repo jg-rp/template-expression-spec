@@ -54,7 +54,7 @@ module Expr
         parse_filter(pair)
       when :keyword_argument
         parse_keyword_arg(pair)
-      when :lambda_expr
+      when :lambda_argument, :lambda_expr
         parse_lambda(pair)
       when :variable
         parse_variable(pair)
