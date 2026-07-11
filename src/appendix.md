@@ -32,7 +32,7 @@ This appendix highlights some of the differences between this specification and 
 
   This enables template authors to construct collections immutably, without manipulating render context data.
 
-- This specification adds support for scoped expressions as filter arguments. Lambda expressions capture their lexical environment and allow filters to apply custom logic such as mapping or sorting to data structures.
+- This specification adds support for first-class expressions including anonymous expressions as filter arguments. Lambda expressions are stateless, can be "called" using the pipe operator (`|`), and allow filters to apply custom logic such as mapping or sorting to data structures.
 
 - This specification replaces the special `x == empty` and `x == blank` constructs with `x.empty?` and `x.blank?` predicates. Other predicates defined in the spec include `defined?` and `array?`.
 

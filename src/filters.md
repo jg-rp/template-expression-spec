@@ -13,12 +13,11 @@ $$
 
 ```peg
 PipeExpression     ← ArithmeticExpression ( S "|" S FilterInvocation )*
-FilterInvocation   ← Identifier ( S ":" S ArgumentList )?
+FilterInvocation   ← Variable ( S ":" S ArgumentList )?
 ArgumentList       ← Argument ( S "," S Argument )*
-Argument           ← LambdaExpression / KeywordArgument / ArgumentExpression
-KeywordArgument    ← Identifier S ( "=" / ":" ) S ( LambdaExpression / ArgumentExpression )
-LambdaExpression   ← LambdaArguments S "=>" S ArgumentExpression
-LambdaArguments    ← Identifier / ( "(" S ( Identifier ( S "," S Identifier )* )? S ")" )
+Argument           ← LambdaArgument / KeywordArgument / ArgumentExpression
+KeywordArgument    ← Identifier S ( "=" / ":" ) S ( LambdaArgument / ArgumentExpression )
+LambdaArgument     ← LambdaParameters S ( "=>" / "->" ) S ArgumentExpression
 ArgumentExpression ← ArithmeticExpression
 ```
 
@@ -40,24 +39,9 @@ Keyword arguments allow values to be passed to specific named parameters of a fi
 
 Lambda expressions provide a way to define anonymous, inline functions that are passed directly to filters. They allow filters to execute custom logic over collections, such as mapping values, filtering arrays, or applying custom sorting rules.
 
-A lambda expression consists of an argument declaration, an arrow operator (`=>`), and a single expression body.
-
-The left side of the arrow defines the parameters. This can be a single variable name or a parenthesized, comma-separated list of variable names. Parentheses are required if there are zero parameters or multiple parameters.
-
-The right side of the arrow is a single expression that determines the return value of the lambda.
-
-Lambdas act as closures, meaning they capture the lexical environment in which they are defined.
-
 - When evaluated by the filter, the body expression has access to the internal parameters passed into it by the filter.
 - The body expression also retains read-access to all variables, and context values that were available in the surrounding template scope at the time the lambda was defined.
 - If a lambda parameter shares a name with a variable in the surrounding scope, the lambda parameter strictly shadows the outer variable for the duration of the lambda's execution.
-
-Lambdas are non-first-class.
-
-- They cannot be produced by expression evaluation.
-- They cannot be stored in `RuntimeValue`.
-- They cannot be returned from filters.
-- They can only appear syntactically as filter arguments.
 
 ##### Well-Typed Filters
 

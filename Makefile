@@ -18,6 +18,7 @@ SPEC_SRC = \
 	src/filters.md \
 	src/arithmetic.md \
 	src/primary.md \
+	src/lambda.md \
 	src/appendix.md
 
 PEG_OUT = src/collected_peg_grammar.md

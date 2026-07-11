@@ -26,7 +26,7 @@ While the template engine manages higher-level concerns - such as file I/O, tag 
 
 - _Filter_: A named, total function registered in the environment that transforms a value. Filters are invoked within a pipeline using the pipe (`|`) syntax, where they accept the result of the preceding expression as their primary input.
 
-- _Lambda_: An anonymous function defined inline as a filter argument. Lambdas capture their lexical environment and allow filters to apply custom logic such as mapping or sorting to data structures.
+- _Lambda_: An anonymous inline function. Lambda expressions allow for user-defined filters and custom mapping or sorting logic to be applied to data structures.
 
 - _Total Evaluation_: An expression language has total evaluation if every syntactically valid expression evaluates to a value and does not raise a runtime error. Every operator, filter, and conversion must produce a value for every possible input.
 
@@ -87,7 +87,7 @@ Filters are named transformations applied to a value via the pipe (`|`) syntax. 
 
 ### Lambdas
 
-Lambdas are anonymous, inline functions (e.g., `item => item.price > 10`) passed as arguments to filters. They allow filters to delegate logic back to the expression engine, enabling powerful operations like custom sorting, mapping, and searching within collections while maintaining lexical scope.
+Lambdas are anonymous, inline functions (e.g., `item => item.price > 10`). They are first-class objects that can be "called" as a user-defined filter with the pipe operator (`|`), or passed as arguments to filters to delegate logic back to the expression engine, enabling powerful operations like custom sorting, mapping, and searching within collections.
 
 ### Control Expressions
 
