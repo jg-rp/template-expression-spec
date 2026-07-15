@@ -54,37 +54,37 @@
       "result": "1,2,3"
     },
     {
-      "name": "Arithmetic vs Pipe: Math happens before transformation",
+      "name": "arithmetic operator binds tighter than pipe",
       "expression": "2 + 3 | times: 2",
       "result": "10"
     },
     {
-      "name": "Pipe vs Comparison: Result is compared after transformation",
+      "name": "pipe binds tighter than comparison, left",
       "expression": "\"hello\" | upcase == \"HELLO\"",
       "result": "true"
     },
     {
-      "name": "Pipe vs Comparison: RHS pipe evaluated before comparison",
+      "name": "pipe binds tighter than comparison, right",
       "expression": "\"ADMIN\" == \"admin\" | upcase",
       "result": "true"
     },
     {
-      "name": "Unary vs Pipe: Negation binds tighter than pipe",
+      "name": "negation binds tighter than pipe",
       "expression": "-5 | abs",
       "result": "5"
     },
     {
-      "name": "Logical AND vs Pipe: Pipe creates value for logical check",
+      "name": "pipe binds tighter than logical and",
       "expression": "true and \"a\" | upcase",
       "result": "A"
     },
     {
-      "name": "Logical OR vs Pipe: Logical operator selects result of pipe",
+      "name": "pipe binds tighter than logical or",
       "expression": "false or \"b\" | upcase",
       "result": "B"
     },
     {
-      "name": "Coalesce vs Pipe: orElse catches Nothing from failed filter",
+      "name": "filter arguments bind less tight than infix operators",
       "expression": "null | plus: 1 orElse 0",
       "result": "0"
     },

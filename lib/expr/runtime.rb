@@ -45,6 +45,10 @@ module Expr
         return expr.evaluate(context)
       end
     end
+
+    def to_s
+      "(#{params.map(&:to_s).join(",")}) => #{expr}"
+    end
   end
 
   def self.to_boolean(value)

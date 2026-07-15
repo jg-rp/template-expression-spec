@@ -65,11 +65,11 @@ primary = _{
   | true_literal
   | false_literal
   | null_literal
+  | lambda_expr
   | variable
   | array_literal
   | object_literal
   | range_literal
-  | lambda_expr
   | parenthesized_expr
 }
 

@@ -3,7 +3,7 @@
 ### Syntax
 
 ```peg
-PrimaryExpression       ← Variable / Literal / ParenthesizedExpression / LambdaExpression
+PrimaryExpression       ← Literal / ParenthesizedExpression / LambdaExpression / Variable
 ParenthesizedExpression ← "(" S Expression S ")" Path?
 ```
 

@@ -176,6 +176,18 @@
         ]
       },
       "result": "true"
+    },
+    {
+      "name": "just lambda",
+      "expression": "(i) => i.user.title",
+      "data": {},
+      "result": "(i) => i.user.title"
+    },
+    {
+      "name": "just lambda, no parens",
+      "expression": "i => i.user.title",
+      "data": {},
+      "result": "(i) => i.user.title"
     }
   ]
 }

@@ -1,3 +1,7 @@
+## 2026-07-15
+
+- Fixed `PrimaryExpression` ordering. `LambdaExpression` needs to come before `Variable`.
+
 ## 2026-07-11
 
 - Promoted `LambdaExpression` to be a `PrimaryExpression`

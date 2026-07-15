@@ -337,8 +337,17 @@ module Expr
       def children = segments.reject { |s| s.instance_of?(::String) || s.instance_of?(::Integer) }
 
       def to_s
-        # TODO
-        root
+        path(segments)
+      end
+
+      def path(segments)
+        root_ = root.is_a?(Name) || root.is_a?(::String) ? root.to_s : "[#{root}]"
+        return root_ if segments.empty?
+
+        segments_ = segments.map do |s|
+          s.is_a?(Name) || s.is_a?(Predicate) ? ".#{s}" : "[#{s}]"
+        end.join
+        "#{root_}#{segments_}"
       end
     end
 
@@ -380,7 +389,10 @@ module Expr
       end
 
       def children = [expr]
-      def to_s = "(#{params.map(&:to_s).join(",")}) => #{expr}"
+
+      def to_s
+        "(#{params.map(&:to_s).join(",")}) => #{expr}"
+      end
     end
 
     def self.tree_view(e)
